@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+.buildvenv/
+desktop/bundled-agent-engine/
+desktop/sidecar/build/
+desktop/sidecar/dist/
+.DS_Store
+Thumbs.db
