@@ -1,0 +1,27 @@
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('atlasDesktop',{
+ isDesktop:true,
+ windowAction:(action)=>ipcRenderer.invoke('atlas:window',action),
+ saveProject:(text,defaultName)=>ipcRenderer.invoke('atlas:save-project',{text,defaultName}),
+ openProject:()=>ipcRenderer.invoke('atlas:open-project'),
+ notify:(title,body)=>ipcRenderer.invoke('atlas:notify',{title,body}),
+ getVersion:()=>ipcRenderer.invoke('atlas:version'),
+ pickResearchFiles:()=>ipcRenderer.invoke('atlas:pick-research-files'),
+ openEvidenceViewer:(url,title)=>ipcRenderer.invoke('atlas:open-evidence',{url,title}),
+ onLLMRequest:(handler)=>ipcRenderer.on('atlas:llm-request',(_event,payload)=>handler(payload)),
+ respondLLMRequest:(id,payload)=>ipcRenderer.send('atlas:llm-response',{id,...payload}),
+ agentHealth:()=>ipcRenderer.invoke('atlas:agent-health'),
+ agentDoctor:()=>ipcRenderer.invoke('atlas:agent-doctor'),
+ agentSmoke:()=>ipcRenderer.invoke('atlas:agent-smoke'),
+ repairAgents:()=>ipcRenderer.invoke('atlas:agent-repair'),
+ setupAgents:()=>ipcRenderer.invoke('atlas:agent-setup'),
+ agentSetupStatus:()=>ipcRenderer.invoke('atlas:agent-setup-status'),
+ startAgentRun:(payload)=>ipcRenderer.invoke('atlas:agent-start',payload),
+ getAgentRun:(runId)=>ipcRenderer.invoke('atlas:agent-run',runId),
+ cancelAgentRun:(runId)=>ipcRenderer.invoke('atlas:agent-cancel',runId),
+ monitorList:()=>ipcRenderer.invoke('atlas:monitor-list'),
+ monitorSync:(jobs)=>ipcRenderer.invoke('atlas:monitor-sync',{jobs}),
+ monitorRunNow:()=>ipcRenderer.invoke('atlas:monitor-run-now'),
+ monitorConfig:(config)=>ipcRenderer.invoke('atlas:monitor-config',config),
+ onMonitorEvent:(handler)=>ipcRenderer.on('atlas:monitor-event',(_event,payload)=>handler(payload))
+});
