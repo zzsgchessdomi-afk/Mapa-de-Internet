@@ -1,0 +1,14 @@
+{
+  "name": "internet-atlas",
+  "version": "29.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=20"},
+  "description": "Internet Atlas autonomous evidence-first research workspace",
+  "scripts": {
+    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js",
+    "test:contract": "node tests/research-contract.mjs",
+    "audit:release": "node scripts/release_audit.mjs"
+  },
+  "dependencies": {"pdf-parse": "2.4.5"}
+}
