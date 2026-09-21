@@ -1,0 +1,16 @@
+{
+  "RETRIEVER": "duckduckgo",
+  "FAST_LLM": "openai:gpt-5.6-luna",
+  "SMART_LLM": "openai:gpt-5.6-luna",
+  "STRATEGIC_LLM": "openai:gpt-5.6-luna",
+  "EMBEDDING": "openai:atlas-feature-hash-384",
+  "CURATE_SOURCES": true,
+  "REPORT_FORMAT": "APA",
+  "MAX_ITERATIONS": 3,
+  "MAX_SUBTOPICS": 5,
+  "SCRAPER": "bs",
+  "TOTAL_WORDS": 1800,
+  "deep_research_breadth": 3,
+  "deep_research_depth": 2,
+  "deep_research_concurrency": 3
+}
