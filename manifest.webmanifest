@@ -1,0 +1,11 @@
+{
+  "name": "Internet Atlas",
+  "short_name": "Atlas",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#02050a",
+  "theme_color": "#02050a",
+  "description": "Autonomous evidence-first research workspace with traceable source snapshots."
+}
