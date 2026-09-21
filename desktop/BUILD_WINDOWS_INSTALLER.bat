@@ -10,7 +10,7 @@ echo [1/8] Preparando entorno Python aislado...
 if exist .build-venv rmdir /s /q .build-venv
 py -3.12 -m venv .build-venv || goto :fail
 .build-venv\Scripts\python.exe -m pip install --upgrade pip wheel pyinstaller || goto :fail
-.build-venv\Scripts\python.exe -m pip install -r sidecar\requirements.txt || goto :fail
+.build-venv\Scripts\python.exe scripts\install_agent_dependencies.py || goto :fail
 
 echo [2/8] Compilando Agent Engine...
 pushd sidecar
