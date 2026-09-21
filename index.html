@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02050a"><title>Internet Atlas — Autonomous Evidence Research</title>
+<style>
+:root{--bg:#02050a;--panel:rgba(7,12,22,.87);--p2:rgba(9,15,27,.97);--line:rgba(255,255,255,.085);--text:#eef7ff;--muted:#7e8ca6;
+--cyan:#79e7ff;--violet:#aa8cff;--gold:#ffd678;--green:#72efb6;--red:#ff718d;--pink:#ff91c8;--shadow:0 28px 100px rgba(0,0,0,.56)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}#stage{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+.vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 46%,transparent 39%,rgba(0,0,0,.63))}
+.glass{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(24px) saturate(150%);box-shadow:var(--shadow)}
+.brand{position:fixed;z-index:40;left:14px;top:14px;padding:8px 11px;border-radius:15px;display:flex;gap:9px;align-items:center}.logo{width:34px;height:34px;border-radius:11px;border:1px solid rgba(121,231,255,.22);background:radial-gradient(circle at 35% 35%,#fff 0 4%,var(--cyan) 5% 11%,transparent 13%),radial-gradient(circle at 68% 64%,var(--violet) 0 9%,transparent 11%),linear-gradient(135deg,rgba(121,231,255,.17),rgba(170,140,255,.13))}.brand b{font-size:12px;letter-spacing:.16em}.brand small{display:block;font-size:8px;color:var(--muted);letter-spacing:.14em;margin-top:2px}
+.command{position:fixed;z-index:41;top:14px;left:50%;transform:translateX(-50%);width:min(860px,calc(100vw - 420px));padding:7px;border-radius:17px;display:flex;gap:7px}.command input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:9px 11px;font-size:12px}.command input::placeholder{color:#66748c}
+.btn{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:10px;padding:8px 10px;transition:.16s}.btn:hover{background:rgba(255,255,255,.085);border-color:rgba(255,255,255,.14)}.btn.primary{border-color:rgba(121,231,255,.27);background:linear-gradient(135deg,rgba(121,231,255,.13),rgba(170,140,255,.12))}.btn.gold{border-color:rgba(255,214,120,.25);background:rgba(255,214,120,.08)}.btn.red{border-color:rgba(255,113,141,.25);color:#ffc2cf}.icon{width:38px;height:38px;padding:0;display:grid;place-items:center}
+.topright{position:fixed;z-index:40;right:14px;top:14px;display:flex;gap:6px;padding:7px;border-radius:15px}
+.left{position:fixed;z-index:35;left:14px;top:85px;bottom:57px;width:360px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column}.head{padding:13px 14px 10px;border-bottom:1px solid var(--line)}.ey{font-size:8px;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase}.head h2,.right h2{font-size:16px;margin:5px 0 2px}.sub{font-size:9px;color:var(--muted);line-height:1.45}.scroll{overflow:auto;padding:12px 13px 18px}.section{margin-bottom:16px}.label{font-size:8px;color:#74829a;letter-spacing:.15em;text-transform:uppercase;margin-bottom:7px}
+.field{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.034);border-radius:10px;padding:8px 9px;outline:0;font-size:9px}.row{display:flex;gap:6px}.row>*{min-width:0}
+.criteria{display:flex;gap:5px;flex-wrap:wrap}.criterion{font-size:8px;padding:5px 7px;border:1px solid var(--line);border-radius:999px;color:#b9c6d8}.criterion.req{border-color:rgba(255,214,120,.25);color:#ffe2a0}.criterion .x{margin-left:4px;opacity:.6}
+.step{display:grid;grid-template-columns:18px 1fr auto;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}.step i{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);font-style:normal;font-size:7px;color:#65738a}.step.on i{border-color:rgba(121,231,255,.35);color:#fff;box-shadow:0 0 12px rgba(121,231,255,.18)}.step.done i{border-color:rgba(114,239,182,.30);background:rgba(114,239,182,.10);color:var(--green)}.step b{font-size:9px}.step span{font-size:7px;color:var(--muted)}
+.run{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}.run b{display:block;font-size:9px}.run span{font-size:7px;color:var(--muted)}
+.right{position:fixed;z-index:35;right:14px;top:85px;bottom:57px;width:430px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}.right.hidden{transform:translateX(calc(100% + 30px));opacity:0}.rhead{padding:13px 14px 10px;border-bottom:1px solid var(--line)}.rscroll{overflow:auto;padding:12px 13px 18px}
+.summary{font-size:10.5px;line-height:1.58;color:#c4d0e1}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:10px 0 14px}.metric{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.024)}.metric b{display:block;font-size:13px}.metric span{font-size:6.5px;color:var(--muted);text-transform:uppercase}
+.matrixWrap{overflow:auto;border:1px solid var(--line);border-radius:11px}.matrix{width:100%;border-collapse:collapse;min-width:650px;font-size:8px}.matrix th,.matrix td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.05);text-align:left;vertical-align:top}.matrix th{position:sticky;top:0;background:rgba(9,15,27,.98);font-size:7px;color:#8391a8;text-transform:uppercase}.matrix tr{cursor:pointer}.matrix tr:hover td{background:rgba(255,255,255,.025)}.good{color:var(--green)}.mid{color:var(--gold)}.bad{color:var(--red)}.unk{color:#75839a}
+.claims{display:grid;gap:6px}.claim{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.024)}.claimTop{display:flex;justify-content:space-between;gap:8px}.claim b{font-size:9px}.claim p{font-size:8px;color:#96a5ba;line-height:1.42;margin:4px 0}.status{font-size:7px;padding:4px 6px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}.verified{color:var(--green);border-color:rgba(114,239,182,.23)}.provisional{color:var(--gold);border-color:rgba(255,214,120,.23)}.missing{color:var(--red);border-color:rgba(255,113,141,.23)}
+.detail{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);width:min(720px,calc(100vw - 24px));max-height:min(780px,calc(100vh - 24px));overflow:auto;border-radius:19px;padding:16px;opacity:0;pointer-events:none;transition:.18s}.detail.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}.detailTop{display:flex;justify-content:space-between;gap:10px}.detail h2{font-size:19px;margin:5px 0}.detail p{font-size:10.5px;line-height:1.55;color:#bdc9dc}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.tag{font-size:8px;padding:5px 7px;border:1px solid var(--line);border-radius:999px;color:#b8c5d8}.evidence{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.evidence b{font-size:8px}.evidence p{font-size:8.5px;color:#9ba8bc;margin:3px 0}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.compare{position:fixed;z-index:36;left:385px;right:455px;bottom:57px;padding:7px;border-radius:14px;display:none;gap:6px;overflow:auto}.compare.show{display:flex}.ccard{flex:1 0 210px;padding:9px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.032)}.ccard b{display:block;font-size:9px}.ccard p{font-size:7.5px;color:#8b99af;line-height:1.38}.ccard .x{float:right;border:0;background:transparent;color:#6f7d94}
+.bottom{position:fixed;z-index:40;left:14px;right:14px;bottom:11px;min-height:38px;padding:8px 10px;border-radius:13px;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:9px}.bottom strong{color:#d9e5f7}.grow{flex:1}.sep{opacity:.35}.bar{width:140px;height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--gold));transition:.25s}
+.toast{position:fixed;z-index:80;left:50%;bottom:64px;transform:translate(-50%,12px);opacity:0;pointer-events:none;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--p2);font-size:10px;transition:.18s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1150px){.brand{display:none}.command{left:9px;right:9px;top:9px;transform:none;width:auto}.topright{display:none}.left{left:9px;top:65px;width:310px;bottom:52px}.right{right:9px;top:65px;width:390px;bottom:52px}.compare{left:330px;right:410px;bottom:52px}.bottom{left:9px;right:9px;bottom:7px}}
+@media(max-width:780px){.left{width:calc(100vw - 18px);height:270px;bottom:auto}.right{left:9px;right:9px;top:342px;width:auto}.compare{left:9px;right:9px}.bottom{display:none}.command .btn.primary{font-size:9px;padding:7px 8px}}
+
+.templates{display:flex;gap:5px;flex-wrap:wrap}.template{font-size:8px;padding:5px 7px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);color:#9eacc0}.template:hover{color:#fff;background:rgba(255,255,255,.06)}
+.auditgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.audititem{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.023)}.audititem b{display:block;font-size:9px}.audititem span{font-size:7px;color:var(--muted)}
+.change{padding:8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,.023)}.change b{font-size:9px;display:block}.change span{font-size:8px;color:#96a4b9}.plus{color:var(--green)!important}.minus{color:var(--red)!important}.delta{color:var(--gold)!important}
+.watchitem{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.watchitem b{display:block;font-size:9px}.watchitem span{font-size:7px;color:var(--muted)}
+.modehint{font-size:7px;color:var(--muted);margin-top:5px;line-height:1.35}
+
+
+.qa{position:fixed;z-index:37;left:385px;right:455px;top:85px;border-radius:16px;padding:8px;display:flex;gap:7px;transition:.2s}
+.qa input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:8px 9px;font-size:10px}
+.answer{position:fixed;z-index:38;left:50%;top:140px;transform:translateX(-50%);width:min(720px,calc(100vw - 790px));max-height:300px;overflow:auto;border-radius:15px;padding:12px;display:none}
+.answer.show{display:block}.answer h3{font-size:12px;margin:4px 0 7px}.answer p{font-size:9px;line-height:1.5;color:#b9c7d9;margin:5px 0}
+.answer .cite{padding:7px 0;border-top:1px solid rgba(255,255,255,.05)}.answer .cite b{font-size:8px}.answer .cite span{display:block;font-size:7px;color:var(--muted);margin-top:2px}
+.blocker{padding:8px;border:1px solid rgba(255,113,141,.16);border-radius:10px;background:rgba(255,113,141,.035);margin-bottom:6px}.blocker b{display:block;font-size:9px;color:#ffc1ce}.blocker span{font-size:8px;color:#9aa7bb}
+.nextstep{padding:8px;border:1px solid rgba(121,231,255,.14);border-radius:10px;background:rgba(121,231,255,.03);margin-bottom:6px}.nextstep b{display:block;font-size:9px}.nextstep span{font-size:8px;color:#95a4b9}
+.watchhistory{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.045)}.watchhistory b{font-size:9px;display:block}.watchhistory span{font-size:7px;color:var(--muted)}
+.badge{font-size:7px;padding:3px 5px;border:1px solid var(--line);border-radius:999px}.badge.ok{color:var(--green);border-color:rgba(114,239,182,.2)}.badge.warn{color:var(--gold);border-color:rgba(255,214,120,.2)}.badge.bad{color:var(--red);border-color:rgba(255,113,141,.2)}
+@media(max-width:1150px){.qa{left:330px;right:410px;top:65px}.answer{top:118px;width:min(650px,calc(100vw - 740px))}}
+@media(max-width:780px){.qa{left:9px;right:9px;top:312px}.answer{left:9px;right:9px;top:360px;width:auto;transform:none}.right{top:418px}}
+
+
+.aiPanel{position:fixed;z-index:75;right:14px;top:76px;width:360px;max-height:calc(100vh - 95px);overflow:auto;border-radius:18px;padding:14px;transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none;transition:.2s}
+.aiPanel.show{transform:none;opacity:1;pointer-events:auto}.aiHeader{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.aiHeader h2{font-size:16px;margin:5px 0 2px}
+.aiStatus{display:flex;gap:7px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);margin:10px 0}
+.aiLed{width:8px;height:8px;border-radius:50%;background:#5b6678}.aiLed.ready{background:var(--green);box-shadow:0 0 12px var(--green)}.aiLed.loading{background:var(--gold);box-shadow:0 0 12px var(--gold)}.aiLed.error{background:var(--red)}
+.aiStatus b{display:block;font-size:9px}.aiStatus span{display:block;font-size:7px;color:var(--muted);margin-top:2px}
+.aiProgress{height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin:8px 0}.aiProgressFill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:.2s}
+.aiFeature{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}.aiFeature b{display:block;font-size:9px}.aiFeature span{font-size:8px;color:#94a2b8;line-height:1.4}
+.aiOutput{padding:10px;border:1px solid rgba(121,231,255,.14);background:rgba(121,231,255,.035);border-radius:11px;font-size:9px;line-height:1.5;color:#c7d4e5;white-space:pre-wrap}
+.aiBadge{font-size:7px;padding:4px 6px;border-radius:999px;border:1px solid rgba(121,231,255,.20);color:#baf0ff}
+.aiBtnActive{border-color:rgba(114,239,182,.30)!important;color:#c6ffe2!important;box-shadow:0 0 18px rgba(114,239,182,.08)}
+@media(max-width:780px){.aiPanel{left:9px;right:9px;top:65px;width:auto;max-height:calc(100vh - 75px)}}
+
+
+body.booting{overflow:hidden}
+.splash{position:fixed;inset:0;z-index:120;background:
+radial-gradient(circle at 20% 20%,rgba(121,231,255,.16),transparent 28%),
+radial-gradient(circle at 80% 25%,rgba(170,140,255,.15),transparent 30%),
+radial-gradient(circle at 50% 75%,rgba(255,214,120,.10),transparent 28%),
+linear-gradient(180deg,#040811 0%,#02050a 100%);display:flex;align-items:center;justify-content:center;transition:.5s}
+.splash.hide{opacity:0;pointer-events:none}
+.splashCard{width:min(960px,calc(100vw - 26px));padding:28px;border-radius:26px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(8,14,25,.88),rgba(7,12,22,.94));border:1px solid rgba(255,255,255,.09);box-shadow:0 40px 140px rgba(0,0,0,.55)}
+.splashGrid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:stretch}
+.bigLogo{width:74px;height:74px;border-radius:22px;border:1px solid rgba(121,231,255,.24);background:
+radial-gradient(circle at 35% 35%,#fff 0 4%,var(--cyan) 5% 13%,transparent 14%),
+radial-gradient(circle at 68% 64%,var(--violet) 0 11%,transparent 12%),
+linear-gradient(135deg,rgba(121,231,255,.18),rgba(170,140,255,.14))}
+.kicker{font-size:10px;letter-spacing:.28em;color:#8eeeff;text-transform:uppercase}
+.heroTitle{font-size:34px;line-height:1.02;margin:10px 0 12px}
+.heroSub{font-size:13px;line-height:1.65;color:#b4c1d6;max-width:620px}
+.heroBullets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
+.heroBullets div{padding:9px 11px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.025);font-size:10px;color:#dce8f7}
+.heroBullets b{display:block;font-size:9px;color:#fff;margin-bottom:3px}
+.launchActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.launcherSide{padding:16px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.03)}
+.sideStat{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}.sideStat:last-child{border-bottom:0}
+.sideStat b{display:block;font-size:18px}.sideStat span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.bootLine{display:flex;gap:10px;align-items:center;margin-top:18px;padding:10px 12px;border-radius:12px;background:rgba(121,231,255,.04);border:1px solid rgba(121,231,255,.12)}
+.bootDots{display:flex;gap:5px}.bootDots i{width:7px;height:7px;border-radius:50%;background:#7eefff;opacity:.2;animation:pulse 1.6s infinite}.bootDots i:nth-child(2){animation-delay:.15s}.bootDots i:nth-child(3){animation-delay:.3s}
+@keyframes pulse{0%,100%{opacity:.18;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+.startOverlay{position:fixed;inset:0;z-index:100;display:none;pointer-events:none;background:linear-gradient(180deg,rgba(2,5,10,.82),rgba(2,5,10,.55) 40%,transparent 100%)}
+.startOverlay.show{display:block}
+.workspaceBanner{position:fixed;z-index:34;left:50%;top:85px;transform:translateX(-50%);width:min(760px,calc(100vw - 420px));padding:12px 14px;border-radius:18px;display:flex;gap:12px;align-items:center}
+.workspaceBanner.hide{display:none}
+.workspaceBanner b{display:block;font-size:12px}.workspaceBanner span{display:block;font-size:9px;color:#a4b1c5;line-height:1.5}
+.pillRow{display:flex;gap:6px;flex-wrap:wrap}.launchPill{font-size:8px;padding:5px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#bdd0e3}
+.quickStart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+.qCard{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025);cursor:pointer;transition:.18s}.qCard:hover{background:rgba(255,255,255,.05);transform:translateY(-2px)}
+.qCard b{display:block;font-size:10px}.qCard span{display:block;font-size:8px;color:#97a5ba;line-height:1.42;margin-top:4px}
+.browserHint{margin-top:13px;font-size:8px;color:#8ea0b8;line-height:1.55}
+.appFrame{position:fixed;inset:8px;border-radius:28px;pointer-events:none;border:1px solid rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+@media(max-width:980px){.splashGrid{grid-template-columns:1fr}.heroTitle{font-size:28px}.workspaceBanner{width:min(720px,calc(100vw - 30px));left:9px;right:9px;transform:none;top:65px}}
+@media(max-width:780px){.heroBullets,.quickStart{grid-template-columns:1fr}.workspaceBanner{top:345px}.splashCard{padding:18px;border-radius:22px}.heroTitle{font-size:24px}}
+
+
+.healthPanel{position:fixed;z-index:74;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);width:min(820px,calc(100vw - 24px));max-height:min(760px,calc(100vh - 24px));overflow:auto;border-radius:20px;padding:16px;opacity:0;pointer-events:none;transition:.18s}
+.healthPanel.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.healthGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.healthItem{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.healthItem b{display:flex;justify-content:space-between;gap:8px;font-size:9px}.healthItem span{display:block;font-size:8px;color:#94a2b8;line-height:1.45;margin-top:4px}
+.healthDot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#5e697b}.healthDot.ok{background:var(--green);box-shadow:0 0 10px rgba(114,239,182,.5)}.healthDot.warn{background:var(--gold)}.healthDot.bad{background:var(--red)}
+.presentation{position:fixed;inset:0;z-index:110;background:#02050a;display:none;overflow:hidden}.presentation.show{display:block}
+.presentation canvas{position:absolute;inset:0}.presHud{position:absolute;left:28px;right:28px;top:24px;display:flex;justify-content:space-between;gap:16px;pointer-events:none}
+.presCard{pointer-events:auto;max-width:520px;padding:15px 16px;border-radius:18px;background:rgba(7,12,22,.72);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(20px)}
+.presCard h1{font-size:25px;line-height:1.05;margin:4px 0 8px}.presCard p{font-size:10px;color:#b8c6d9;line-height:1.55}.presMeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.presMeta span{font-size:8px;padding:5px 7px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.03)}
+.presBottom{position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;gap:16px;align-items:end}
+.presResults{width:min(620px,60vw);display:grid;gap:6px}.presResult{padding:9px 11px;border-radius:12px;background:rgba(7,12,22,.72);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px)}
+.presResult b{font-size:10px}.presResult span{font-size:8px;color:#98a7bb;float:right}.presExit{pointer-events:auto}
+.recovery{position:fixed;z-index:73;left:50%;bottom:62px;transform:translateX(-50%);width:min(760px,calc(100vw - 30px));padding:10px 12px;border-radius:14px;display:none;align-items:center;gap:10px}
+.recovery.show{display:flex}.recovery b{font-size:9px;display:block}.recovery span{font-size:8px;color:#9caabd}
+.projectTools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:7px}
+.projectTools .btn{font-size:8px}
+.bootCheck{display:flex;gap:7px;align-items:center;padding:8px 9px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.022);margin-top:6px}
+.bootCheck b{font-size:8px}.bootCheck span{font-size:7px;color:#8fa0b8}
+.tour{position:fixed;z-index:130;inset:0;display:none;background:rgba(0,0,0,.58)}.tour.show{display:block}.tourCard{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 28px));padding:18px;border-radius:20px;background:#09111d;border:1px solid rgba(255,255,255,.10);box-shadow:0 28px 100px rgba(0,0,0,.65)}
+.tourCard h2{margin:5px 0 8px;font-size:20px}.tourCard p{font-size:10px;line-height:1.6;color:#b3c0d3}.tourDots{display:flex;gap:5px;margin:10px 0}.tourDots i{width:8px;height:8px;border-radius:50%;background:#566277}.tourDots i.on{background:var(--cyan)}
+@media(max-width:780px){.healthGrid{grid-template-columns:1fr}.presHud,.presBottom{left:12px;right:12px}.presResults{width:100%}.presCard{max-width:none}.presCard h1{font-size:20px}}
+
+
+/* PRODUCT SHELL */
+.splash{padding:0!important;overflow:hidden!important;background:
+radial-gradient(circle at 50% 38%,rgba(92,211,255,.10),transparent 34%),
+radial-gradient(circle at 70% 70%,rgba(151,119,255,.08),transparent 33%),
+#02050a!important}
+.splashCard{width:100%!important;height:100%!important;max-width:none!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:grid!important;place-items:center!important;overflow:hidden!important}
+.x19Launch{width:min(760px,calc(100vw - 34px));display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px 0}
+.x19Mark{width:82px;height:82px;border-radius:26px;position:relative;margin-bottom:22px;background:linear-gradient(145deg,rgba(121,231,255,.16),rgba(170,140,255,.08));border:1px solid rgba(121,231,255,.18);box-shadow:0 22px 70px rgba(0,0,0,.45),0 0 60px rgba(121,231,255,.08)}
+.x19Mark:before{content:"";position:absolute;inset:17px;border:1px solid rgba(121,231,255,.55);border-radius:50%;box-shadow:0 0 25px rgba(121,231,255,.15)}
+.x19Mark:after{content:"";position:absolute;width:15px;height:15px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:#a7f2ff;box-shadow:0 0 20px #79e7ff}
+.x19Name{font-size:12px;letter-spacing:.34em;color:#8cecff;text-transform:uppercase;margin-bottom:13px}
+.x19Title{font-size:clamp(34px,7vw,64px);line-height:.98;letter-spacing:-.045em;margin:0;max-width:720px}
+.x19Sub{font-size:clamp(12px,2.3vw,15px);line-height:1.6;color:#91a0b5;max-width:580px;margin:17px auto 22px}
+.x19Command{width:min(700px,100%);display:flex;gap:7px;padding:7px;border-radius:18px;background:rgba(8,14,24,.78);border:1px solid rgba(255,255,255,.09);box-shadow:0 24px 80px rgba(0,0,0,.38);backdrop-filter:blur(20px)}
+.x19Command input{flex:1;min-width:0;background:transparent;border:0;outline:0;padding:13px 12px;font-size:12px;color:#eef7ff}
+.x19Command input::placeholder{color:#67768c}
+.x19Command .btn{padding:11px 16px;white-space:nowrap}
+.x19Examples{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:13px}
+.x19Example{font-size:8px;padding:6px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);color:#8796aa;cursor:pointer}
+.x19Example:hover{color:#dbe9f7;border-color:rgba(121,231,255,.16)}
+.x19Footer{position:absolute;left:18px;right:18px;bottom:max(18px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:9px;color:#536176;font-size:8px}
+.x19Footer i{width:4px;height:4px;border-radius:50%;background:#526074}
+.x19Install{display:none}
+.x19Install.show{display:inline-flex}
+.x19FullscreenHint{margin-top:11px;font-size:8px;color:#536176;min-height:12px}
+.splashGrid,.heroBullets,.launcherSide,.bootLine,.launchActions,.bigLogo,.kicker,.heroTitle,.heroSub{display:none!important}
+.workspaceBanner{display:none!important}
+.startOverlay{display:none!important}
+body.booting{overflow:hidden!important}
+
+/* Once inside, use the full screen as a serious application */
+.brand{background:rgba(5,10,18,.72)!important;box-shadow:none!important}
+.appFrame{inset:0!important;border-radius:0!important;border-color:rgba(255,255,255,.025)!important}
+.command{box-shadow:0 16px 50px rgba(0,0,0,.30)!important}
+.left,.right{box-shadow:0 28px 80px rgba(0,0,0,.34)!important}
+
+/* mobile */
+@media(max-width:780px){
+ .x19Launch{width:calc(100vw - 30px);padding:10px 0}
+ .x19Mark{width:68px;height:68px;border-radius:21px;margin-bottom:18px}
+ .x19Mark:before{inset:14px}
+ .x19Title{font-size:39px;max-width:360px}
+ .x19Sub{font-size:12px;max-width:340px;margin:14px auto 20px}
+ .x19Command{display:grid;grid-template-columns:1fr;padding:7px;border-radius:16px}
+ .x19Command input{padding:12px 10px;text-align:left}
+ .x19Command .btn{width:100%;padding:11px}
+ .x19Examples{margin-top:11px;gap:5px}
+ .x19Example{font-size:7.5px}
+ .x19Footer{font-size:7px}
+}
+@media(max-height:680px){
+ .x19Mark{width:54px;height:54px;border-radius:17px;margin-bottom:12px}
+ .x19Title{font-size:32px}
+ .x19Sub{margin:10px auto 14px}
+ .x19Examples{margin-top:8px}
+}
+
+
+:root{--leftW:360px;--rightW:430px}
+.nativeTitlebar{position:fixed;z-index:200;left:0;right:0;top:0;height:38px;display:none;align-items:center;background:#050910;border-bottom:1px solid rgba(255,255,255,.06);-webkit-app-region:drag}
+.desktop-mode .nativeTitlebar{display:flex}.nativeTitlebar .ntBrand{padding:0 12px;font-size:9px;letter-spacing:.14em;color:#9eb0c5}.nativeTitlebar .ntProject{font-size:8px;color:#66758a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ntGrow{flex:1}.winControls{display:flex;height:100%;-webkit-app-region:no-drag}.winBtn{width:46px;border:0;background:transparent;color:#91a0b3;font-size:12px}.winBtn:hover{background:rgba(255,255,255,.06)}.winBtn.close:hover{background:#c42b1c;color:#fff}
+.desktop-mode .brand,.desktop-mode .command,.desktop-mode .topright{top:52px}.desktop-mode .left,.desktop-mode .right{top:124px}.desktop-mode .qa{top:124px}.desktop-mode .softwareBar{top:93px}
+.activityRail{position:fixed;z-index:39;left:0;top:85px;bottom:57px;width:46px;border-right:1px solid rgba(255,255,255,.05);background:rgba(4,8,14,.82);backdrop-filter:blur(18px);display:none;flex-direction:column;align-items:center;padding:7px 0;gap:5px}
+.software-mode .activityRail{display:flex}.railBtn{width:34px;height:34px;border:1px solid transparent;border-radius:9px;background:transparent;color:#718097;display:grid;place-items:center;font-size:13px}.railBtn:hover,.railBtn.on{color:#dff7ff;background:rgba(121,231,255,.07);border-color:rgba(121,231,255,.10)}
+.software-mode .left{left:58px;width:var(--leftW)}.software-mode .right{width:var(--rightW)}.software-mode .brand{left:58px}.software-mode .compare{left:calc(var(--leftW) + 72px);right:calc(var(--rightW) + 25px)}
+.softwareBar{position:fixed;z-index:38;left:calc(var(--leftW) + 78px);right:calc(var(--rightW) + 26px);top:85px;height:32px;border-bottom:1px solid rgba(255,255,255,.055);background:rgba(4,8,14,.76);display:flex;align-items:end;overflow:hidden;padding:0 4px}
+.runTabs{display:flex;gap:2px;overflow:auto;min-width:0}.runTab{height:31px;max-width:190px;display:flex;align-items:center;gap:6px;padding:0 9px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;background:rgba(255,255,255,.02);color:#718198;font-size:8px;cursor:pointer;white-space:nowrap}
+.runTab.active{background:rgba(9,15,27,.98);color:#e4f2ff;border-color:rgba(255,255,255,.06)}.runTab span{overflow:hidden;text-overflow:ellipsis}.runTab i{font-style:normal;opacity:.5}.runTab i:hover{opacity:1}
+.resizeHandle{position:fixed;z-index:45;top:124px;bottom:57px;width:5px;cursor:col-resize;display:none}.software-mode .resizeHandle{display:block}.resizeHandle.leftH{left:calc(58px + var(--leftW) + 5px)}.resizeHandle.rightH{right:calc(var(--rightW) + 18px)}
+.resizeHandle:hover{background:rgba(121,231,255,.20)}
+.cmdPalette{position:fixed;z-index:160;left:50%;top:17%;transform:translateX(-50%) scale(.98);width:min(650px,calc(100vw - 28px));border-radius:16px;padding:8px;opacity:0;pointer-events:none;transition:.14s}.cmdPalette.show{opacity:1;transform:translateX(-50%) scale(1);pointer-events:auto}
+.cmdPalette input{width:100%;border:0;outline:0;background:transparent;padding:11px 12px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.06)}.cmdList{max-height:320px;overflow:auto;padding:5px}.cmdItem{display:flex;justify-content:space-between;gap:12px;padding:9px;border-radius:9px;cursor:pointer}.cmdItem:hover,.cmdItem.sel{background:rgba(121,231,255,.06)}.cmdItem b{font-size:9px}.cmdItem span{font-size:7px;color:#6f7f96}
+.consoleDrawer{position:fixed;z-index:72;left:58px;right:14px;bottom:0;height:250px;background:#04080e;border-top:1px solid rgba(255,255,255,.08);box-shadow:0 -28px 80px rgba(0,0,0,.45);transform:translateY(100%);transition:.2s;display:flex;flex-direction:column}.consoleDrawer.show{transform:none}
+.consoleHead{height:34px;display:flex;align-items:center;padding:0 10px;border-bottom:1px solid rgba(255,255,255,.05)}.consoleHead b{font-size:8px;letter-spacing:.12em}.consoleBody{flex:1;overflow:auto;padding:9px 11px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:8.5px;line-height:1.55;color:#9db0c6}.consoleLine{white-space:pre-wrap}.consoleLine .prompt{color:#79e7ff}.consoleInputRow{display:flex;border-top:1px solid rgba(255,255,255,.05);padding:6px 10px;gap:7px}.consoleInputRow span{font:9px ui-monospace;color:#79e7ff;padding-top:6px}.consoleInputRow input{flex:1;border:0;outline:0;background:transparent;font:9px ui-monospace;color:#dce9f8;padding:5px}
+.nativeBadge{display:none;font-size:7px;padding:4px 6px;border-radius:999px;border:1px solid rgba(114,239,182,.18);color:#9ff0c8}.desktop-mode .nativeBadge{display:inline-flex}
+.software-mode .bottom{left:58px}
+@media(max-width:1000px){.activityRail,.softwareBar,.resizeHandle{display:none!important}.software-mode .left{left:9px;width:300px}.software-mode .brand{left:9px}.software-mode .right{width:350px}.software-mode .bottom{left:9px}.consoleDrawer{left:0}.desktop-mode .left,.desktop-mode .right{top:65px}.desktop-mode .brand,.desktop-mode .command,.desktop-mode .topright{top:9px}.nativeTitlebar{display:none!important}}
+
+
+.agentPanel{position:fixed;z-index:78;right:14px;top:124px;width:390px;bottom:57px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transform:translateX(calc(100% + 35px));opacity:0;pointer-events:none;transition:.2s}
+.agentPanel.show{transform:none;opacity:1;pointer-events:auto}
+.agentHead{padding:13px 14px 10px;border-bottom:1px solid var(--line)}.agentScroll{overflow:auto;padding:12px 13px 18px}
+.engineCard{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);margin-bottom:8px}
+.engineCardTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.engineCard b{font-size:10px}.engineCard p{font-size:8px;line-height:1.45;color:#93a2b7;margin:4px 0 0}
+.engineBadge{font-size:7px;padding:4px 6px;border:1px solid var(--line);border-radius:999px;color:#77869c}.engineBadge.ready{color:var(--green);border-color:rgba(114,239,182,.24)}.engineBadge.running{color:var(--gold);border-color:rgba(255,214,120,.24)}.engineBadge.error{color:var(--red);border-color:rgba(255,113,141,.24)}
+.agentFlow{display:grid;gap:6px;margin-top:8px}.agentNode{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.055);border-radius:10px;background:rgba(255,255,255,.018)}
+.agentOrb{width:22px;height:22px;border-radius:8px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);font-size:8px;color:#8290a5}.agentNode.running .agentOrb{color:#fff;border-color:rgba(121,231,255,.30);box-shadow:0 0 14px rgba(121,231,255,.12)}.agentNode.done .agentOrb{color:var(--green);border-color:rgba(114,239,182,.24);background:rgba(114,239,182,.07)}.agentNode.error .agentOrb{color:var(--red);border-color:rgba(255,113,141,.24)}
+.agentNode b{font-size:9px;display:block}.agentNode span{font-size:7px;color:#77869b}.agentNode em{font-size:7px;font-style:normal;color:#68768b}
+.agentLog{min-height:130px;max-height:240px;overflow:auto;padding:9px;border:1px solid var(--line);border-radius:10px;background:#03070c;font:8px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:#93a8bd;white-space:pre-wrap}
+.agentResult{padding:10px;border:1px solid rgba(121,231,255,.13);border-radius:11px;background:rgba(121,231,255,.03);font-size:9px;line-height:1.52;color:#c2d0e1;white-space:pre-wrap;max-height:280px;overflow:auto}
+.agentInstall{padding:10px;border:1px solid rgba(255,214,120,.16);border-radius:11px;background:rgba(255,214,120,.035);font-size:8px;line-height:1.5;color:#b6a57b}
+.agentProgress{height:4px;background:rgba(255,255,255,.055);border-radius:99px;overflow:hidden;margin:8px 0}.agentProgress div{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--gold));transition:.2s}
+.agentMini{font-size:7px;color:#6e7d92}
+.agentToolbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.agentMode{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}.agentMode button{font-size:7.5px;padding:7px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025)}.agentMode button.on{border-color:rgba(121,231,255,.24);color:#dff9ff;background:rgba(121,231,255,.055)}
+@media(max-width:780px){.agentPanel{left:9px;right:9px;top:65px;width:auto;bottom:9px}}
+
+
+/* LIVE EVIDENCE SYSTEM */
+.liveGraph{position:fixed;z-index:37;left:50%;transform:translateX(-50%);bottom:64px;width:min(620px,calc(100vw - 460px));padding:8px 10px;border-radius:14px;display:none;pointer-events:none}.liveGraph.show{display:block}.lgTitle{display:flex;justify-content:space-between;font-size:7px;letter-spacing:.13em;color:#77889d}.lgTitle b{color:#9bb0c8}.lgFlow{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:7px}.lgFlow>b{font-size:10px;color:#354355}.lgNode{display:flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid rgba(255,255,255,.055);border-radius:9px;background:rgba(255,255,255,.018);font-size:7px;color:#718096;transition:.18s}.lgNode i{font-style:normal;width:16px;height:16px;border-radius:6px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08)}.lgNode.running{color:#eafaff;border-color:rgba(121,231,255,.25);background:rgba(121,231,255,.05);box-shadow:0 0 18px rgba(121,231,255,.06)}.lgNode.running i{color:#9ff3ff}.lgNode.done{color:#9cefc5;border-color:rgba(114,239,182,.16)}.lgNode.error{color:#ff8aa2;border-color:rgba(255,113,141,.18)}.lgDetail{font-size:7px;color:#6d7d92;text-align:center;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.labPanel{position:fixed;z-index:86;left:50%;top:50%;transform:translate(-50%,-50%) scale(.97);width:min(820px,calc(100vw - 24px));max-height:min(760px,calc(100vh - 24px));overflow:auto;border-radius:20px;padding:16px;opacity:0;pointer-events:none;transition:.16s}.labPanel.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}.labTabs{display:flex;gap:5px;padding:8px 0 12px}.labTabs button{padding:7px 10px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.025);font-size:8px;color:#8291a6}.labTabs button.on{color:#e5fbff;border-color:rgba(121,231,255,.20);background:rgba(121,231,255,.05)}.labView.hidden{display:none}.replayNow{padding:10px;border-radius:11px;background:rgba(121,231,255,.035);border:1px solid rgba(121,231,255,.10);font-size:9px;color:#c8d7e8;margin:8px 0}.replayTimeline{display:grid;gap:6px}.replayEvent{display:grid;grid-template-columns:56px 90px 1fr;gap:8px;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer}.replayEvent:hover,.replayEvent.on{border-color:rgba(121,231,255,.18);background:rgba(121,231,255,.04)}.replayEvent time{font:7px ui-monospace;color:#728198}.replayEvent b{font-size:8px}.replayEvent span{font-size:8px;color:#8d9caf;line-height:1.4}.forkInput{width:100%;min-height:92px;resize:vertical;margin-top:10px;padding:10px}.lineage{display:grid;gap:5px;margin-top:12px}.lineageItem{padding:8px 9px;border-left:2px solid rgba(170,140,255,.28);background:rgba(170,140,255,.035);font-size:8px;color:#9facbf}.runComparePick{display:grid;grid-template-columns:1fr auto 1fr auto;gap:7px;align-items:center}.runComparePick>span{font-size:8px;color:#6f7d91}.runCompareResult{margin-top:10px;display:grid;gap:7px}.runDelta{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.02)}.runDelta b{display:block;font-size:9px;margin-bottom:4px}.runDelta p{font-size:8px;color:#91a0b4;line-height:1.5;margin:0}.runDelta .plus{color:var(--green)}.runDelta .minus{color:var(--red)}
+@media(max-width:1000px){.liveGraph{width:calc(100vw - 30px);bottom:55px}.replayEvent{grid-template-columns:48px 70px 1fr}.runComparePick{grid-template-columns:1fr}.runComparePick>span{display:none}}
+
+
+/* BRANCH RESEARCH SYSTEM */
+.branchCanvasWrap{position:relative;margin-top:10px;height:260px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(121,231,255,.04),transparent 42%),#03070c}
+.branchCanvasWrap canvas{width:100%;height:100%;display:block}.branchLegend{position:absolute;left:9px;top:8px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}.branchLegend span{font-size:7px;padding:4px 6px;border:1px solid rgba(255,255,255,.06);border-radius:999px;background:rgba(4,8,14,.78);color:#7f90a7}
+.flightRecorder{position:fixed;z-index:42;left:50%;transform:translateX(-50%);bottom:61px;width:min(880px,calc(100vw - 510px));border-radius:14px;padding:7px 9px;display:none;overflow:hidden}.flightRecorder.show{display:block}.frHead{display:flex;align-items:center;gap:8px;font-size:7px;color:#75869b}.frHead b{color:#a6bdd2;letter-spacing:.11em}.frStream{display:flex;gap:5px;margin-top:6px;overflow:hidden;align-items:center}.frEvent{min-width:8px;height:8px;border-radius:50%;background:#354253;box-shadow:0 0 0 3px rgba(255,255,255,.015);transition:.18s}.frEvent.planner{background:#79e7ff}.frEvent.discovery{background:#aa8cff}.frEvent.evidence{background:#72efb6}.frEvent.analysis{background:#ffd678}.frEvent.memory{background:#ff718d}.frEvent.current{transform:scale(1.45);box-shadow:0 0 16px currentColor}.frText{font-size:7px;color:#718198;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.frBranch{font-size:7px;color:#aa8cff}
+.replayControls{display:grid;grid-template-columns:auto auto 1fr auto;gap:7px;align-items:center}.replaySlider{width:100%;accent-color:#79e7ff}.eventFork{border-color:rgba(170,140,255,.20)!important;color:#cfc2ff!important}.lineageTree{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lineageNode{padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.02);font-size:8px;color:#8998ad;cursor:pointer}.lineageNode.root{border-color:rgba(121,231,255,.18)}.lineageNode.child{border-color:rgba(170,140,255,.18)}.lineageNode.active{background:rgba(121,231,255,.05);color:#e8fbff}
+.deltaGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}.deltaStat{padding:9px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}.deltaStat b{display:block;font-size:15px}.deltaStat span{font-size:7px;color:#728197}.criteriaDelta{display:grid;gap:5px}.criteriaDeltaRow{display:grid;grid-template-columns:1.2fr .8fr 28px .8fr;gap:7px;align-items:center;padding:7px 8px;border:1px solid rgba(255,255,255,.05);border-radius:9px;font-size:8px}.criteriaDeltaRow .up{color:var(--green)}.criteriaDeltaRow .down{color:var(--red)}
+.runtimeChip{display:inline-flex;gap:5px;align-items:center;font-size:7px;padding:4px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.07);color:#7d8da3}.runtimeChip.ready{border-color:rgba(114,239,182,.20);color:#9cefc5}.runtimeChip.bad{border-color:rgba(255,113,141,.22);color:#ff91a8}
+@media(max-width:1000px){.flightRecorder{width:calc(100vw - 28px);bottom:53px}.deltaGrid{grid-template-columns:repeat(2,1fr)}.criteriaDeltaRow{grid-template-columns:1fr}.branchCanvasWrap{height:220px}}
+
+
+.toolsMenu{position:fixed;z-index:82;right:14px;top:66px;width:220px;padding:8px;border-radius:13px;display:none;grid-template-columns:1fr 1fr;gap:6px}.toolsMenu.show{display:grid}.toolsMenu .btn{width:100%;font-size:8px}.topright{max-width:none!important}.command{width:min(660px,calc(100vw - 640px))!important}@media(max-width:1150px){.toolsMenu{top:58px;right:9px}.command{width:auto!important}}
+
+/* ===== MISSION CONTROL ===== */
+.mcRoot{
+  position:fixed; inset:0; z-index:62; display:none;
+  background:#050a12; color:#eaf2ff; font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
+  grid-template-rows:54px minmax(0,1fr);
+}
+.mcRoot.show{display:grid}
+.desktop-mode .mcRoot{top:38px}
+.mcTop{
+  display:grid;grid-template-columns:auto minmax(360px,1fr) auto;gap:14px;align-items:center;
+  padding:0 14px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(5,10,18,.98)
+}
+.mcBrand{display:flex;align-items:center;gap:10px;min-width:230px}
+.mcLogo{width:28px;height:28px;border-radius:9px;border:1px solid rgba(83,166,255,.32);position:relative;background:radial-gradient(circle at 50% 50%,rgba(63,124,255,.45),rgba(14,27,47,.7))}
+.mcLogo:before,.mcLogo:after{content:"";position:absolute;border:1px solid rgba(89,186,255,.65);border-radius:50%;inset:7px}.mcLogo:after{inset:12px;background:#75d8ff;box-shadow:0 0 14px #3c91ff}
+.mcBrand b{display:block;font-size:14px;line-height:1}.mcBrand small{display:block;margin-top:4px;font-size:6.5px;letter-spacing:.22em;color:#60738f}
+.mcSearch{display:flex;align-items:center;gap:7px;max-width:780px;margin:auto;width:100%;padding:5px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#09111d}
+.mcSearch input{flex:1;background:transparent;border:0;outline:0;color:#e8f2ff;padding:8px 10px;font-size:10px}
+.mcSearch button{font-size:8px;padding:8px 13px}
+.mcTopActions{display:flex;align-items:center;gap:6px}.mcTopActions .btn{font-size:7.5px}
+.mcStatus{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:9px;background:rgba(114,239,182,.045);border:1px solid rgba(114,239,182,.12);font-size:7px;color:#9fceb8;white-space:nowrap}
+.mcStatus i{width:7px;height:7px;border-radius:50%;background:#72efb6;box-shadow:0 0 10px rgba(114,239,182,.55)}
+.mcBody{display:grid;grid-template-columns:250px minmax(0,1fr) 350px;min-height:0}
+.mcLeft,.mcRight{background:#07101b;min-height:0;overflow:auto}
+.mcLeft{border-right:1px solid rgba(255,255,255,.065);padding:12px}
+.mcRight{border-left:1px solid rgba(255,255,255,.065);padding:10px;display:flex;flex-direction:column;gap:9px}
+.mcCenter{min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 150px 104px;background:#060c15}
+.mcProject{padding:10px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:linear-gradient(160deg,rgba(60,102,255,.07),rgba(255,255,255,.015))}
+.mcProject .ey{font-size:6.5px}.mcProject h3{font-size:11px;margin:6px 0 5px}.mcProject p{font-size:8px;line-height:1.45;color:#8ea0b7;margin:0}
+.mcNav{margin-top:10px;display:grid;gap:3px}.mcNav button{display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;border-radius:9px;background:transparent;color:#91a3ba;text-align:left;padding:9px 10px;font-size:8.5px}
+.mcNav button.on,.mcNav button:hover{background:rgba(61,116,255,.14);color:#edf6ff}.mcNav button span{font-size:7px;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.055);color:#8394aa}
+.mcSectionTitle{display:flex;justify-content:space-between;align-items:center;margin:15px 2px 7px;font-size:7px;text-transform:uppercase;letter-spacing:.12em;color:#63758c}.mcSectionTitle b{color:#95a9c0}
+.mcRuns{display:grid;gap:4px}.mcRun{padding:7px 8px;border-left:2px solid #2c4059;border-radius:0 8px 8px 0;background:rgba(255,255,255,.018);cursor:pointer}.mcRun:hover,.mcRun.on{background:rgba(83,126,255,.08);border-left-color:#5da7ff}.mcRun b{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcRun span{display:block;font-size:6.5px;color:#667991;margin-top:3px}
+.mcBranchList{display:grid;gap:4px}.mcBranch{padding:7px;border:1px solid rgba(255,255,255,.05);border-radius:8px;font-size:7.5px;color:#9baac0;cursor:pointer}.mcBranch:hover{border-color:rgba(168,130,255,.22);color:#d6c7ff}
+.mcStats{margin-top:12px;padding:9px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.018)}.mcStatsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.mcStatsGrid div{text-align:center;padding:7px 4px;border-radius:7px;background:rgba(255,255,255,.025)}.mcStatsGrid b{display:block;font-size:12px}.mcStatsGrid span{font-size:6px;color:#667991}
+.mcGraphPanel{position:relative;min-height:0;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;background:
+radial-gradient(circle at 50% 45%,rgba(40,92,177,.08),transparent 38%),
+linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),#060d17;background-size:auto,22px 22px,22px 22px}
+.mcGraphHead{position:absolute;left:13px;right:13px;top:11px;z-index:4;display:flex;justify-content:space-between;gap:10px;pointer-events:none}.mcGraphHead h2{font-size:12px;margin:0}.mcGraphHead p{font-size:7px;color:#71839a;margin:3px 0 0}.mcGraphTools{display:flex;gap:5px;pointer-events:auto}.mcGraphTools button{font-size:7px}
+.mcGraph{position:absolute;inset:48px 8px 8px}.mcEdges{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.mcNode{position:absolute;transform:translate(-50%,-50%);min-width:120px;max-width:165px;padding:8px 10px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(10,19,31,.95);box-shadow:0 10px 28px rgba(0,0,0,.28);cursor:pointer;transition:.15s;z-index:2}
+.mcNode:hover,.mcNode.on{transform:translate(-50%,-50%) scale(1.035);border-color:rgba(99,176,255,.48);box-shadow:0 0 0 1px rgba(71,150,255,.1),0 13px 35px rgba(0,0,0,.35)}
+.mcNode.query{min-width:150px;text-align:center;border-color:rgba(59,134,255,.52);box-shadow:0 0 30px rgba(57,122,255,.12)}.mcNode.source{min-width:96px;max-width:120px;padding:7px 8px;border-color:rgba(100,119,150,.18)}.mcNode.entity.high{border-color:rgba(114,239,182,.25)}.mcNode.entity.mid{border-color:rgba(255,214,120,.22)}
+.mcNode b{display:block;font-size:8px;line-height:1.25;overflow:hidden;text-overflow:ellipsis}.mcNode small{display:block;font-size:6px;color:#697b92;margin-top:3px}.mcNode .score{float:right;color:#8fb9ef;font-size:6px;margin-left:6px}
+.mcDot{display:inline-block;width:7px;height:7px;border-radius:3px;margin-right:6px;background:#5f83ff;box-shadow:0 0 10px rgba(72,134,255,.3)}.mcNode.source .mcDot{background:#72849a}.mcNode.entity.high .mcDot{background:#72efb6}.mcNode.entity.mid .mcDot{background:#ffd678}
+.mcEmpty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;color:#657991;font-size:8px;line-height:1.5}
+.mcReplay{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.07);min-width:0;background:#07101a}
+.mcReplayHead{display:flex;align-items:center;gap:8px}.mcReplayHead b{font-size:9px}.mcReplayHead span{font-size:7px;color:#667890}.mcReplayControls{display:flex;gap:5px;margin-left:auto}
+.mcTimeline{position:relative;height:62px;margin-top:8px}.mcLine{position:absolute;left:12px;right:12px;top:24px;height:2px;background:#20334e}.mcEvent{position:absolute;top:18px;width:13px;height:13px;border-radius:50%;border:2px solid #07101a;background:#557399;transform:translateX(-50%);cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.04)}.mcEvent.planner{background:#69d8ff}.mcEvent.discovery{background:#8b7dff}.mcEvent.evidence{background:#72efb6}.mcEvent.analysis{background:#ffd678}.mcEvent.memory{background:#ff728c}.mcEvent.on{transform:translateX(-50%) scale(1.35);box-shadow:0 0 16px currentColor}.mcTimeStart,.mcTimeEnd{position:absolute;top:39px;font-size:6px;color:#5e7088}.mcTimeStart{left:4px}.mcTimeEnd{right:4px}.mcReplayNow{font-size:7px;color:#98abc1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-2px}
+.mcForkInline{display:flex;gap:5px;margin-top:4px}.mcForkInline input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.065);border-radius:8px;background:#091420;color:#dfeaff;padding:6px 8px;font-size:7px;outline:0}.mcForkInline button{font-size:7px}
+.mcAgents{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:9px 12px;background:#07101a;overflow:hidden}.mcAgent{border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:7px 8px;background:rgba(255,255,255,.018);min-width:0}.mcAgent b{display:block;font-size:7.5px}.mcAgent span{display:block;font-size:6px;color:#6f8197;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcAgent i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#405067;margin-right:5px}.mcAgent.running i{background:#62b9ff;box-shadow:0 0 8px rgba(98,185,255,.6)}.mcAgent.done i{background:#72efb6}.mcAgent.error i{background:#ff718d}
+.mcEvidence,.mcConflict,.mcCompare{border:1px solid rgba(255,255,255,.065);border-radius:11px;background:rgba(255,255,255,.018);overflow:hidden}
+.mcBoxHead{display:flex;align-items:center;justify-content:space-between;padding:8px 9px;border-bottom:1px solid rgba(255,255,255,.055)}.mcBoxHead b{font-size:8px}.mcBoxHead span{font-size:6px;color:#687b92}
+.mcEvidenceBody{padding:9px;min-height:160px}.mcEvSource{display:flex;align-items:center;gap:7px}.mcEvIcon{width:28px;height:28px;border-radius:9px;background:#11243b;display:grid;place-items:center;font-size:11px;color:#81c6ff}.mcEvSource b{font-size:9px}.mcEvSource span{display:block;font-size:6px;color:#63758d;margin-top:2px}.mcVerified{margin-left:auto;font-size:6px;padding:4px 6px;border-radius:999px;color:#9cefc3;border:1px solid rgba(114,239,182,.17);background:rgba(114,239,182,.05)}.mcProvisional{color:#e6c67e;border-color:rgba(255,214,120,.17);background:rgba(255,214,120,.05)}
+.mcEvTitle{font-size:11px;line-height:1.3;margin:10px 0 7px}.mcEvExcerpt{font-size:7.5px;line-height:1.5;color:#9daec1;padding:8px;border-radius:8px;background:#09131f;border:1px solid rgba(255,255,255,.045);max-height:95px;overflow:auto}.mcEvidenceList{display:grid;gap:5px;margin-top:7px}.mcEvidenceLine{font-size:7px;line-height:1.4;color:#8fa3b8;padding:6px;border-left:2px solid #273f5e;background:rgba(255,255,255,.015)}.mcEvActions{display:flex;gap:5px;margin-top:8px}.mcEvActions button{font-size:7px}
+.mcConflictBody{padding:8px}.mcConflictEmpty{font-size:7px;color:#71849c;line-height:1.45}.mcConflictItem{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:stretch}.mcConflictSide{padding:7px;border-radius:8px;border:1px solid rgba(255,255,255,.055);font-size:6.7px;line-height:1.4;color:#97a9bd}.mcConflictSide.pos{border-color:rgba(114,239,182,.15);background:rgba(114,239,182,.035)}.mcConflictSide.neg{border-color:rgba(255,113,141,.17);background:rgba(255,113,141,.035)}.mcVS{align-self:center;font-size:7px;color:#7890ac}
+.mcCompareBody{padding:8px}.mcCompareSel{display:grid;grid-template-columns:1fr auto 1fr;gap:5px}.mcCompareSel select{min-width:0;background:#09131f;border:1px solid rgba(255,255,255,.07);border-radius:7px;color:#cfe0f4;padding:6px;font-size:6.5px}.mcCompareStats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:7px}.mcCompareStats div{padding:6px;border-radius:7px;background:#09131f;text-align:center}.mcCompareStats b{display:block;font-size:9px}.mcCompareStats span{font-size:5.8px;color:#6a7d95}.mcCompareText{font-size:6.5px;color:#8498ae;margin-top:7px;line-height:1.4}
+.mcRight::-webkit-scrollbar,.mcLeft::-webkit-scrollbar{width:7px}.mcRight::-webkit-scrollbar-thumb,.mcLeft::-webkit-scrollbar-thumb{background:#1b2b40;border-radius:99px}
+.mcCloseLegacy{position:fixed;z-index:63;left:-9999px}
+@media(max-width:1120px){
+ .mcBody{grid-template-columns:210px minmax(0,1fr) 310px}.mcBrand{min-width:190px}.mcTop{grid-template-columns:auto 1fr}.mcTopActions{display:none}
+}
+@media(max-width:820px){
+ .mcRoot{grid-template-rows:52px minmax(0,1fr)}
+ .mcTop{grid-template-columns:1fr;padding:5px 8px}.mcBrand{display:none}.mcBody{grid-template-columns:1fr}.mcLeft{display:none}.mcRight{position:absolute;z-index:5;right:8px;top:60px;bottom:8px;width:min(350px,calc(100vw - 16px));box-shadow:0 20px 70px rgba(0,0,0,.55);transform:translateX(calc(100% + 18px));transition:.2s}.mcRight.mobileShow{transform:none}.mcCenter{grid-template-rows:minmax(0,1fr) 140px 95px}.mcNode{min-width:100px;max-width:125px}
+}
+
+
+/* ===== PROOF INTELLIGENCE ===== */
+:root{--proof:#77d6ff;--proof2:#b28cff;--ok:#72efb6;--warn:#ffd678;--bad:#ff728d}
+.mcTop{grid-template-columns:auto minmax(380px,1fr) auto}
+.mcPulse{display:flex;align-items:center;gap:5px;margin-left:4px}
+.mcPulse span{font-size:6px;padding:4px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.06);color:#72869f;background:rgba(255,255,255,.02)}
+.mcPulse b{color:#dceaff;font-size:7px}
+.mcRightTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:#07101b;position:sticky;top:0;z-index:2}
+.mcRightTabs button{border:0;border-radius:7px;background:transparent;color:#71849b;padding:7px 4px;font-size:6.8px}
+.mcRightTabs button.on{background:rgba(87,154,255,.11);color:#e7f5ff}
+.mcPane{display:none}.mcPane.show{display:block}
+.proofHero{padding:10px;border:1px solid rgba(119,214,255,.12);border-radius:11px;background:linear-gradient(145deg,rgba(119,214,255,.055),rgba(178,140,255,.025))}
+.proofHero .ey{font-size:6px}.proofHero h3{font-size:12px;margin:5px 0 4px}.proofHero p{font-size:7.2px;line-height:1.5;color:#879bb4;margin:0}
+.proofPath{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px}
+.proofPath span{font-size:6.5px;padding:5px 7px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:#08131f;color:#9db0c6}
+.proofPath i{font-style:normal;color:#52677f;font-size:7px}
+.claimList{display:grid;gap:6px;margin-top:8px}
+.claimCard{padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.018);cursor:pointer}
+.claimCard:hover,.claimCard.on{border-color:rgba(119,214,255,.22);background:rgba(119,214,255,.035)}
+.claimTop{display:flex;justify-content:space-between;gap:7px;align-items:center}.claimTop b{font-size:7.7px}.claimStatus{font-size:5.8px;padding:3px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.07);color:#8194aa}
+.claimStatus.verified{color:#a0f3c6;border-color:rgba(114,239,182,.16);background:rgba(114,239,182,.04)}
+.claimStatus.provisional{color:#f0d695;border-color:rgba(255,214,120,.15);background:rgba(255,214,120,.04)}
+.claimStatus.missing{color:#9aa8b9}
+.claimValue{font-size:7px;color:#aabbd0;margin-top:4px;line-height:1.35}
+.claimEvidence{font-size:6.6px;color:#72869d;margin-top:5px;line-height:1.4;max-height:47px;overflow:hidden}
+.proofTrace{margin-top:8px;padding:8px;border:1px solid rgba(255,255,255,.055);border-radius:9px;background:#06101b}
+.proofTraceHead{display:flex;justify-content:space-between;gap:7px;align-items:center}.proofTraceHead b{font-size:7.5px}.proofTraceHead span{font-size:6px;color:#6c8099}
+.traceSteps{display:grid;gap:0;margin-top:7px}.traceStep{display:grid;grid-template-columns:16px 1fr;gap:7px;position:relative;padding:4px 0}.traceStep:before{content:"";position:absolute;left:7px;top:18px;bottom:-4px;width:1px;background:#1c324a}.traceStep:last-child:before{display:none}.traceDot{width:14px;height:14px;border-radius:5px;border:1px solid rgba(119,214,255,.16);display:grid;place-items:center;font-size:5px;color:#80dfff;background:#0a1724;z-index:1}.traceText b{display:block;font-size:6.8px}.traceText span{display:block;font-size:6.2px;color:#7489a2;line-height:1.4;margin-top:2px}
+.traceSources{display:grid;gap:4px;margin-top:6px}.traceSource{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:6px;border-radius:7px;border:1px solid rgba(255,255,255,.05);background:#07121e}.traceSource div{min-width:0}.traceSource b{display:block;font-size:6.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.traceSource span{display:block;font-size:5.6px;color:#657a92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.traceSource button{font-size:5.8px;padding:4px 6px}
+.caseToolbar{display:flex;gap:5px;margin:7px 0}.caseToolbar button{font-size:6.5px}.caseEmpty{font-size:7px;line-height:1.45;color:#73869f;padding:10px;border:1px dashed rgba(255,255,255,.07);border-radius:9px}
+.caseItems{display:grid;gap:5px}.caseItem{padding:7px;border:1px solid rgba(255,255,255,.055);border-radius:8px;background:rgba(255,255,255,.016)}.caseItemTop{display:flex;justify-content:space-between;gap:7px}.caseItem b{font-size:7px}.caseItem small{font-size:5.7px;color:#697e96}.caseItem p{font-size:6.4px;line-height:1.4;color:#879bb2;margin:5px 0 0}.caseItem button{font-size:5.6px;margin-top:5px}
+.scenarioIntro{font-size:6.8px;line-height:1.45;color:#7d91a8;padding:8px;border:1px solid rgba(255,255,255,.055);border-radius:8px;background:rgba(255,255,255,.015)}
+.scenarioRows{display:grid;gap:6px;margin-top:8px}.scenarioRow{display:grid;grid-template-columns:minmax(90px,1fr) 82px 28px;gap:6px;align-items:center;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,.05);background:#07111c}.scenarioRow label{font-size:6.5px;color:#9cadc1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.scenarioRow input{width:100%;accent-color:#6caeff}.scenarioRow b{font-size:7px;text-align:right}
+.scenarioRank{display:grid;gap:4px;margin-top:8px}.scenarioItem{display:grid;grid-template-columns:18px 1fr auto;gap:6px;align-items:center;padding:6px;border-radius:7px;background:#08131f;border:1px solid rgba(255,255,255,.045)}.scenarioItem i{font-style:normal;font-size:7px;color:#617790}.scenarioItem b{font-size:6.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.scenarioItem span{font-size:7px;color:#89c7ff}
+.sourceMatrix{display:grid;gap:4px}.sourceRow{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;padding:6px;border-radius:7px;background:#07121e;border:1px solid rgba(255,255,255,.045)}.sourceRow b{font-size:6.6px}.sourceRow span{font-size:5.8px;color:#6f839b}.sourceRow em{font-style:normal;font-size:5.8px;color:#8aa1b8}
+.gapButton{width:100%;margin-top:7px;font-size:6.7px}
+.mcNode.selectedProof{box-shadow:0 0 0 1px rgba(119,214,255,.28),0 0 34px rgba(119,214,255,.10),0 13px 35px rgba(0,0,0,.35)}
+.mcDecisionRibbon{position:absolute;left:12px;right:12px;bottom:8px;display:flex;gap:5px;z-index:4;pointer-events:none}.mcDecisionRibbon span{font-size:5.8px;padding:4px 6px;border-radius:999px;background:rgba(4,11,18,.78);border:1px solid rgba(255,255,255,.05);color:#6e8299;backdrop-filter:blur(8px)}
+.mcDecisionRibbon b{color:#a8bad0}
+.mcProofBadge{position:absolute;right:11px;bottom:10px;font-size:5.8px;padding:5px 7px;border-radius:999px;border:1px solid rgba(119,214,255,.12);background:rgba(7,18,29,.8);color:#7cabc8;z-index:4}
+@media(max-width:820px){.mcRightTabs{position:static}.mcPulse{display:none}}
+
+
+/* ===== VERIFIED RESEARCH CORE ===== */
+.integrityBadge{display:inline-flex;align-items:center;gap:5px;padding:4px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.07);font-size:5.8px;color:#778ba3}
+.integrityBadge.ok{color:#9af1c1;border-color:rgba(114,239,182,.18);background:rgba(114,239,182,.04)}
+.integrityBadge.stale{color:#ffd991;border-color:rgba(255,214,120,.18);background:rgba(255,214,120,.04)}
+.integrityBadge.bad{color:#ff9aae;border-color:rgba(255,113,141,.18);background:rgba(255,113,141,.04)}
+.snapshotCard{margin-top:7px;padding:7px;border:1px solid rgba(255,255,255,.055);border-radius:8px;background:#06101a}
+.snapshotTop{display:flex;justify-content:space-between;gap:7px}.snapshotTop b{font-size:6.6px}.snapshotTop span{font-size:5.7px;color:#6d8199}
+.snapshotHash{font:5.8px ui-monospace,SFMono-Regular,Consolas,monospace;color:#7fa4c6;word-break:break-all;margin-top:5px;line-height:1.35}
+.snapshotMeta{font-size:5.8px;color:#637890;margin-top:4px;line-height:1.4}
+.sourceIntake{padding:8px;border:1px solid rgba(119,214,255,.10);border-radius:9px;background:rgba(119,214,255,.025);margin-bottom:8px}
+.sourceIntake b{font-size:7px}.sourceIntake p{font-size:6.2px;color:#758aa2;line-height:1.4;margin:4px 0 6px}
+.sourceIntakeRow{display:flex;gap:5px}.sourceIntakeRow input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.065);border-radius:7px;background:#06111d;color:#e4effc;padding:7px 8px;font-size:6.7px;outline:0}
+.sourceIntakeRow button{font-size:6.2px}
+.proofBundle{font-size:6px;color:#7e93aa;line-height:1.45;padding:7px;border-radius:8px;background:#07121e;border:1px solid rgba(255,255,255,.045);margin-top:7px}
+.proofExact{border-left:2px solid #72efb6;padding-left:7px;color:#a7b9cc}
+.proofUnverified{border-left:2px solid #ffd678;padding-left:7px;color:#a39779}
+
+
+/* ===== AUTONOMOUS EVIDENCE SYSTEM ===== */
+.machinePanel{position:fixed;z-index:92;right:14px;top:68px;width:430px;max-height:calc(100vh - 86px);overflow:auto;border-radius:18px;padding:13px;transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none;transition:.2s;background:rgba(5,11,19,.97);border:1px solid rgba(119,214,255,.15);box-shadow:0 28px 100px rgba(0,0,0,.55)}
+.machinePanel.show{transform:none;opacity:1;pointer-events:auto}.machineHead{display:flex;justify-content:space-between;gap:10px}.machineHead h2{font-size:16px;margin:4px 0}.machineState{margin:10px 0;padding:9px;border-radius:11px;background:#07131f;border:1px solid rgba(255,255,255,.06)}.machineStateTop{display:flex;align-items:center;justify-content:space-between}.machineStateTop b{font-size:9px}.machineLamp{width:8px;height:8px;border-radius:50%;background:#526175;display:inline-block;margin-right:6px}.machineLamp.running{background:#69c6ff;box-shadow:0 0 12px #69c6ff}.machineLamp.done{background:#72efb6}.machineLamp.error{background:#ff728d}
+.machineMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.machineMetrics div{padding:7px 4px;text-align:center;border-radius:8px;background:rgba(255,255,255,.025)}.machineMetrics b{display:block;font-size:12px}.machineMetrics span{font-size:5.8px;color:#697d95}
+.machineConfig{display:grid;gap:7px}.machineConfigRow{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;padding:7px;border:1px solid rgba(255,255,255,.05);border-radius:9px;background:rgba(255,255,255,.015)}.machineConfigRow label{font-size:7.2px;color:#9bacc0}.machineConfigRow input[type=range]{width:100%;accent-color:#72c8ff}.machineConfigRow select{background:#07121e;border:1px solid rgba(255,255,255,.07);border-radius:7px;color:#dfeafa;padding:6px;font-size:7px}.machineConfigRow input[type=checkbox]{justify-self:end}
+.machineActions{display:flex;gap:6px;margin:9px 0}.machineActions button{flex:1}.machineLog{display:grid;gap:4px;max-height:240px;overflow:auto}.machineEvent{display:grid;grid-template-columns:52px 1fr;gap:7px;padding:6px 7px;border-left:2px solid #29405e;border-radius:0 7px 7px 0;background:rgba(255,255,255,.015)}.machineEvent b{font-size:6.5px;color:#84a8cb}.machineEvent span{font-size:6.7px;color:#97a9be;line-height:1.4}.machineEvent.good{border-left-color:#72efb6}.machineEvent.warn{border-left-color:#ffd678}.machineEvent.bad{border-left-color:#ff728d}
+.monitorCard{margin-top:10px;padding:9px;border:1px solid rgba(178,140,255,.13);border-radius:11px;background:rgba(178,140,255,.025)}.monitorCard h3{font-size:9px;margin:0 0 5px}.monitorCard p{font-size:6.5px;line-height:1.45;color:#7d91a9}.monitorToggles{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.monitorToggles label{font-size:6.5px;color:#9baec3}.monitorJobs{display:grid;gap:4px;margin-top:7px}.monitorJob{padding:6px;border-radius:7px;background:#07121e;border:1px solid rgba(255,255,255,.05);font-size:6.5px}.monitorJob b{display:block}.monitorJob span{color:#71869e}
+.snapshotModal{position:fixed;z-index:120;inset:0;background:rgba(1,4,8,.82);backdrop-filter:blur(9px);display:none;padding:30px}.snapshotModal.show{display:grid;place-items:center}.snapshotWindow{width:min(1100px,96vw);height:min(780px,90vh);display:grid;grid-template-rows:auto auto minmax(0,1fr);background:#07101a;border:1px solid rgba(119,214,255,.16);border-radius:16px;overflow:hidden;box-shadow:0 35px 140px rgba(0,0,0,.7)}.snapshotHeader{display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid rgba(255,255,255,.06)}.snapshotHeader div{min-width:0;flex:1}.snapshotHeader b{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.snapshotHeader span{font-size:6.2px;color:#71859d}.snapshotSearch{display:flex;gap:5px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.05)}.snapshotSearch input{flex:1;background:#091522;border:1px solid rgba(255,255,255,.06);border-radius:8px;color:#dfeeff;padding:7px;font-size:7px;outline:0}.snapshotBody{overflow:auto;padding:14px;font:7.4px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:#aebed0;white-space:pre-wrap}.snapshotBody mark{background:rgba(255,214,120,.25);color:#ffe8aa;border-radius:2px}
+@media(max-width:780px){.machinePanel{left:8px;right:8px;top:60px;width:auto}.snapshotModal{padding:8px}}
+
+
+/* FINAL MOBILE CONSTRAINTS */
+@media(max-width:820px){
+  .mcRoot{overflow:hidden}
+  .mcTop{grid-template-columns:minmax(0,1fr)!important;width:100%!important;max-width:100vw!important;min-width:0!important}
+  .mcTopActions,.mcBrand,.mcPulse{display:none!important}
+  .mcSearch{min-width:0!important;max-width:100%!important;width:100%!important}
+  .mcSearch input{min-width:0!important}
+  .mcBody{grid-template-columns:minmax(0,1fr)!important;width:100%!important;max-width:100vw!important;min-width:0!important}
+  .mcCenter,.mcGraphPanel,.mcReplay,.mcAgents{width:100%!important;max-width:100vw!important;min-width:0!important}
+  .mcAgents{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .mcAgent{min-width:0!important}
+}
+</style>
+<link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<section class="mcRoot" id="mcRoot">
+  <header class="mcTop">
+    <div class="mcBrand"><div class="mcLogo"></div><div><b>Internet Atlas</b><small>AUTONOMOUS EVIDENCE RESEARCH</small></div></div>
+    <form class="mcSearch" id="mcSearchForm"><input id="mcQuery" autocomplete="off" spellcheck="false" placeholder="Investiga una empresa, producto, tecnología u oportunidad…"><button class="btn primary">Investigar</button></form>
+    <div class="mcTopActions">
+      <div class="mcStatus"><i></i><span id="mcSystemText">Sistema listo</span></div>
+<div class="mcPulse"><span><b id="mcPulseSources">0</b> fuentes</span><span><b id="mcPulseVerified">0</b> verificadas</span><span><b id="mcPulseGaps">0</b> gaps</span></div>
+      <button class="btn primary" id="machineOpen">IA Machine</button><button class="btn" id="mcAgentsOpen">Agentes</button>
+      <button class="btn" id="mcExport">Exportar</button>
+      <button class="btn" id="mcHome">Inicio</button>
+    </div>
+  </header>
+  <div class="mcBody">
+    <aside class="mcLeft">
+      <div class="mcProject"><div class="ey">PROYECTO ACTUAL</div><h3 id="mcProjectName">Mi Atlas</h3><p id="mcProjectObjective">Empieza una investigación.</p></div>
+      <nav class="mcNav">
+        <button class="on" data-mc-nav="mission">⌂ Autonomous Evidence System <span id="mcNavEvidence">0</span></button>
+        <button data-mc-nav="branches">⌘ Ramas <span id="mcNavBranches">0</span></button>
+        <button data-mc-nav="evidence">▤ Evidencia <span id="mcNavEntities">0</span></button>
+        <button data-mc-nav="runs">◷ Runs <span id="mcNavRuns">0</span></button>
+        <button data-mc-nav="agents">◎ Agentes <span id="mcNavAgents">5</span></button>
+      </nav>
+      <div class="mcSectionTitle"><b>Runs recientes</b><span id="mcRunsCount">0</span></div>
+      <div class="mcRuns" id="mcRuns"></div>
+      <div class="mcSectionTitle"><b>Ramas</b><span id="mcBranchesCount">0</span></div>
+      <div class="mcBranchList" id="mcBranches"></div>
+      <div class="mcStats">
+        <div class="mcStatsGrid">
+          <div><b id="mcStatRuns">0</b><span>runs</span></div>
+          <div><b id="mcStatBranches">0</b><span>ramas</span></div>
+          <div><b id="mcStatEvidence">0</b><span>entidades</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="mcCenter">
+      <section class="mcGraphPanel">
+        <div class="mcGraphHead">
+          <div><h2>Mapa de investigación en vivo</h2><p id="mcGraphSubtitle">Los nodos se construyen con resultados reales de la investigación.</p></div>
+          <div class="mcGraphTools"><button class="btn" id="mcFit">Centrar</button><button class="btn" id="mcRightToggle">Evidencia</button></div>
+        </div>
+        <div class="mcGraph" id="mcGraph">
+          <svg class="mcEdges" id="mcEdges"></svg>
+          <div class="mcEmpty" id="mcEmpty">No hay una investigación activa.<br>Escribe un objetivo arriba para construir el mapa.</div>
+          <div class="mcDecisionRibbon" id="mcDecisionRibbon"></div>
+          <div class="mcProofBadge">CLICK NODE → PROOF CHAIN</div>
+        </div>
+      </section>
+
+      <section class="mcReplay">
+        <div class="mcReplayHead"><b>Replay / Time Machine</b><span id="mcReplayCount">0 eventos</span>
+          <div class="mcReplayControls"><button class="btn" id="mcReplayPlay">▶</button><button class="btn" id="mcReplayStop">■</button></div>
+        </div>
+        <div class="mcTimeline" id="mcTimeline"><div class="mcLine"></div><span class="mcTimeStart">00:00</span><span class="mcTimeEnd" id="mcTimeEnd">00:00</span></div>
+        <div class="mcReplayNow" id="mcReplayNow">Selecciona un evento para inspeccionar cómo evolucionó el run.</div>
+        <div class="mcForkInline"><input id="mcForkInput" placeholder="Crear una rama desde el evento seleccionado…"><button class="btn eventFork" id="mcForkCreate">Fork desde aquí</button></div>
+      </section>
+
+      <section class="mcAgents" id="mcAgents">
+        <div class="mcAgent" data-mc-agent="planner"><b><i></i>Planificación</b><span>En espera</span></div>
+        <div class="mcAgent" data-mc-agent="discovery"><b><i></i>Búsqueda</b><span>En espera</span></div>
+        <div class="mcAgent" data-mc-agent="evidence"><b><i></i>Evidencia</b><span>En espera</span></div>
+        <div class="mcAgent" data-mc-agent="analysis"><b><i></i>Análisis</b><span>En espera</span></div>
+        <div class="mcAgent" data-mc-agent="memory"><b><i></i>Memoria</b><span>En espera</span></div>
+      </section>
+    </main>
+
+    <aside class="mcRight" id="mcRight">
+      <div class="mcRightTabs">
+        <button class="on" data-mc-tab="proof">Proof</button>
+        <button data-mc-tab="scenario">Scenario</button>
+        <button data-mc-tab="sources">Sources</button>
+        <button data-mc-tab="case">Case File</button>
+      </div>
+
+      <div class="mcPane show" data-mc-pane="proof">
+        <section class="mcEvidence">
+          <div class="mcBoxHead"><b>Proof Chain</b><span id="mcEvidenceCounter">0 fuentes</span></div>
+          <div class="mcEvidenceBody" id="mcEvidenceBody"><div class="mcConflictEmpty">Selecciona una entidad del mapa. Atlas mostrará exactamente por qué la puntuó así.</div></div>
+        </section>
+        <section class="mcConflict" style="margin-top:9px">
+          <div class="mcBoxHead"><b>Evidence Conflicts</b><span id="mcConflictCount">0</span></div>
+          <div class="mcConflictBody" id="mcConflictBody"><div class="mcConflictEmpty">Atlas solo mostrará conflictos cuando encuentre textos opuestos en fuentes distintas.</div></div>
+        </section>
+      </div>
+
+      <div class="mcPane" data-mc-pane="scenario">
+        <section class="mcCompare">
+          <div class="mcBoxHead"><b>Scenario Lab</b><span>pesos, no verdad absoluta</span></div>
+          <div class="mcCompareBody">
+            <div class="scenarioIntro">Cambia qué te importa y Atlas recalcula el orden sin alterar la investigación original. Esto es una simulación de prioridades, no una puntuación objetiva del mundo.</div>
+            <div class="scenarioRows" id="scenarioRows"></div>
+            <div class="scenarioRank" id="scenarioRank"></div>
+          </div>
+        </section>
+        <section class="mcCompare" style="margin-top:9px">
+          <div class="mcBoxHead"><b>Comparar Runs</b><span>cambios reales</span></div>
+          <div class="mcCompareBody">
+            <div class="mcCompareSel"><select id="mcRunA"></select><button class="btn" id="mcRunCompareGo">VS</button><select id="mcRunB"></select></div>
+            <div class="mcCompareStats">
+              <div><b id="mcCmpAdded">0</b><span>nuevas</span></div>
+              <div><b id="mcCmpRemoved">0</b><span>retiradas</span></div>
+              <div><b id="mcCmpMoved">0</b><span>scores cambiados</span></div>
+            </div>
+            <div class="mcCompareText" id="mcCompareText">Necesitas al menos dos runs para comparar.</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="mcPane" data-mc-pane="sources">
+        <section class="mcEvidence">
+          <div class="mcBoxHead"><b>Source Intelligence</b><span id="sourceMatrixCount">0</span></div>
+          <div class="mcEvidenceBody">
+            <div class="sourceIntake">
+              <b>Añadir fuente real</b>
+              <p>Pega una URL. Atlas la inspecciona, guarda snapshot + SHA-256 y solo después puede usarla como evidencia verificable.</p>
+              <div class="sourceIntakeRow"><input id="manualSourceUrl" placeholder="https://..."><button class="btn primary" id="manualSourceAdd">Inspeccionar</button><button class="btn" id="localDocsAdd">Archivos</button></div>
+            </div>
+            <div class="sourceMatrix" id="sourceMatrix"></div>
+            <button class="btn primary gapButton" id="closeEvidenceGaps">Cerrar gaps del top 3</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="mcPane" data-mc-pane="case">
+        <section class="mcEvidence">
+          <div class="mcBoxHead"><b>Case File</b><span id="caseCount">0 pruebas</span></div>
+          <div class="mcEvidenceBody">
+            <div class="caseToolbar"><button class="btn primary" id="caseExport">Exportar dossier</button><button class="btn" id="proofBundleExport">Proof bundle JSON</button><button class="btn" id="caseClear">Vaciar</button></div>
+            <div id="caseItems"></div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div class="nativeTitlebar" id="nativeTitlebar">
+ <div class="ntBrand">INTERNET ATLAS</div><div class="ntProject" id="ntProject">Workspace</div><div class="ntGrow"></div>
+ <div class="winControls"><button class="winBtn" data-win="minimize">—</button><button class="winBtn" data-win="maximize">□</button><button class="winBtn close" data-win="close">×</button></div>
+</div>
+<div class="activityRail" id="activityRail">
+ <button class="railBtn on" data-rail="research" title="Investigación">⌕</button>
+ <button class="railBtn" data-rail="projects" title="Proyectos">▤</button>
+ <button class="railBtn" data-rail="agents" title="Agentes">◎</button><button class="railBtn" data-rail="monitor" title="Monitor">◉</button>
+ <button class="railBtn" data-rail="health" title="Salud">◇</button>
+ <button class="railBtn" data-rail="console" title="Consola">›_</button>
+ <div style="flex:1"></div>
+ <button class="railBtn" data-rail="present" title="Presentación">▣</button>
+ <button class="railBtn" data-rail="home" title="Inicio">⌂</button>
+</div>
+<div class="softwareBar glass" id="softwareBar"><div class="runTabs" id="runTabs"></div><div style="flex:1"></div><span class="nativeBadge">DESKTOP</span></div>
+<div class="resizeHandle leftH" id="leftResize"></div><div class="resizeHandle rightH" id="rightResize"></div>
+<section class="cmdPalette glass" id="cmdPalette"><input id="cmdSearch" placeholder="Comando…  Ctrl+K"><div class="cmdList" id="cmdList"></div></section>
+<section class="consoleDrawer" id="consoleDrawer">
+ <div class="consoleHead"><b>ATLAS COMMAND CONSOLE</b><div style="flex:1"></div><button class="btn" id="consoleClose">×</button></div>
+ <div class="consoleBody" id="consoleBody"></div>
+ <div class="consoleInputRow"><span>atlas&gt;</span><input id="consoleInput" autocomplete="off" spellcheck="false" placeholder="help"></div>
+</section>
+
+
+<div id="atlasFatal" style="display:none;position:fixed;z-index:9999;inset:0;background:#050912;color:#e8f2ff;padding:28px;font:14px system-ui;overflow:auto"><h2 style="margin:0 0 10px">Internet Atlas no pudo iniciar</h2><p id="atlasFatalText" style="color:#9fb0c4;line-height:1.5"></p><button onclick="location.reload()" style="padding:9px 13px;border-radius:9px;border:1px solid #29425f;background:#0b1625;color:white">Reintentar</button></div><script>window.addEventListener('error',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent=(e.message||'Error de inicio')+' · '+(e.filename||'')+':'+(e.lineno||'');b.style.display='block'}});window.addEventListener('unhandledrejection',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent='Error asíncrono: '+String(e.reason?.message||e.reason||'desconocido');b.style.display='block'}});</script><div class="appFrame"></div>
+<section class="splash" id="splash">
+  <div class="splashCard">
+    <div class="x19Launch">
+      <div class="x19Mark"></div>
+      <div class="x19Name">Internet Atlas</div>
+      <h1 class="x19Title">Investiga. Conecta. Decide.</h1>
+      <div class="x19Sub">Escribe una misión. Atlas puede investigar por ciclos, perseguir gaps de evidencia, verificar fuentes por snapshot SHA-256 y detenerse cuando cumple un objetivo medible.</div>
+      <form class="x19Command" id="launchForm">
+        <input id="launchQuery" autocomplete="off" placeholder="Ej. Compara herramientas de IA para video con API y uso comercial">
+        <button class="btn" type="submit">Investigar</button>
+        <button class="btn primary" id="launchMachine" type="button">IA Machine</button><button class="btn" id="launchDocuments" type="button">Añadir documentos</button>
+      </form>
+      <div class="x19Examples">
+        <button class="x19Example" data-launchq="Investiga Supabase como producto: precio, API, open source, alternativas y señales de adopción.">Analizar producto</button>
+        <button class="x19Example" data-launchq="Encuéntrame herramientas de IA para video que tengan API, entrada gratuita y uso comercial. Compáralas.">Comparar herramientas</button>
+        <button class="x19Example" data-launchq="Busca oportunidades y huecos en software para gimnasios pequeños: competidores, APIs y señales de demanda.">Buscar oportunidad</button>
+      </div>
+      <button class="btn x19Install" id="installAtlas" type="button" style="margin-top:15px">Instalar Atlas</button>
+      <div class="x19FullscreenHint" id="fullscreenHint">Al entrar, Atlas usará toda la pantalla cuando el navegador lo permita.</div>
+    </div>
+    <div class="x19Footer"><span>Production Candidate</span><i></i><span>Autonomous Evidence Research</span><i></i><span>Proof first</span></div>
+  </div>
+</section>
+<div class="startOverlay show" id="startOverlay"></div>
+<div class="workspaceBanner glass" id="workspaceBanner">
+  <div style="flex:1;min-width:0">
+    <b>Bienvenido a Atlas</b>
+    <span>Empieza con una investigación libre o usa una plantilla. La experiencia ya abre como producto, no como archivo perdido en Descargas.</span>
+    <div class="pillRow" style="margin-top:7px">
+      <span class="launchPill">Research</span>
+      <span class="launchPill">Evidence</span>
+      <span class="launchPill">AI</span>
+      <span class="launchPill">Decision Pack</span>
+      <span class="launchPill">Monitor</span>
+    </div>
+  </div>
+  <button class="btn" id="hideBanner">Ocultar</button>
+</div>
+
+<canvas id="stage"></canvas><div class="vig"></div>
+<div class="brand glass" id="brandHome" style="cursor:pointer"><div class="logo"></div><div><b>INTERNET ATLAS</b><small>EVIDENCE RESEARCH SYSTEM</small></div></div>
+<form class="command glass" id="form"><input id="q" autocomplete="off" spellcheck="false" placeholder="Objetivo: encuentra X que cumpla A, B y C; compáralo y explícame por qué."><button class="btn primary">Investigar</button></form>
+<div class="topright glass"><button class="btn" id="agentsBtn">Agentes</button><button class="btn" id="replayBtn">Replay</button><button class="btn" id="forkBtn">Fork</button><button class="btn" id="runsBtn">Runs</button><button class="btn" id="toolsBtn">Herramientas ▾</button></div>
+<div class="toolsMenu glass" id="toolsMenu"><button class="btn" id="healthBtn">Salud</button><button class="btn" id="presentBtn">Presentar</button><button class="btn" id="aiBtn">IA</button><button class="btn" id="deep">Profundizar</button><button class="btn" id="monitor">Monitor</button><button class="btn" id="exportData">Datos</button><button class="btn" id="decisionPack">Decision Pack</button><button class="btn gold" id="export">Informe</button></div>
+
+<div class="qa glass"><input id="askInput" autocomplete="off" placeholder="Pregúntale a Atlas sobre esta investigación: ¿cuál cumple API + gratis?"><button class="btn primary" id="askBtn">Preguntar</button></div>
+<section class="answer glass" id="answerBox"><div class="ey">ATLAS SOBRE TU EVIDENCIA</div><h3 id="answerTitle">—</h3><p id="answerText"></p><div id="answerCites"></div></section>
+
+
+<aside class="left glass"><div class="head"><div class="ey">RESEARCH AGENT</div><h2>Objetivo → evidencia</h2><div class="sub">Cada requisito termina en una celda verificable, provisional o faltante. Las fuentes multi‑tenant se mantienen como entidades separadas.</div></div><div class="scroll">
+ <div class="section"><div class="label">Proyecto</div><div class="row"><select class="field" id="projectSelect"></select><button class="btn" id="newProject">+</button></div>
+ <div class="projectTools"><button class="btn" id="exportProject">Exportar proyecto</button><button class="btn" id="importProject">Importar proyecto</button></div>
+ <input id="projectFile" type="file" accept=".json,.atlas.json,application/json" style="display:none"></div>
+ <div class="section"><div class="label">Estrategia</div>
+  <div class="row"><select class="field" id="modeSelect"><option value="general">General</option><option value="company">Empresa</option><option value="product">Producto</option><option value="technology">Tecnología</option><option value="opportunity">Oportunidad</option></select>
+  <select class="field" id="depthSelect"><option value="fast">Rápida</option><option value="standard" selected>Estándar</option><option value="deep">Profunda</option></select></div>
+  <div class="modehint" id="modeHint">General: investigación multi-fuente y evidencia.</div>
+ </div>
+ <div class="section"><div class="label">Pruebas rápidas</div><div class="templates">
+  <button class="template" data-template="Encuéntrame herramientas de IA para video que tengan API, entrada gratuita y uso comercial. Compáralas.">IA video</button>
+  <button class="template" data-template="Investiga Supabase como producto: precio, API, open source, alternativas y señales de adopción.">Producto</button>
+  <button class="template" data-template="Investiga el ecosistema de React: paquetes, alternativas, repositorios y evidencia técnica.">Tecnología</button>
+  <button class="template" data-template="Busca oportunidades y huecos en software para gimnasios pequeños: competidores, APIs y señales de demanda.">Oportunidad</button>
+ </div></div>
+ <div class="section"><div class="label">Criterios</div><div class="criteria" id="criteria"></div><div class="row" style="margin-top:7px"><input class="field" id="newCriterion" placeholder="Añadir criterio manual"><button class="btn" id="addCriterion">+</button></div></div>
+ <div class="section"><div class="label">Agente</div>
+  <div class="step" id="s1"><i>1</i><b>Interpretar requisitos</b><span>—</span></div>
+  <div class="step" id="s2"><i>2</i><b>Descubrir candidatos</b><span>—</span></div>
+  <div class="step" id="s3"><i>3</i><b>Agrupar entidades</b><span>—</span></div>
+  <div class="step" id="s4"><i>4</i><b>Inspeccionar evidencia</b><span>—</span></div>
+  <div class="step" id="s5"><i>5</i><b>Evaluar criterios</b><span>—</span></div>
+  <div class="step" id="s6"><i>6</i><b>Generar memo</b><span>—</span></div>
+  <div class="step" id="s7"><i>7</i><b>Comparar historial + auditoría</b><span>—</span></div>
+ </div>
+ <div class="section"><div class="label">Historial</div><div id="recent"></div></div>
+</div></aside>
+
+<aside class="right glass hidden" id="right"><div class="rhead"><div class="ey">DECISION TABLE</div><h2 id="title">—</h2><div class="sub" id="subtitle">—</div></div><div class="rscroll">
+ <div class="section"><div class="label">Memo</div><div class="summary" id="memo"></div></div>
+ <div class="metrics"><div class="metric"><b id="mEnt">0</b><span>entidades</span></div><div class="metric"><b id="mIns">0</b><span>inspeccionadas</span></div><div class="metric"><b id="mVer">0</b><span>claims verificados</span></div><div class="metric"><b id="mCov">0%</b><span>cobertura</span></div></div>
+ <div class="section"><div class="label">Comparación dinámica</div><div class="matrixWrap"><table class="matrix"><thead id="matrixHead"></thead><tbody id="matrixBody"></tbody></table></div></div>
+ <div class="section"><div class="label">Claims ledger</div><div class="claims" id="claims"></div></div>
+ <div class="section"><div class="label">Cambios vs investigación anterior</div><div id="changes"></div></div>
+ <div class="section"><div class="label">Recibo de investigación</div><div class="auditgrid" id="audit"></div></div>
+ <div class="section"><div class="label">Bloqueadores de decisión</div><div id="blockers"></div></div>
+ <div class="section"><div class="label">Siguiente mejor acción</div><div id="nextActions"></div></div>
+ <div class="section"><div class="label">Monitor local</div><div class="row" style="margin-bottom:7px"><button class="btn" id="checkWatch">Revisar vigilancia ahora</button></div><div id="watchList"></div></div>
+ <div class="section"><div class="label">Historial de cambios vigilados</div><div id="watchHistory"></div></div>
+</div></aside>
+
+<div class="compare glass" id="compare"></div>
+
+<section class="detail glass" id="detail"><div class="detailTop"><div><div class="ey" id="dEye">ENTITY</div><h2 id="dTitle">—</h2></div><button class="btn icon" id="dClose">×</button></div>
+<div class="tags" id="dTags"></div><p id="dDesc"></p>
+<div class="section"><div class="label">Criterios</div><div id="dCriteria"></div></div>
+<div class="section"><div class="label">Evidencia extraída</div><div id="dEvidence"></div></div>
+<div class="actions"><button class="btn primary" id="dOpen">Abrir fuente</button><button class="btn" id="dDeepen">Profundizar</button><button class="btn" id="dCompare">Comparar</button><button class="btn" id="dSave">Guardar</button><button class="btn gold" id="dWatch">Vigilar</button></div>
+</section>
+
+
+
+<aside class="agentPanel glass" id="agentPanel">
+ <div class="agentHead"><div class="ey">ATLAS AGENT ENGINE</div><h2 style="font-size:16px;margin:5px 0 2px">CrewAI × GPT Researcher</h2><div class="sub">Orquestación multiagente + investigación profunda detrás de Atlas.</div></div>
+ <div class="agentScroll">
+   <div class="engineCard">
+     <div class="engineCardTop"><b>Research Engine</b><span class="engineBadge" id="agentEngineBadge">comprobando</span></div>
+     <p id="agentEngineText">Buscando sidecar Python…</p>
+     <div class="agentProgress"><div id="agentProgress"></div></div>
+     <div class="agentToolbar"><button class="btn primary" id="agentSetup">Preparar motor</button><button class="btn" id="agentHealth">Comprobar</button><button class="btn" id="agentDoctor">Diagnóstico</button><button class="btn" id="agentRepair">Reparar</button><button class="btn" id="agentClose">Cerrar</button></div>
+   </div>
+   <div class="section"><div class="label">Pipeline</div>
+     <div class="agentFlow">
+       <div class="agentNode" data-agent-stage="planner"><i class="agentOrb">P</i><div><b>Planner</b><span>CrewAI · descompone objetivo</span></div><em>idle</em></div>
+       <div class="agentNode" data-agent-stage="researcher"><i class="agentOrb">R</i><div><b>Deep Research</b><span>GPT Researcher · web + fuentes</span></div><em>idle</em></div>
+       <div class="agentNode" data-agent-stage="verifier"><i class="agentOrb">V</i><div><b>Verifier</b><span>CrewAI · contradicciones y evidencia</span></div><em>idle</em></div>
+       <div class="agentNode" data-agent-stage="analyst"><i class="agentOrb">A</i><div><b>Decision Analyst</b><span>CrewAI · criterios y tradeoffs</span></div><em>idle</em></div>
+       <div class="agentNode" data-agent-stage="publisher"><i class="agentOrb">D</i><div><b>Decision Publisher</b><span>CrewAI · memo final</span></div><em>idle</em></div>
+     </div>
+   </div>
+   <div class="section"><div class="label">Modo de agentes</div>
+     <div class="agentMode"><button class="on" data-agent-mode="hybrid">Híbrido</button><button data-agent-mode="crew">Crew</button><button data-agent-mode="gptr">Deep Research</button></div>
+     <div class="agentToolbar"><button class="btn primary" id="agentRun">Ejecutar agentes</button><button class="btn" id="agentCancel">Cancelar</button></div>
+   </div>
+   <div class="section"><div class="label">Ejecución</div><div class="agentLog" id="agentLog">Motor todavía no iniciado.</div></div>
+   <div class="section"><div class="label">Resultado</div><div class="agentResult" id="agentResult">—</div></div>
+   <div class="agentInstall" id="agentInstallNote">En la versión instalada, CrewAI + GPT Researcher vienen dentro de Atlas Desktop. No instala Python ni descarga un LLM local en el PC del comprador.</div>
+   <div class="section" style="margin-top:12px"><div class="label">Diagnóstico</div><div class="agentResult" id="agentDoctorOutput">Sin ejecutar.</div></div>
+ </div>
+</aside>
+
+
+<aside class="machinePanel" id="machinePanel">
+ <div class="machineHead"><div><div class="ey">AUTONOMOUS RESEARCH CORE</div><h2>IA Machine</h2><div class="sub">Investiga → detecta gaps → profundiza → reintenta → verifica → se detiene por criterio.</div></div><button class="btn icon" id="machineClose">×</button></div>
+ <div class="machineState">
+  <div class="machineStateTop"><b><i class="machineLamp" id="machineLamp"></i><span id="machineStateText">idle</span></b><span class="badge" id="machineStopReason">sin ejecutar</span></div>
+  <div class="machineMetrics" style="grid-template-columns:repeat(5,1fr)"><div><b id="machineCycle">0</b><span>ciclo</span></div><div><b id="machineVerified">0%</b><span>verificado</span></div><div><b id="machineQualified">0</b><span>cumplen</span></div><div><b id="machineGaps">0</b><span>gaps</span></div><div><b id="machineNew">0</b><span>nuevos</span></div></div>
+ </div>
+ <div class="machineConfig">
+  <div class="machineConfigRow"><label>Objetivo de verificación</label><div><input id="machineTarget" type="range" min="40" max="100" step="5" value="80"><b id="machineTargetValue" style="font-size:7px;margin-left:5px">80%</b></div></div>
+  <div class="machineConfigRow"><label>Máximo de ciclos autónomos</label><select id="machineCycles"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+  <div class="machineConfigRow"><label>Escalar a CrewAI/GPT Researcher al terminar</label><input id="machineUseAgents" type="checkbox" checked></div>
+ </div>
+ <div class="machineActions"><button class="btn primary" id="machineRun">Ejecutar misión</button><button class="btn" id="machineStop">Detener</button></div>
+ <div class="section"><div class="label">Registro de decisiones</div><div class="machineLog" id="machineLog"><div class="machineEvent"><b>READY</b><span>Esperando una misión.</span></div></div></div>
+ <div class="monitorCard"><h3>Persistent Monitor · Desktop</h3><p>Atlas puede quedarse en la bandeja de Windows, revisar las URLs vigiladas por SHA-256 y avisar cuando cambie el contenido.</p>
+  <div class="monitorToggles"><label><input type="checkbox" id="monitorEnabled" checked> monitor activo</label><label><input type="checkbox" id="monitorStartup"> iniciar con Windows</label><button class="btn" id="monitorSync">Sincronizar</button><button class="btn" id="monitorNow">Revisar ahora</button></div>
+  <div class="monitorJobs" id="monitorJobs"><div class="sub">Disponible en Atlas Desktop.</div></div>
+ </div>
+</aside>
+<div class="snapshotModal" id="snapshotModal">
+ <div class="snapshotWindow">
+  <div class="snapshotHeader"><div><b id="snapshotTitle">Snapshot</b><span id="snapshotMeta">—</span></div><button class="btn" id="snapshotOpenSource">Abrir fuente</button><button class="btn icon" id="snapshotClose">×</button></div>
+  <div class="snapshotSearch"><input id="snapshotSearchInput" placeholder="Buscar dentro del snapshot…"><button class="btn" id="snapshotPrev">↑</button><button class="btn" id="snapshotNext">↓</button><span class="badge" id="snapshotHits">0</span></div>
+  <div class="snapshotBody" id="snapshotBody"></div>
+ </div>
+</div>
+<aside class="aiPanel glass" id="aiPanel">
+ <div class="aiHeader"><div><div class="ey">CLOUD AI CORE</div><h2>Atlas Intelligence</h2><div class="sub">IA desde el propio HTML. Sin descargar modelos locales.</div></div><button class="btn icon" id="aiClose">×</button></div>
+ <div class="aiStatus"><i class="aiLed" id="aiLed"></i><div><b id="aiStatusTitle">Detectando Puter AI…</b><span id="aiStatusText">Puter AI → Auto → fallback analítico</span></div></div>
+ <div class="aiProgress"><div class="aiProgressFill" id="aiProgressFill"></div></div>
+ <div class="row"><select class="field" id="aiEngineSelect"><option value="auto">Puter Auto</option></select><button class="btn primary" id="aiActivate">Activar IA</button></div>
+ <div class="modehint">El modelo corre en la nube. Atlas no descarga pesos de IA al dispositivo.</div>
+ <div class="section" style="margin-top:12px"><div class="label">Capacidades</div>
+   <div class="aiFeature"><b>Research Planner <span class="aiBadge">AI</span></b><span>Genera consultas adicionales según tu objetivo y modo de investigación.</span></div>
+   <div class="aiFeature"><b>Requirement Extractor <span class="aiBadge">AI</span></b><span>Detecta requisitos explícitos que el parser normal puede perder.</span></div>
+   <div class="aiFeature"><b>Evidence Analyst <span class="aiBadge">AI</span></b><span>Redacta conclusiones usando únicamente la evidencia recopilada.</span></div>
+   <div class="aiFeature"><b>Ask Atlas <span class="aiBadge">AI</span></b><span>Cuando la IA está activa, responde semánticamente sobre el corpus de evidencia.</span></div>
+ </div>
+ <div class="row"><button class="btn" id="aiBrief">Generar AI Brief</button><button class="btn" id="aiStop">Detener</button></div>
+ <div class="section" style="margin-top:12px"><div class="label">Salida IA</div><div class="aiOutput" id="aiOutput">IA aún no activada.</div></div>
+</aside>
+
+
+
+<div class="flightRecorder glass" id="flightRecorder"><div class="frHead"><b>RESEARCH FLIGHT RECORDER</b><span class="frBranch" id="frBranch">root</span><span class="frText" id="frText">esperando investigación</span><span id="frCount">0 events</span></div><div class="frStream" id="frStream"></div></div>
+<div class="liveGraph glass" id="liveGraph">
+ <div class="lgTitle"><b>LIVE RESEARCH GRAPH</b><span id="liveGraphState">idle</span></div>
+ <div class="lgFlow">
+  <div class="lgNode" data-live-stage="planner"><i>P</i><span>Plan</span></div><b>›</b>
+  <div class="lgNode" data-live-stage="discovery"><i>S</i><span>Search</span></div><b>›</b>
+  <div class="lgNode" data-live-stage="evidence"><i>E</i><span>Evidence</span></div><b>›</b>
+  <div class="lgNode" data-live-stage="analysis"><i>A</i><span>Analyze</span></div><b>›</b>
+  <div class="lgNode" data-live-stage="memory"><i>M</i><span>Memory</span></div>
+ </div>
+ <div class="lgDetail" id="liveGraphDetail">Esperando investigación.</div>
+</div>
+
+<section class="labPanel glass" id="labPanel">
+ <div class="detailTop"><div><div class="ey">EVIDENCE RESEARCH SYSTEM</div><h2 id="labTitle">Research Replay</h2><div class="sub">Ramas, replay y comparación de ejecuciones reales.</div></div><button class="btn icon" id="labClose">×</button></div>
+ <div class="labTabs"><button class="on" data-lab-tab="replay">Replay</button><button data-lab-tab="fork">Fork</button><button data-lab-tab="compare">Compare Runs</button><button data-lab-tab="graph">Branch Graph</button></div>
+ <div class="labView" data-lab-view="replay">
+  <div class="replayControls"><button class="btn primary" id="replayPlay">▶ Reproducir</button><button class="btn" id="replayStop">Detener</button><input class="replaySlider" id="replaySlider" type="range" min="0" max="0" value="0"><button class="btn eventFork" id="forkFromEvent">Fork desde aquí</button></div>
+  <div class="replayNow" id="replayNow">Sin investigación cargada.</div><div class="replayTimeline" id="replayTimeline"></div><div class="lineageTree" id="lineageTree"></div>
+ </div>
+ <div class="labView hidden" data-lab-view="fork">
+  <div class="summary">Crea una rama desde la investigación actual. Atlas conserva el padre y ejecuta una hipótesis nueva sin destruir el run original.</div>
+  <textarea class="field forkInput" id="forkInput" placeholder="Ej. ¿Qué cambia si todo debe ser open-source y funcionar localmente?"></textarea>
+  <div class="actions"><button class="btn primary" id="forkCreate">Crear rama e investigar</button></div>
+  <div class="lineage" id="lineage"></div>
+ </div>
+ <div class="labView hidden" data-lab-view="compare">
+  <div class="runComparePick"><select class="field" id="runA"></select><span>vs</span><select class="field" id="runB"></select><button class="btn primary" id="compareRunsGo">Comparar</button></div>
+  <div class="runCompareResult" id="runCompareResult">Elige dos ejecuciones.</div>
+ </div>
+ <div class="labView hidden" data-lab-view="graph">
+  <div class="sub">Cada punto es una investigación. Las líneas violetas son forks. Haz click en un nodo para cargar ese run.</div>
+  <div class="branchCanvasWrap"><canvas id="branchCanvas"></canvas><div class="branchLegend"><span>● run raíz</span><span>● fork</span><span>línea = linaje</span></div></div>
+ </div>
+</section>
+
+<section class="healthPanel glass" id="healthPanel">
+ <div class="detailTop"><div><div class="ey">SYSTEM HEALTH</div><h2>Preflight & fuentes</h2><div class="sub">Comprueba qué partes de Atlas están listas antes de una investigación.</div></div><button class="btn icon" id="healthClose">×</button></div>
+ <div class="healthGrid" id="healthGrid"></div>
+ <div class="actions"><button class="btn primary" id="runHealth">Volver a comprobar</button><button class="btn" id="retryFailed">Reintentar fallos recientes</button></div>
+</section>
+
+<section class="presentation" id="presentation">
+ <canvas id="presentationCanvas"></canvas>
+ <div class="presHud"><div class="presCard"><div class="ey">ATLAS PRESENTATION MODE</div><h1 id="presTitle">—</h1><p id="presMemo">—</p><div class="presMeta" id="presMeta"></div></div><button class="btn presExit" id="presExit">Salir</button></div>
+ <div class="presBottom"><div class="presResults" id="presResults"></div><div class="presCard" style="max-width:320px"><div class="ey">DECISION STATUS</div><p id="presBlockers"></p></div></div>
+</section>
+
+<div class="recovery glass" id="recovery"><div style="flex:1"><b>Atlas recuperó una sesión anterior</b><span id="recoveryText">Hay trabajo guardado.</span></div><button class="btn primary" id="resumeSession">Continuar</button><button class="btn" id="dismissRecovery">Descartar aviso</button></div>
+
+<section class="tour" id="tour"><div class="tourCard"><div class="ey">TOUR DE 30 SEGUNDOS</div><h2 id="tourTitle">—</h2><p id="tourText"></p><div class="tourDots" id="tourDots"></div><div class="actions"><button class="btn" id="tourSkip">Saltar</button><button class="btn primary" id="tourNext">Siguiente</button></div></div></section>
+
+<div class="bottom glass"><strong id="state">LISTO</strong><span class="sep">•</span><span id="stateText">esperando objetivo</span><div class="grow"></div><div class="bar"><div class="fill" id="fill"></div></div><span id="coverage">0%</span><span class="sep">•</span><span id="zoom">100%</span></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API_SNAPSHOT=[{"name":"Open-Meteo","url":"https://open-meteo.com/","description":"Pronóstico meteorológico global sin API key.","auth":"No","https":true,"cors":"Yes","category":"Weather"},{"name":"National Weather Service","url":"https://www.weather.gov/documentation/services-web-api","description":"Alertas y pronósticos meteorológicos de EE. UU.","auth":"No","https":true,"cors":"Yes","category":"Weather"},{"name":"OpenAQ","url":"https://docs.openaq.org/","description":"Datos abiertos de calidad del aire.","auth":"No","https":true,"cors":"Yes","category":"Environment"},{"name":"USGS Earthquake","url":"https://earthquake.usgs.gov/fdsnws/event/1/","description":"Datos sísmicos y terremotos del USGS.","auth":"No","https":true,"cors":"Yes","category":"Disasters"},{"name":"NASA APIs","url":"https://api.nasa.gov/","description":"Datos, imágenes y datasets públicos de NASA.","auth":"apiKey","https":true,"cors":"Yes","category":"Science & Math"},{"name":"SpaceX API","url":"https://github.com/r-spacex/SpaceX-API","description":"Datos de lanzamientos y misiones SpaceX.","auth":"No","https":true,"cors":"Yes","category":"Science & Math"},{"name":"arXiv API","url":"https://info.arxiv.org/help/api/index.html","description":"Búsqueda y consulta del archivo científico arXiv.","auth":"No","https":true,"cors":"Unknown","category":"Science & Math"},{"name":"OpenAlex","url":"https://docs.openalex.org/","description":"Catálogo abierto de trabajos académicos y autores.","auth":"No","https":true,"cors":"Yes","category":"Education"},{"name":"Crossref","url":"https://api.crossref.org/","description":"Metadatos de publicaciones y DOI.","auth":"No","https":true,"cors":"Yes","category":"Education"},{"name":"Open Library","url":"https://openlibrary.org/developers/api","description":"Libros, autores, ediciones y portadas.","auth":"No","https":true,"cors":"Yes","category":"Books"},{"name":"Gutendex","url":"https://gutendex.com/","description":"Catálogo JSON de Project Gutenberg.","auth":"No","https":true,"cors":"Yes","category":"Books"},{"name":"Google Books","url":"https://developers.google.com/books","description":"Búsqueda y metadatos de libros.","auth":"apiKey","https":true,"cors":"Yes","category":"Books"},{"name":"Jikan","url":"https://jikan.moe/","description":"API pública para datos de MyAnimeList.","auth":"No","https":true,"cors":"Yes","category":"Anime"},{"name":"AniList","url":"https://anilist.gitbook.io/anilist-apiv2-docs/","description":"Anime, manga, personajes y listas de usuarios.","auth":"OAuth","https":true,"cors":"Yes","category":"Anime"},{"name":"PokéAPI","url":"https://pokeapi.co/","description":"Datos completos del universo Pokémon.","auth":"No","https":true,"cors":"Yes","category":"Games & Comics"},{"name":"RAWG","url":"https://rawg.io/apidocs","description":"Base de datos de videojuegos.","auth":"apiKey","https":true,"cors":"Yes","category":"Games & Comics"},{"name":"Rick and Morty","url":"https://rickandmortyapi.com/","description":"Personajes, episodios y ubicaciones de Rick and Morty.","auth":"No","https":true,"cors":"Yes","category":"Games & Comics"},{"name":"Open Trivia DB","url":"https://opentdb.com/api_config.php","description":"Preguntas de trivia de múltiples categorías.","auth":"No","https":true,"cors":"Yes","category":"Games & Comics"},{"name":"The Cat API","url":"https://thecatapi.com/","description":"Imágenes y datos de razas de gatos.","auth":"apiKey","https":true,"cors":"Yes","category":"Animals"},{"name":"Dog CEO","url":"https://dog.ceo/dog-api/","description":"Imágenes aleatorias de perros por raza.","auth":"No","https":true,"cors":"Yes","category":"Animals"},{"name":"REST Countries","url":"https://restcountries.com/","description":"Información de países, monedas, idiomas y regiones.","auth":"No","https":true,"cors":"Yes","category":"Geocoding"},{"name":"Nominatim","url":"https://nominatim.org/release-docs/latest/api/Overview/","description":"Geocodificación sobre OpenStreetMap.","auth":"No","https":true,"cors":"Yes","category":"Geocoding"},{"name":"GeoNames","url":"https://www.geonames.org/export/web-services.html","description":"Lugares, geografía y geocodificación mundial.","auth":"apiKey","https":true,"cors":"Unknown","category":"Geocoding"},{"name":"OpenStreetMap","url":"https://wiki.openstreetmap.org/wiki/API","description":"Datos y edición del mapa abierto mundial.","auth":"OAuth","https":true,"cors":"Unknown","category":"Geocoding"},{"name":"CoinGecko","url":"https://docs.coingecko.com/","description":"Precios, mercados y metadatos de criptomonedas.","auth":"No","https":true,"cors":"Yes","category":"Cryptocurrency"},{"name":"CoinCap","url":"https://docs.coincap.io/","description":"Activos y precios de criptomonedas en tiempo real.","auth":"No","https":true,"cors":"Yes","category":"Cryptocurrency"},{"name":"Frankfurter","url":"https://www.frankfurter.app/docs/","description":"Tipos de cambio basados en datos del BCE.","auth":"No","https":true,"cors":"Yes","category":"Currency Exchange"},{"name":"ExchangeRate.host","url":"https://exchangerate.host/documentation","description":"Conversión y tipos de cambio.","auth":"apiKey","https":true,"cors":"Yes","category":"Currency Exchange"},{"name":"SEC EDGAR","url":"https://www.sec.gov/edgar/sec-api-documentation","description":"Presentaciones y datos corporativos de la SEC.","auth":"No","https":true,"cors":"Unknown","category":"Finance"},{"name":"Alpha Vantage","url":"https://www.alphavantage.co/documentation/","description":"Mercados, acciones, forex y cripto.","auth":"apiKey","https":true,"cors":"Unknown","category":"Finance"},{"name":"FRED","url":"https://fred.stlouisfed.org/docs/api/fred/","description":"Series económicas de la Reserva Federal de St. Louis.","auth":"apiKey","https":true,"cors":"Unknown","category":"Finance"},{"name":"World Bank","url":"https://datahelpdesk.worldbank.org/knowledgebase/topics/125589-developer-information","description":"Indicadores económicos y de desarrollo mundial.","auth":"No","https":true,"cors":"Yes","category":"Open Data"},{"name":"Data.gov","url":"https://data.gov/developers/apis","description":"Catálogos y datasets públicos del gobierno estadounidense.","auth":"No","https":true,"cors":"Unknown","category":"Government"},{"name":"US Census","url":"https://www.census.gov/data/developers.html","description":"Datos demográficos y económicos del Census Bureau.","auth":"apiKey","https":true,"cors":"Yes","category":"Government"},{"name":"openFDA","url":"https://open.fda.gov/apis/","description":"Medicamentos, dispositivos y alimentos de la FDA.","auth":"No","https":true,"cors":"Yes","category":"Health"},{"name":"ClinicalTrials.gov","url":"https://clinicaltrials.gov/data-api/about-api","description":"Estudios clínicos registrados públicamente.","auth":"No","https":true,"cors":"Yes","category":"Health"},{"name":"NPPES","url":"https://npiregistry.cms.hhs.gov/api-page","description":"Registro público de proveedores de salud.","auth":"No","https":true,"cors":"Yes","category":"Health"},{"name":"GitHub REST API","url":"https://docs.github.com/en/rest","description":"Repositorios, issues, usuarios y organizaciones.","auth":"OAuth","https":true,"cors":"Yes","category":"Development"},{"name":"GitLab API","url":"https://docs.gitlab.com/api/","description":"Repositorios, pipelines, issues y grupos GitLab.","auth":"apiKey","https":true,"cors":"Yes","category":"Development"},{"name":"npm Registry","url":"https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md","description":"Metadatos públicos de paquetes npm.","auth":"No","https":true,"cors":"Yes","category":"Development"},{"name":"Stack Exchange","url":"https://api.stackexchange.com/docs","description":"Preguntas, respuestas, usuarios y etiquetas.","auth":"OAuth","https":true,"cors":"Yes","category":"Development"},{"name":"JSONPlaceholder","url":"https://jsonplaceholder.typicode.com/","description":"API REST falsa para pruebas y prototipos.","auth":"No","https":true,"cors":"Yes","category":"Test Data"},{"name":"httpbin","url":"https://httpbin.org/","description":"Prueba de solicitudes HTTP.","auth":"No","https":true,"cors":"Yes","category":"Test Data"},{"name":"ReqRes","url":"https://reqres.in/","description":"API alojada para prototipos frontend.","auth":"apiKey","https":true,"cors":"Yes","category":"Test Data"},{"name":"IPify","url":"https://www.ipify.org/","description":"Obtiene la IP pública del cliente.","auth":"No","https":true,"cors":"Yes","category":"Development"},{"name":"VirusTotal","url":"https://docs.virustotal.com/reference/overview","description":"Análisis de URLs, archivos, dominios e IPs.","auth":"apiKey","https":true,"cors":"Unknown","category":"Security"},{"name":"Have I Been Pwned","url":"https://haveibeenpwned.com/API/v3","description":"Consulta exposición de cuentas y brechas.","auth":"apiKey","https":true,"cors":"Unknown","category":"Security"},{"name":"Shodan","url":"https://developer.shodan.io/","description":"Dispositivos y servicios expuestos en Internet.","auth":"apiKey","https":true,"cors":"Unknown","category":"Security"},{"name":"URLScan.io","url":"https://urlscan.io/docs/api/","description":"Escaneo y análisis público de URLs.","auth":"apiKey","https":true,"cors":"Unknown","category":"Security"},{"name":"NewsAPI","url":"https://newsapi.org/docs","description":"Titulares y artículos de múltiples fuentes.","auth":"apiKey","https":true,"cors":"Unknown","category":"News"},{"name":"GNews","url":"https://gnews.io/docs/v4","description":"Noticias y búsqueda de artículos.","auth":"apiKey","https":true,"cors":"Yes","category":"News"},{"name":"Hacker News","url":"https://github.com/HackerNews/API","description":"Historias, comentarios y usuarios de Hacker News.","auth":"No","https":true,"cors":"Yes","category":"News"},{"name":"Reddit","url":"https://www.reddit.com/dev/api/","description":"Posts, comunidades, comentarios y perfiles.","auth":"OAuth","https":true,"cors":"Unknown","category":"Social"},{"name":"Mastodon","url":"https://docs.joinmastodon.org/api/","description":"API abierta para servidores Mastodon.","auth":"OAuth","https":true,"cors":"Yes","category":"Social"},{"name":"Discord","url":"https://discord.com/developers/docs/intro","description":"Bots, servidores, usuarios y eventos Discord.","auth":"OAuth","https":true,"cors":"Unknown","category":"Social"},{"name":"Spotify","url":"https://developer.spotify.com/documentation/web-api","description":"Música, artistas, playlists y reproducción.","auth":"OAuth","https":true,"cors":"Yes","category":"Music"},{"name":"MusicBrainz","url":"https://musicbrainz.org/doc/MusicBrainz_API","description":"Metadatos musicales abiertos.","auth":"No","https":true,"cors":"Yes","category":"Music"},{"name":"Deezer","url":"https://developers.deezer.com/api","description":"Catálogo musical, artistas y álbumes.","auth":"OAuth","https":true,"cors":"Yes","category":"Music"},{"name":"TMDB","url":"https://developer.themoviedb.org/docs/getting-started","description":"Películas, series, personas e imágenes.","auth":"apiKey","https":true,"cors":"Yes","category":"Video"},{"name":"OMDb","url":"https://www.omdbapi.com/","description":"Metadatos de películas y series.","auth":"apiKey","https":true,"cors":"Yes","category":"Video"},{"name":"YouTube Data API","url":"https://developers.google.com/youtube/v3","description":"Videos, canales, playlists y búsquedas.","auth":"apiKey","https":true,"cors":"Yes","category":"Video"},{"name":"Unsplash","url":"https://unsplash.com/documentation","description":"Fotografías y colecciones de Unsplash.","auth":"OAuth","https":true,"cors":"Yes","category":"Photography"},{"name":"Pexels","url":"https://www.pexels.com/api/documentation/","description":"Fotos y videos de Pexels.","auth":"apiKey","https":true,"cors":"Yes","category":"Photography"},{"name":"Lorem Picsum","url":"https://picsum.photos/","description":"Imágenes aleatorias para prototipos.","auth":"No","https":true,"cors":"Yes","category":"Photography"},{"name":"OpenAI","url":"https://platform.openai.com/docs/api-reference","description":"Modelos de IA para texto, visión, audio y más.","auth":"apiKey","https":true,"cors":"Unknown","category":"Machine Learning"},{"name":"Hugging Face","url":"https://huggingface.co/docs/api-inference/index","description":"Modelos y servicios de inferencia de IA.","auth":"apiKey","https":true,"cors":"Yes","category":"Machine Learning"},{"name":"Replicate","url":"https://replicate.com/docs/reference/http","description":"Ejecución de modelos de IA mediante API.","auth":"apiKey","https":true,"cors":"Unknown","category":"Machine Learning"},{"name":"Google Gemini","url":"https://ai.google.dev/api","description":"API de modelos Gemini.","auth":"apiKey","https":true,"cors":"Yes","category":"Machine Learning"},{"name":"Wikipedia","url":"https://www.mediawiki.org/wiki/API:Main_page","description":"Contenido y búsquedas de Wikipedia.","auth":"No","https":true,"cors":"Yes","category":"Open Data"},{"name":"Wikidata","url":"https://www.wikidata.org/wiki/Wikidata:Data_access","description":"Grafo abierto de conocimiento estructurado.","auth":"No","https":true,"cors":"Yes","category":"Open Data"},{"name":"Internet Archive","url":"https://archive.org/developers/","description":"Metadatos y colecciones del Internet Archive.","auth":"No","https":true,"cors":"Yes","category":"Open Data"}];
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('stage'),ctx=canvas.getContext('2d',{alpha:false});
+const STORE='internet-atlas-state-v1';
+const LEGACY_STORES=['atlas-x12-state-v1'];
+
+const _memoryStore=new Map();
+const safeStore={
+ getItem(k){try{return window['localStorage'].getItem(k)}catch{return _memoryStore.has(k)?_memoryStore.get(k):null}},
+ setItem(k,v){try{window['localStorage'].setItem(k,String(v));return true}catch{_memoryStore.set(k,String(v));return false}},
+ removeItem(k){try{window['localStorage'].removeItem(k);return true}catch{_memoryStore.delete(k);return false}},
+ persistent(){try{const k='__atlas_store_test';window['localStorage'].setItem(k,'1');window['localStorage'].removeItem(k);return true}catch{return false}}
+};
+const IS_RESTRICTED_ORIGIN=['file:','content:','about:','data:'].includes(location.protocol);
+
+const SRC={websearch:{label:'Web Search',color:'#65d6ff',trust:.62},wikipedia:{label:'Wikipedia',color:'#79e7ff',trust:.82},wikidata:{label:'Wikidata',color:'#72efb6',trust:.86},github:{label:'GitHub',color:'#aa8cff',trust:.72},stackoverflow:{label:'Stack Overflow',color:'#ffb15c',trust:.60},hackernews:{label:'Hacker News',color:'#ff91c8',trust:.52},npm:{label:'npm',color:'#ff718d',trust:.66},openalex:{label:'OpenAlex',color:'#ffd678',trust:.91},crossref:{label:'Crossref',color:'#8ee6ba',trust:.92},arxiv:{label:'arXiv',color:'#e79a9a',trust:.90},publicapis:{label:'Public APIs',color:'#72d8ff',trust:.70},web:{label:'Web',color:'#79e7ff',trust:.76},manual:{label:'Fuente añadida',color:'#8ef0c2',trust:.80},localfile:{label:'Documento local',color:'#b5a1ff',trust:.88}};
+let W=innerWidth,H=innerHeight,DPR=1,state=loadState(),project=null,current=null,criteria=[],rawResults=[],entities=[],nodes=[],edges=[],byId=new Map(),selected=null,compareIds=[],token=0,researchStartedAt=0,auditLog=null,researchDiagnostics=[],aiState={engine:null,model:'auto',loading:false,abort:false,lastError:null},healthState={},failedQueries=[],tourIndex=0,openRunIds=[],commandSelection=0,agentState={mode:'hybrid',runId:null,poll:null,installed:false,running:false},replayBuffer=[],replayTimer=null,pendingFork=null,replaySelectedIndex=0;
+let cam={x:0,y:0,z:1},drag=false,last={x:0,y:0},pointers=new Map(),pinch=0,hovered=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const rnd=(s,a=0,b=1)=>a+(hash(s)%100000)/100000*(b-a);
+const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+const domainOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'').toLowerCase()}catch{return''}};
+function defaultState(){return{schemaVersion:29,projects:[{id:'default',name:'Mi Atlas',runs:[],saved:[],watch:[]}],active:'default'}}
+function normalizeStateShape(x){
+ if(!x||!Array.isArray(x.projects)||!x.projects.length)return defaultState();
+ x.schemaVersion=29;for(const p of x.projects){p.runs=Array.isArray(p.runs)?p.runs:[];p.saved=Array.isArray(p.saved)?p.saved:[];p.watch=Array.isArray(p.watch)?p.watch:[]}
+ if(!x.projects.some(p=>p.id===x.active))x.active=x.projects[0].id;return x
+}
+function loadState(){
+ try{
+  const current=safeStore.getItem(STORE);if(current)return normalizeStateShape(JSON.parse(current));
+  for(const key of LEGACY_STORES){const old=safeStore.getItem(key);if(!old)continue;const migrated=normalizeStateShape(JSON.parse(old));safeStore.setItem(STORE,JSON.stringify(migrated));return migrated}
+ }catch{}
+ return defaultState()
+}
+function saveState(){try{state.schemaVersion=29;safeStore.setItem(STORE,JSON.stringify(state));return true}catch{return false}}
+function activeProject(){return state.projects.find(p=>p.id===state.active)||state.projects[0]}
+function toast(s,ms=2200){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),ms)}
+function setStatus(a,b){$('state').textContent=a;$('stateText').textContent=b}
+function setCoverage(v){v=Math.max(0,Math.min(100,Math.round(v)));$('fill').style.width=v+'%';$('coverage').textContent=v+'%';$('mCov').textContent=v+'%'}
+function step(n,mode,text){const e=$('s'+n);e.classList.remove('on','done');if(mode)e.classList.add(mode);e.querySelector('span').textContent=text||'—'}
+function resetSteps(){for(let i=1;i<=7;i++)step(i,'','—')}
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);layout()}addEventListener('resize',resize);resize();
+
+
+function downloadBlob(name,content,type='application/json'){
+ const a=document.createElement('a'),b=new Blob([content],{type});a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+function exportActiveProject(){
+ if(!project)return toast('No hay proyecto activo');
+ const payload={format:'internet-atlas-project',version:29,exportedAt:new Date().toISOString(),project};
+ downloadBlob((project.name||'Atlas_Project').replace(/[^\w-]+/g,'_')+'.atlas.json',JSON.stringify(payload,null,2))
+}
+async function importProjectFile(file){
+ try{
+   const data=JSON.parse(await file.text());
+   const p=data?.project||data;
+   if(!p||!Array.isArray(p.runs))throw new Error('Formato de proyecto no válido');
+   const copy=JSON.parse(JSON.stringify(p));copy.id='p-'+Date.now();copy.name=(copy.name||'Proyecto importado')+' · importado';
+   copy.saved=Array.isArray(copy.saved)?copy.saved:[];copy.watch=Array.isArray(copy.watch)?copy.watch:[];
+   state.projects.push(copy);state.active=copy.id;saveState();syncProject();project=activeProject();current=project.runs[0]||null;
+   if(current)loadRun(current.id);toast('Proyecto importado')
+ }catch(e){toast('No pude importar ese proyecto')}
+}
+async function sourceProbe(name,url,kind='fetch'){
+ const started=performance.now();
+ try{
+   if(kind==='feature'){
+     const ok=url();return{name,status:ok?'ok':'warn',detail:ok?'disponible':'no disponible',ms:0}
+   }
+   const c=new AbortController(),t=setTimeout(()=>c.abort(),6500);
+   const r=await fetch(url,{signal:c.signal,mode:'cors'});clearTimeout(t);
+   return{name,status:r.ok?'ok':'warn',detail:r.ok?'HTTP '+r.status:'HTTP '+r.status,ms:Math.round(performance.now()-started)}
+ }catch(e){return{name,status:'bad',detail:'sin respuesta desde este navegador',ms:Math.round(performance.now()-started)}}
+}
+async function runHealthCheck(){
+ $('healthGrid').innerHTML='<div class="sub">Comprobando…</div>';
+ let probes=[];
+ if(IS_RESTRICTED_ORIGIN){
+   probes=[
+    {name:'Modo actual',status:'warn',detail:'Standalone restringido: usa catálogo embebido; las fuentes web completas requieren Desktop/hosting.',ms:0},
+    {name:'Motor local',status:'ok',detail:`${API_SNAPSHOT.length} APIs embebidas disponibles`,ms:0},
+    {name:'Persistencia',status:safeStore.persistent()?'ok':'warn',detail:safeStore.persistent()?'almacenamiento persistente':'memoria temporal mientras esta pestaña siga abierta',ms:0},
+    {name:'Puter AI',status:globalThis.puter?.ai?.chat?'ok':'warn',detail:globalThis.puter?.ai?.chat?'cargado':'se carga solo al pulsar Activar IA',ms:0},
+    {name:'CrewAI / GPT Researcher',status:'warn',detail:'requiere Atlas Desktop',ms:0}
+   ]
+ }else{
+   probes=await Promise.all([
+    sourceProbe('Internet','https://www.wikidata.org/w/api.php?action=wbsearchentities&search=atlas&language=en&limit=1&format=json&origin=*'),
+    sourceProbe('Wikipedia','https://en.wikipedia.org/w/api.php?action=opensearch&search=atlas&limit=1&format=json&origin=*'),
+    sourceProbe('GitHub','https://api.github.com/search/repositories?q=internet-atlas&per_page=1'),
+    sourceProbe('Hacker News','https://hn.algolia.com/api/v1/search?query=atlas&hitsPerPage=1'),
+    sourceProbe('npm','https://registry.npmjs.org/-/v1/search?text=atlas&size=1'),
+    sourceProbe('OpenAlex','https://api.openalex.org/works?search=atlas&per-page=1'),
+    sourceProbe('Puter AI',()=>!!globalThis.puter?.ai?.chat,'feature'),
+    sourceProbe('Persistencia',()=>true,'feature')
+   ])
+ }
+ healthState=Object.fromEntries(probes.map(x=>[x.name,x]));
+ $('healthGrid').innerHTML=probes.map(x=>`<div class="healthItem"><b>${esc(x.name)} <i class="healthDot ${x.status}"></i></b><span>${esc(x.detail)}${x.ms?` · ${x.ms} ms`:''}</span></div>`).join('');
+ return probes
+}
+function renderPresentation(){
+ if(!current||!entities.length){toast('Primero investiga');return false}
+ $('presTitle').textContent=current.objective;$('presMemo').textContent=current.aiBrief||current.memo||memo();
+ $('presMeta').innerHTML=[`${entities.length} entidades`,`${current.coverage}% cobertura`,current.mode||'general',current.depth||''].map(x=>`<span>${esc(x)}</span>`).join('');
+ $('presResults').innerHTML=entities.slice(0,5).map((e,i)=>`<div class="presResult"><b>${i+1}. ${esc(e.title)}</b><span>${e.score}/100</span></div>`).join('');
+ const b=decisionBlockers();$('presBlockers').textContent=b.length?`${b.length} bloqueadores pendientes. Principales: ${b.slice(0,3).map(x=>x.entity+' · '+x.criterion).join('; ')}`:'Sin bloqueadores obligatorios detectados.';
+ $('presentation').classList.add('show');drawPresentation();return true
+}
+function drawPresentation(){
+ const c=$('presentationCanvas'),x=c.getContext('2d');const d=Math.min(devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';x.setTransform(d,0,0,d,0,0);
+ x.fillStyle='#02050a';x.fillRect(0,0,innerWidth,innerHeight);
+ for(let i=0;i<180;i++){x.globalAlpha=.08+rnd('px'+i,0,.26);x.fillStyle='#d9e8ff';x.beginPath();x.arc(rnd('psx'+i,0,innerWidth),rnd('psy'+i,0,innerHeight),rnd('pr'+i,.3,1.2),0,Math.PI*2);x.fill()}x.globalAlpha=1;
+ if(!entities.length)return;const cx=innerWidth/2,cy=innerHeight/2,R=Math.min(innerWidth,innerHeight)*.28,N=Math.min(entities.length,14);
+ x.strokeStyle='rgba(121,231,255,.12)';x.lineWidth=1;
+ for(let i=0;i<N;i++){const a=-Math.PI/2+i*2*Math.PI/N,px=cx+Math.cos(a)*R,py=cy+Math.sin(a)*R;x.beginPath();x.moveTo(cx,cy);x.lineTo(px,py);x.stroke();const e=entities[i];x.fillStyle=e.score>=75?'#72efb6':e.score>=50?'#ffd678':'#aa8cff';x.shadowColor=x.fillStyle;x.shadowBlur=12;x.beginPath();x.arc(px,py,5,0,Math.PI*2);x.fill();x.shadowBlur=0}
+ x.fillStyle='#ffd678';x.beginPath();x.arc(cx,cy,12,0,Math.PI*2);x.fill()
+}
+function maybeShowRecovery(){
+ if(researchStartedAt>0)return;
+ if(project?.runs?.length){const r=project.runs[0];$('recoveryText').textContent=`Último proyecto: ${project.name} · ${new Date(r.at).toLocaleString()} · ${r.coverage||0}% cobertura`;$('recovery').classList.add('show')}
+}
+const TOUR=[
+ {t:'1. Define el objetivo',d:'Escribe una meta completa. Atlas detecta requisitos y construye un plan de investigación.'},
+ {t:'2. Comprueba evidencia',d:'La matriz separa verificado, provisional y desconocido. No tienes que interpretar nodos a ciegas.'},
+ {t:'3. Usa IA cuando aporte valor',d:'Ask Atlas y AI Brief trabajan sobre la evidencia ya recopilada.'},
+ {t:'4. Entrega el trabajo',d:'Decision Pack, presentación, exportación de datos y proyectos portables convierten la investigación en un entregable.'}
+];
+function renderTour(){const s=TOUR[tourIndex];$('tourTitle').textContent=s.t;$('tourText').textContent=s.d;$('tourDots').innerHTML=TOUR.map((_,i)=>`<i class="${i===tourIndex?'on':''}"></i>`).join('');$('tourNext').textContent=tourIndex===TOUR.length-1?'Terminar':'Siguiente'}
+function startTour(){tourIndex=0;renderTour();$('tour').classList.add('show')}
+function nextTour(){if(tourIndex<TOUR.length-1){tourIndex++;renderTour()}else{$('tour').classList.remove('show');safeStore.setItem('internet-atlas-tour-v1','done')}}
+
+
+function normalizePuterModel(model){const m=String(model||'gpt-5.6-luna').replace(/^openai[:/]/i,'').replace(/^puter[:/]/i,'');return (!m||m==='atlas-auto'||m==='auto')?'gpt-5.6-luna':m}
+if(globalThis.atlasDesktop?.onLLMRequest){
+ globalThis.atlasDesktop.onLLMRequest(async req=>{
+   try{
+     await ensurePuter();
+     const model=normalizePuterModel(req.model);
+     const messages=Array.isArray(req.messages)?req.messages:[{role:'user',content:String(req.prompt||'')}];
+     const resp=await puter.ai.chat(messages,{model});
+     const text=puterText(resp);
+     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:true,text,model})
+   }catch(e){
+     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:false,error:String(e?.message||e)})
+   }
+ })
+}
+function agentLog(text){
+ const e=$('agentLog');const line=`[${new Date().toLocaleTimeString()}] ${text}`;e.textContent=(e.textContent==='Motor todavía no iniciado.'?'':e.textContent+'\n')+line;e.scrollTop=e.scrollHeight
+}
+function setAgentStage(stage,status,detail=''){
+ const el=document.querySelector(`[data-agent-stage="${stage}"]`);if(!el)return;
+ el.classList.remove('running','done','error');if(status&&status!=='idle')el.classList.add(status);
+ el.querySelector('em').textContent=detail||status||'idle'
+}
+function resetAgentStages(){['planner','researcher','verifier','analyst','publisher'].forEach(s=>setAgentStage(s,'idle','idle'))}
+function setAgentEngine(kind,title,text){
+ const b=$('agentEngineBadge');b.className='engineBadge'+(kind?' '+kind:'');b.textContent=title;$('agentEngineText').textContent=text||''
+}
+
+function renderDoctor(d){
+ const box=$('agentDoctorOutput');
+ if(!d){box.textContent='Sin datos.';return}
+ if(d.error){box.textContent='ERROR: '+d.error;return}
+ const rows=[];
+ for(const [k,v] of Object.entries(d.checks||{}))rows.push(`${v.ok?'✓':'×'} ${k}: ${v.detail??v.status??v.error??''}`);
+ if(d.smoke)rows.push(`\nSMOKE TEST: ${d.smoke.ok?'OK':'FALLÓ'} ${d.smoke.error||d.smoke.stage||''}`);
+ box.textContent=rows.join('\n')||JSON.stringify(d,null,2)
+}
+async function runAgentDoctor(){
+ if(!IS_DESKTOP)return toast('Diagnóstico disponible en Desktop');
+ $('agentDoctorOutput').textContent='Ejecutando diagnóstico…';agentLog('Ejecutando doctor del Agent Engine');
+ try{
+   const d=await globalThis.atlasDesktop.agentDoctor();
+   const smoke=d?.ready?await globalThis.atlasDesktop.agentSmoke():null;
+   if(smoke)d.smoke=smoke;
+   renderDoctor(d);
+   if(d?.ready&&smoke?.ok){setAgentEngine('ready','validado','Imports, bridge y runtime smoke test correctos');agentLog('Doctor: motor validado')}
+   else{setAgentEngine('error','requiere atención','Usa Reparar si faltan dependencias o el smoke test falla');agentLog('Doctor encontró problemas')}
+ }catch(e){$('agentDoctorOutput').textContent=String(e?.message||e)}
+}
+async function repairAgentEngine(){
+ if(!IS_DESKTOP)return;
+ if(!confirm('Atlas eliminará solo el entorno Python interno de agentes y lo reinstalará. ¿Continuar?'))return;
+ setAgentEngine('running','reparando','Reconstruyendo entorno CrewAI + GPT Researcher…');agentLog('Reparación iniciada');
+ await globalThis.atlasDesktop.repairAgents();
+ let tries=0;
+ const timer=setInterval(async()=>{
+   tries++;const s=await globalThis.atlasDesktop.agentSetupStatus();
+   $('agentProgress').style.width=(s?.progress||0)+'%';
+   if(s?.line)agentLog(s.line);
+   if(s?.done){clearInterval(timer);await checkAgentEngine();if(s.ok)runAgentDoctor();else renderDoctor({error:s.error||'Reparación falló'})}
+   if(tries>240){clearInterval(timer);renderDoctor({error:'Tiempo de reparación agotado'})}
+ },1000)
+}
+async function checkAgentEngine(){
+ if(!IS_DESKTOP){setAgentEngine('error','desktop requerido','CrewAI/GPT Researcher corren en Atlas Desktop.');return null}
+ try{
+   const h=await globalThis.atlasDesktop.agentHealth();
+   agentState.installed=!!h?.ready;
