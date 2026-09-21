@@ -55,7 +55,9 @@ jobs:
         run: |
           $exe = Get-ChildItem dist/Internet-Atlas-Portable-*.exe | Select-Object -First 1
           if (-not $exe) { throw 'Portable EXE not found' }
+          $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-portable.json'
           $p = Start-Process -FilePath $exe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
+          if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
           if ($p.ExitCode -ne 0) { throw "Portable acceptance test failed: $($p.ExitCode)" }
       - name: Install NSIS build and acceptance-test installed application
         working-directory: desktop
@@ -68,7 +70,9 @@ jobs:
           Start-Sleep -Seconds 2
           $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Internet Atlas.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $appExe) { throw 'Installed Internet Atlas.exe not found' }
+          $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-installed.json'
           $test = Start-Process -FilePath $appExe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
+          if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
           if ($test.ExitCode -ne 0) { throw "Installed app acceptance test failed: $($test.ExitCode)" }
           $uninstaller = Get-ChildItem $appExe.DirectoryName -Filter 'Uninstall*.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $uninstaller) { throw 'Uninstaller not found' }
