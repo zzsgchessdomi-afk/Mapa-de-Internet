@@ -28,17 +28,20 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           python -m venv .build-venv
-          ./.build-venv/Scripts/python.exe -m pip install --upgrade pip wheel pyinstaller
-          ./.build-venv/Scripts/python.exe -m pip install -r sidecar/requirements.txt
+          & ./.build-venv/Scripts/python.exe -m pip install --upgrade pip wheel pyinstaller
+          & ./.build-venv/Scripts/python.exe scripts/install_agent_dependencies.py
           Push-Location sidecar
           & ../.build-venv/Scripts/python.exe -m PyInstaller --noconfirm --clean atlas_agent.spec
           Pop-Location
           if (Test-Path bundled-agent-engine) { Remove-Item bundled-agent-engine -Recurse -Force }
           Copy-Item sidecar/dist/atlas-agent-engine bundled-agent-engine -Recurse
-          ./.build-venv/Scripts/python.exe scripts/collect_python_licenses.py
+          & ./.build-venv/Scripts/python.exe scripts/collect_python_licenses.py
           Copy-Item ../THIRD_PARTY_NOTICES.md bundled-agent-engine/THIRD_PARTY_NOTICES.md
-          ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
+          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
+          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine deep self-test failed: $LASTEXITCODE" }
       - name: Install Electron dependencies
         working-directory: desktop
         run: npm install --no-audit --no-fund
