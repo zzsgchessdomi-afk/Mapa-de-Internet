@@ -12,18 +12,36 @@
     "dist": "npm run prepare:app && electron-builder"
   },
   "devDependencies": {
-    "electron": "^38.1.0",
-    "electron-builder": "^27.0.0"
+    "electron": "38.2.2",
+    "electron-builder": "26.15.3"
   },
   "build": {
     "appId": "com.internetatlas.desktop",
     "productName": "Internet Atlas",
-    "files": ["main.js","preload.cjs","app/**/*","package.json"],
-    "directories": {"buildResources": "build","output": "dist"},
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "app/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
     "win": {
       "target": [
-        {"target": "nsis","arch": ["x64"]},
-        {"target": "portable","arch": ["x64"]}
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -37,8 +55,20 @@
       "deleteAppDataOnUninstall": false,
       "artifactName": "Internet-Atlas-Setup-${version}-${arch}.${ext}"
     },
-    "extraResources": [{"from": "bundled-agent-engine","to": "agent-engine","filter": ["**/*"]}],
-    "portable": {"artifactName": "Internet-Atlas-Portable-${version}-${arch}.${ext}"}
+    "extraResources": [
+      {
+        "from": "bundled-agent-engine",
+        "to": "agent-engine",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "portable": {
+      "artifactName": "Internet-Atlas-Portable-${version}-${arch}.${ext}"
+    }
   },
-  "dependencies": {"pdf-parse": "2.4.5"}
+  "dependencies": {
+    "pdf-parse": "2.4.5"
+  }
 }
