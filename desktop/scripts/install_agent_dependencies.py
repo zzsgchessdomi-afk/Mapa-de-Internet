@@ -13,7 +13,7 @@ GPTR = "gpt-researcher==0.15.1"
 # CrewAI 1.15.22 pins json5~=0.10.0 while GPT Researcher 0.15.1 declares
 # json5>=0.12.0. Atlas keeps CrewAI's supported json5 and validates the exact
 # GPT Researcher code path with --self-test-deep before any release is accepted.
-IGNORED = {"json5"}
+IGNORED = {"json5", "aiofiles"}
 
 def pip(*args: str) -> None:
     cmd=[sys.executable,"-m","pip",*args]
@@ -39,16 +39,16 @@ def main() -> int:
         p=Path(td)/"requirements.txt"
         p.write_text("\n".join(reqs)+"\n",encoding="utf-8")
         pip("install","-r",str(p))
-    pip("install","json5~=0.10.0")
-    # Import validation here catches incomplete resolution before PyInstaller.
-    import fastapi, httpx, crewai, gpt_researcher
-    print({
-        "fastapi": md.version("fastapi"),
-        "httpx": md.version("httpx"),
-        "crewai": md.version("crewai"),
-        "gpt-researcher": md.version("gpt-researcher"),
-        "json5": md.version("json5"),
-    })
+    pip("install","json5~=0.10.0","aiofiles~=24.1.0")
+    # Validate in a fresh interpreter so newly installed .pth files (notably
+    # pywin32/pywintypes on Windows) are processed by Python startup.
+    probe = (
+        "import importlib.metadata as m; "
+        "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
+        "print({k:m.version(k) for k in "
+        "['fastapi','httpx','crewai','gpt-researcher','json5','aiofiles','pywin32']})"
+    )
+    subprocess.check_call([sys.executable,"-c",probe])
     return 0
 
 if __name__=="__main__":
