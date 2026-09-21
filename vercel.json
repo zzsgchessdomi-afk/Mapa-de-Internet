@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/research.js": {"maxDuration": 30},
+    "api/inspect.js": {"maxDuration": 30}
+  }
+}
