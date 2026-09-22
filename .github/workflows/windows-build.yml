@@ -24,16 +24,8 @@ jobs:
           python-version: '3.12'
       - name: Install root dependencies
         run: npm install --no-audit --no-fund
-      - name: Root static checks
-        run: npm run check
-      - name: Research provider contract
-        run: npm run test:contract
-      - name: Capsule regression suite
-        run: npm run test:capsule
-      - name: Capsule reproducibility benchmark
-        run: npm run benchmark:capsule
-      - name: Release audit
-        run: npm run audit:release
+      - name: Full ATLANEX pre-release audit
+        run: npm run audit:all
       - name: Build bundled CrewAI + GPT Researcher engine
         working-directory: desktop
         shell: pwsh
