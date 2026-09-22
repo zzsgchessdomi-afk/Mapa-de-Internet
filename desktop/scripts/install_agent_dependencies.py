@@ -40,16 +40,20 @@ def main() -> int:
         pip("install","-r",str(p))
     pip("install",*RUNTIME_OVERRIDES)
     installed={normalized(d.metadata["Name"]) for d in md.distributions() if d.metadata.get("Name")}
+    required=("fastapi","uvicorn","httpx","crewai","gpt-researcher","litellm","pywin32")
+    missing=[p for p in required if normalized(p) not in installed]
+    if missing:
+        raise RuntimeError("Required ATLANEX runtime packages are missing: "+repr(missing))
     leaked=[p for p in ("unstructured","unstructured-client","spacy","numba","llvmlite") if normalized(p) in installed]
     if leaked:
         raise RuntimeError("Heavy optional document stack leaked into Atlas runtime: "+repr(leaked))
     probe=(
         "import importlib.metadata as m; "
-        "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
+        "import fastapi,httpx,crewai,gpt_researcher,litellm,pywintypes; "
         "from crewai import LLM,Agent,Task,Crew,Process; "
         "from gpt_researcher import GPTResearcher; "
         "print({k:m.version(k) for k in "
-        "['fastapi','httpx','crewai','gpt-researcher','json5','aiofiles','pywin32']})"
+        "['fastapi','httpx','crewai','gpt-researcher','litellm','json5','aiofiles','pywin32']})"
     )
     subprocess.check_call([sys.executable,"-c",probe])
     return 0
