@@ -28,6 +28,12 @@ jobs:
         run: npm run check
       - name: Research provider contract
         run: npm run test:contract
+      - name: Capsule regression suite
+        run: npm run test:capsule
+      - name: Capsule reproducibility benchmark
+        run: npm run benchmark:capsule
+      - name: Release audit
+        run: npm run audit:release
       - name: Build bundled CrewAI + GPT Researcher engine
         working-directory: desktop
         shell: pwsh
