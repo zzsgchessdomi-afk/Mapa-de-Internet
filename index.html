@@ -531,8 +531,8 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
         <section class="mcEvidence">
           <div class="mcBoxHead"><b>Case File</b><span id="caseCount">0 pruebas</span></div>
           <div class="mcEvidenceBody">
-            <div class="caseToolbar"><button class="btn primary" id="capsuleExport">Exportar AI Capsule</button><button class="btn" id="capsuleOpen">Abrir Capsule</button><button class="btn" id="caseExport">Dossier</button><button class="btn" id="proofBundleExport">Proof bundle</button><button class="btn" id="caseClear">Vaciar</button></div>
-            <input id="capsuleOpenInput" type="file" accept=".aicapsule,application/json" hidden>
+            <div class="caseToolbar"><button class="btn primary" id="capsuleExport">Exportar AI Capsule</button><button class="btn" id="capsuleOpen">Abrir Capsule</button><button class="btn" id="capsuleCompare">Comparar Capsule</button><button class="btn" id="caseExport">Dossier</button><button class="btn" id="proofBundleExport">Proof bundle</button><button class="btn" id="caseClear">Vaciar</button></div>
+            <input id="capsuleOpenInput" type="file" accept=".aicapsule,application/json" hidden><input id="capsuleCompareInput" type="file" accept=".aicapsule,application/json" hidden>
             <div id="capsuleStatus" class="caseEmpty" style="margin-bottom:8px">AI Capsule 0.1 listo: exporta el run, su timeline y la evidencia con integridad SHA-256.</div>
             <div id="caseItems"></div>
           </div>
@@ -2431,7 +2431,24 @@ async function openAICapsuleFile(file){
  }
 }
 
-function renderSourceIntelligence(){
+
+async function compareAICapsuleFile(file){
+ const left=globalThis.__atlanexOpenedCapsule;
+ if(!left)return toast('Primero abre una Capsule base',4200);
+ try{
+   const right=JSON.parse(await file.text());
+   const [a,b]=await Promise.all([globalThis.AtlanexCapsule.verifyCapsule(left),globalThis.AtlanexCapsule.verifyCapsule(right)]);
+   if(!a.ok||!b.ok)return toast('No puedo comparar: una Capsule no supera integridad',5000);
+   const d=globalThis.AtlanexCapsule.compareCapsules(left,right),box=$('capsuleStatus');
+   box.innerHTML=`<div class="proofBundle"><b>CAPSULE DIFF</b><br>
+   ${esc((d.leftSha256||'').slice(0,12))} → ${esc((d.rightSha256||'').slice(0,12))}<br>
+   Timeline: ${d.timeline.left} → ${d.timeline.right} (${d.timeline.delta>=0?'+':''}${d.timeline.delta})<br>
+   Evidencia: +${d.evidence.added.length} · -${d.evidence.removed.length} · ${d.evidence.changed.length} modificadas · ${d.evidence.unchanged.length} iguales
+   ${d.runChanges.length?'<br>Run: '+d.runChanges.map(x=>esc(x.field)+' cambió').join(' · '):''}</div>`;
+   toast('Comparación de Capsules lista',3500)
+ }catch(e){toast('No pude comparar esa Capsule: '+String(e?.message||e).slice(0,120),4500)}
+}
+\nfunction renderSourceIntelligence(){
  const map=new Map();
  for(const r of rawResults){
    const k=r.source||'unknown';if(!map.has(k))map.set(k,{count:0,domains:new Set()});
@@ -2899,7 +2916,7 @@ $('mcRightToggle').onclick=()=>$('mcRight').classList.toggle('mobileShow');
 document.querySelectorAll('[data-mc-tab]').forEach(b=>b.onclick=()=>switchMCTab(b.dataset.mcTab));
 $('closeEvidenceGaps').onclick=closeEvidenceGaps;
 $('capsuleExport').onclick=exportAICapsule;
-$('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();
+$('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();\n$('capsuleCompare').onclick=()=>{if(!globalThis.__atlanexOpenedCapsule)return toast('Primero abre una Capsule base');$('capsuleCompareInput').click()};\n$('capsuleCompareInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await compareAICapsuleFile(file);e.target.value=''};
 $('capsuleOpenInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await openAICapsuleFile(file);e.target.value=''};
 $('caseExport').onclick=exportCaseFile;
 $('proofBundleExport').onclick=exportProofBundle;
