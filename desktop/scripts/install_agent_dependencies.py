@@ -10,9 +10,9 @@ BASE = [
     "crewai==1.15.22",
 ]
 GPTR = "gpt-researcher==0.15.1"
-# CrewAI 1.15.22 pins json5~=0.10.0 while GPT Researcher 0.15.1 declares
-# json5>=0.12.0. Atlas keeps CrewAI's supported json5 and validates the exact
-# GPT Researcher code path with --self-test-deep before any release is accepted.
+# json5 is shared by both engines. GPT Researcher requires >=0.12, so use that
+# and validate CrewAI's Atlas execution path explicitly instead of knowingly
+# shipping an environment that pip reports as inconsistent.
 IGNORED = {"json5", "aiofiles"}
 
 def pip(*args: str) -> None:
@@ -39,12 +39,14 @@ def main() -> int:
         p=Path(td)/"requirements.txt"
         p.write_text("\n".join(reqs)+"\n",encoding="utf-8")
         pip("install","-r",str(p))
-    pip("install","json5~=0.10.0","aiofiles~=24.1.0")
-    # Validate in a fresh interpreter so newly installed .pth files (notably
-    # pywin32/pywintypes on Windows) are processed by Python startup.
+    pip("install","json5>=0.12.0","aiofiles~=24.1.0")
+    # unstructured-client's newer aiofiles requirement is not on Atlas' runtime
+    # path. Validate the imports and exact engine entry points we actually ship.
     probe = (
         "import importlib.metadata as m; "
         "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
+        "from crewai import LLM,Agent,Task,Crew,Process; "
+        "from gpt_researcher import GPTResearcher; "
         "print({k:m.version(k) for k in "
         "['fastapi','httpx','crewai','gpt-researcher','json5','aiofiles','pywin32']})"
     )
