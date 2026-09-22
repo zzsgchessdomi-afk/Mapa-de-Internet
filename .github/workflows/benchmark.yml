@@ -1,0 +1,40 @@
+name: Atlanex Public Benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/capsule-core.js"
+      - "benchmarks/**"
+      - "package.json"
+      - ".github/workflows/benchmark.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/capsule-core.js"
+      - "benchmarks/**"
+      - "package.json"
+      - ".github/workflows/benchmark.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --ignore-scripts
+      - name: Run deterministic public benchmark
+        run: node benchmarks/capsule-benchmark.mjs --out benchmark-results.json
+      - name: Publish benchmark artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlanex-public-benchmark
+          path: benchmark-results.json
+          if-no-files-found: error

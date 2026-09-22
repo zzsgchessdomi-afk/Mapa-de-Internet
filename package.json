@@ -18,7 +18,8 @@
     "capsule:compare-advanced": "node scripts/capsule_cli.mjs compare-advanced",
     "capsule:minimize": "node scripts/capsule_cli.mjs minimize",
     "capsule:testcase": "node scripts/capsule_cli.mjs testcase",
-    "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase"
+    "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase",
+    "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"

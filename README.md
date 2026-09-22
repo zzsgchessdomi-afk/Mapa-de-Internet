@@ -39,3 +39,8 @@ This source tree is a production candidate. A release should not be marketed as 
 - the incident minimizer selects a deterministic replay window around the first failure/conflict/mismatch-style event and carries only the evidence needed for that window
 - regression testcases embed the minimized fixture plus required stages/evidence hashes and can be executed with `npm run capsule:run-testcase -- file.testcase.json`
 - Capsule CI now runs the desktop app preparation step and asserts that both `lib/capsule-core.js` and the Viewer are actually present in the packaged app payload
+
+## Public reproducibility benchmark
+Atlanex includes an offline, deterministic benchmark for the Capsule evidence/replay layer. It checks tamper detection, ES256 trust verification, wrong-key rejection, replay incident detection, evidence deltas, minimization and generated regression testcases.
+
+Run `npm run benchmark:capsule`. The GitHub workflow also publishes the JSON result as the `atlanex-public-benchmark` artifact.
