@@ -4,10 +4,11 @@ import subprocess, sys, tempfile
 from pathlib import Path
 
 BASE = [
-    "fastapi>=0.115,<1",
-    "uvicorn[standard]>=0.30,<1",
     "httpx>=0.28.1,<1",
     "crewai==1.15.22",
+]
+GEMINI_RUNTIME = [
+    "langchain-google-genai>=2,<4",
 ]
 GPTR = "gpt-researcher==0.15.1"
 IGNORED_GPTR = {"json5","aiofiles","unstructured","unstructured-client"}
@@ -34,22 +35,27 @@ def main() -> int:
             continue
         reqs.append(str(req))
     print("Excluded unused document dependencies:",skipped,flush=True)
-    with tempfile.TemporaryDirectory(prefix="atlas-gptr-deps-") as td:
+    with tempfile.TemporaryDirectory(prefix="atlanex-gptr-deps-") as td:
         p=Path(td)/"requirements.txt"
         p.write_text("\n".join(reqs)+"\n",encoding="utf-8")
         pip("install","-r",str(p))
     pip("install",*RUNTIME_OVERRIDES)
+    pip("install",*GEMINI_RUNTIME)
+
     installed={normalized(d.metadata["Name"]) for d in md.distributions() if d.metadata.get("Name")}
     leaked=[p for p in ("unstructured","unstructured-client","spacy","numba","llvmlite") if normalized(p) in installed]
     if leaked:
-        raise RuntimeError("Heavy optional document stack leaked into Atlas runtime: "+repr(leaked))
+        raise RuntimeError("Heavy optional document stack leaked into Atlanex runtime: "+repr(leaked))
+
     probe=(
         "import importlib.metadata as m; "
-        "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
-        "from crewai import LLM,Agent,Task,Crew,Process; "
+        "import httpx,crewai,gpt_researcher,pywintypes,langchain_google_genai; "
+        "from crewai import Agent,Task,Crew,Process; "
+        "from crewai.llms.base_llm import BaseLLM; "
         "from gpt_researcher import GPTResearcher; "
+        "from langchain_google_genai import ChatGoogleGenerativeAI,GoogleGenerativeAIEmbeddings; "
         "print({k:m.version(k) for k in "
-        "['fastapi','httpx','crewai','gpt-researcher','json5','aiofiles','pywin32']})"
+        "['httpx','crewai','gpt-researcher','json5','aiofiles','pywin32','langchain-google-genai']})"
     )
     subprocess.check_call([sys.executable,"-c",probe])
     return 0
