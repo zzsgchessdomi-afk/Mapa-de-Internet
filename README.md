@@ -23,3 +23,12 @@ This source tree is a production candidate. A release should not be marketed as 
 - Packaged `Internet Atlas.exe --acceptance-test` boots the real Electron renderer/preload, performs live Internet research, fetches a real public source into a SHA-256 snapshot, persists/reloads a monitor job, and runs the bundled deep agent self-test.
 - Windows CI runs the acceptance test on the portable EXE, silently installs the NSIS build, runs the same acceptance test from the installed application, then silently uninstalls it.
 - A release fails if any of those checks fail.
+
+## AI Capsule 0.1
+- export the active research run, replay timeline and Case File evidence as a portable `.aicapsule` JSON file
+- redact common credential/token patterns before export
+- canonical SHA-256 integrity verification that detects post-export tampering
+- open and verify capsules directly from Atlanex Case File
+- verify from the terminal/CI with `npm run capsule:verify -- path/to/file.aicapsule`
+- independent contract test with `npm run test:capsule`
+- interoperability draft in `AICAPSULE_SPEC.md`

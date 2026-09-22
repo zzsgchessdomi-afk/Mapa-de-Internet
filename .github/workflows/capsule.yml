@@ -1,0 +1,41 @@
+name: AI Capsule Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/capsule-core.js"
+      - "tests/capsule-contract.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - "index.html"
+      - "scripts/capsule_cli.mjs"
+      - "AICAPSULE_SPEC.md"
+      - "package.json"
+      - ".github/workflows/capsule.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/capsule-core.js"
+      - "tests/capsule-contract.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - "index.html"
+      - "scripts/capsule_cli.mjs"
+      - "AICAPSULE_SPEC.md"
+      - "package.json"
+      - ".github/workflows/capsule.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --ignore-scripts
+      - run: npm run test:capsule
