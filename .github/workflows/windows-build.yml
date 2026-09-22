@@ -64,15 +64,19 @@ jobs:
         shell: pwsh
         timeout-minutes: 5
         run: |
-          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test
-          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine self-test failed: $LASTEXITCODE" }
+          $env:ATLAS_SELF_TEST_LOG = Join-Path $PWD 'agent-self-test.json'
+          $p = Start-Process -FilePath ./bundled-agent-engine/atlas-agent-engine.exe -ArgumentList '--self-test' -PassThru -Wait
+          if (Test-Path $env:ATLAS_SELF_TEST_LOG) { Get-Content $env:ATLAS_SELF_TEST_LOG -Raw | Write-Host }
+          if ($p.ExitCode -ne 0) { throw "Bundled Agent Engine self-test failed: $($p.ExitCode)" }
       - name: Packaged Agent Engine deep self-test
         working-directory: desktop
         shell: pwsh
         timeout-minutes: 10
         run: |
-          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
-          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine deep self-test failed: $LASTEXITCODE" }
+          $env:ATLAS_SELF_TEST_LOG = Join-Path $PWD 'agent-self-test-deep.json'
+          $p = Start-Process -FilePath ./bundled-agent-engine/atlas-agent-engine.exe -ArgumentList '--self-test-deep' -PassThru -Wait
+          if (Test-Path $env:ATLAS_SELF_TEST_LOG) { Get-Content $env:ATLAS_SELF_TEST_LOG -Raw | Write-Host }
+          if ($p.ExitCode -ne 0) { throw "Bundled Agent Engine deep self-test failed: $($p.ExitCode)" }
       - name: Install Electron dependencies
         working-directory: desktop
         run: npm install --no-audit --no-fund
