@@ -8,6 +8,10 @@ BASE = [
     "uvicorn[standard]>=0.30,<1",
     "httpx>=0.28.1,<1",
     "crewai==1.15.22",
+    # GPT Researcher 0.15.1's DuckDuckGo retriever imports the renamed
+    # ddgs package at runtime, but its published metadata does not reliably
+    # install it. Pin it explicitly so Windows builds are reproducible.
+    "ddgs==9.16.0",
 ]
 GPTR = "gpt-researcher==0.15.1"
 # json5 is shared by both engines. GPT Researcher requires >=0.12, so use that
@@ -44,11 +48,14 @@ def main() -> int:
     # path. Validate the imports and exact engine entry points we actually ship.
     probe = (
         "import importlib.metadata as m; "
-        "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
+        "import fastapi,httpx,crewai,gpt_researcher,pywintypes,ddgs; "
         "from crewai import LLM,Agent,Task,Crew,Process; "
+        "from ddgs import DDGS; "
         "from gpt_researcher import GPTResearcher; "
+        "from gpt_researcher.retrievers.duckduckgo.duckduckgo import Duckduckgo; "
+        "assert callable(getattr(Duckduckgo('atlas dependency probe'),'search',None)); "
         "print({k:m.version(k) for k in "
-        "['fastapi','httpx','crewai','gpt-researcher','json5','aiofiles','pywin32']})"
+        "['fastapi','httpx','crewai','gpt-researcher','ddgs','json5','aiofiles','pywin32']})"
     )
     subprocess.check_call([sys.executable,"-c",probe])
     return 0
