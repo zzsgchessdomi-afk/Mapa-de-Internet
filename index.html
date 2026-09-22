@@ -2408,24 +2408,35 @@ async function exportAICapsule(){
    toast('AI Capsule exportada · '+capsule.integrity.payloadSha256.slice(0,12));
  }catch(e){toast('Capsule: '+String(e?.message||e).slice(0,140),4500)}
 }
-function renderCapsuleStatus(capsule,check){
+function renderCapsuleStatus(capsule,check,signatureCheck=null){
  const box=$('capsuleStatus');if(!box)return;
  const s=globalThis.AtlanexCapsule?.summary?.(capsule)||{};
  const evidence=(capsule?.evidence||[]).slice(0,4);
+ const signatureLine=!capsule?.integrity?.signature
+   ? 'Firma: no incluida'
+   : signatureCheck?.ok
+     ? 'Firma ES256: válida · '+esc((signatureCheck.keyId||s.keyId||'').slice(0,28))
+     : 'Firma ES256: <span class="bad">inválida</span>';
  box.innerHTML=`<div class="proofBundle"><b>${check?.ok?'CAPSULE VERIFIED':'CAPSULE INVALID'}</b><br>
  SHA-256 ${esc(check?.actualSha256||s.sha256||'')}<br>
+ ${signatureLine}<br>
  ${esc(s.objective||'Sin objetivo')} · ${Number(s.evidenceCount||0)} evidencias · ${Number(s.timelineEvents||0)} eventos · ${Number(check?.redactions||capsule?.integrity?.redactions||0)} secretos redactados
  ${check?.errors?.length?'<br><span class="bad">'+check.errors.map(esc).join(' · ')+'</span>':''}
+ ${signatureCheck?.errors?.length?'<br><span class="bad">'+signatureCheck.errors.map(esc).join(' · ')+'</span>':''}
  ${evidence.length?'<br><br>'+evidence.map(e=>'• '+esc(e.entity||'evidence')+' · '+esc(e.criterion||'')+' · '+esc((e.sha256||'').slice(0,12))).join('<br>'):''}</div>`;
 }
 async function openAICapsuleFile(file){
  try{
    const capsule=JSON.parse(await file.text());
    const check=await globalThis.AtlanexCapsule.verifyCapsule(capsule);
-   renderCapsuleStatus(capsule,check);
+   const signatureCheck=capsule?.integrity?.signature
+     ? await globalThis.AtlanexCapsule.verifySignature(capsule)
+     : null;
+   renderCapsuleStatus(capsule,check,signatureCheck);
    if(!check.ok)return toast('Capsule inválida: '+check.errors[0],5000);
+   if(signatureCheck&&!signatureCheck.ok)return toast('Capsule íntegra, pero la firma ES256 no es válida',5000);
    globalThis.__atlanexOpenedCapsule=capsule;
-   toast(`Capsule verificada · ${check.evidenceCount} evidencias · ${check.timelineEvents} eventos`,4200);
+   toast(`Capsule verificada · ${check.evidenceCount} evidencias · ${check.timelineEvents} eventos${signatureCheck?.ok?' · firma válida':''}`,4200);
  }catch(e){
    renderCapsuleStatus(null,{ok:false,errors:[String(e?.message||e)]});
    toast('No pude abrir esa Capsule',4200)
