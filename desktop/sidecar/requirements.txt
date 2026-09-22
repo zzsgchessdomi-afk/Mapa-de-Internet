@@ -3,3 +3,4 @@ uvicorn[standard]>=0.30,<1
 httpx>=0.27,<1
 crewai==1.15.22
 gpt-researcher==0.15.1
+ddgs==9.16.0

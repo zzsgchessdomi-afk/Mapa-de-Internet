@@ -28,22 +28,49 @@ jobs:
         run: npm run check
       - name: Research provider contract
         run: npm run test:contract
-      - name: Build bundled CrewAI + GPT Researcher engine
+      - name: Install Agent Engine dependencies
         working-directory: desktop
         shell: pwsh
+        timeout-minutes: 20
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           python -m venv .build-venv
           & ./.build-venv/Scripts/python.exe -m pip install --upgrade pip wheel pyinstaller
           & ./.build-venv/Scripts/python.exe scripts/install_agent_dependencies.py
+      - name: Build Agent Engine with PyInstaller
+        working-directory: desktop
+        shell: pwsh
+        timeout-minutes: 15
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           Push-Location sidecar
           & ../.build-venv/Scripts/python.exe -m PyInstaller --noconfirm --clean atlas_agent.spec
           Pop-Location
+          if ($LASTEXITCODE -ne 0) { throw "PyInstaller build failed: $LASTEXITCODE" }
+      - name: Stage Agent Engine and licenses
+        working-directory: desktop
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          $ErrorActionPreference = 'Stop'
           if (Test-Path bundled-agent-engine) { Remove-Item bundled-agent-engine -Recurse -Force }
           Copy-Item sidecar/dist/atlas-agent-engine bundled-agent-engine -Recurse
           & ./.build-venv/Scripts/python.exe scripts/collect_python_licenses.py
           Copy-Item ../THIRD_PARTY_NOTICES.md bundled-agent-engine/THIRD_PARTY_NOTICES.md
+      - name: Packaged Agent Engine self-test
+        working-directory: desktop
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine self-test failed: $LASTEXITCODE" }
+      - name: Packaged Agent Engine deep self-test
+        working-directory: desktop
+        shell: pwsh
+        timeout-minutes: 10
+        run: |
           & ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
           if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine deep self-test failed: $LASTEXITCODE" }
       - name: Install Electron dependencies

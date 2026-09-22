@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_data_files, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata, collect_submodules
 
 # Do NOT recursively collect CrewAI/GPT Researcher/LangChain.
 # PyInstaller's normal import graph starts from server.py; explicit entries below
@@ -8,6 +8,8 @@ hiddenimports = [
     "crewai",
     "crewai.llm",
     "gpt_researcher",
+    "gpt_researcher.retrievers.duckduckgo.duckduckgo",
+    "ddgs",
     "litellm",
     "langchain",
     "langchain_core",
@@ -23,6 +25,13 @@ hiddenimports = [
     "httpx",
     "pydantic",
 ]
+# ddgs is small, but parts of the retriever stack are discovered at runtime.
+# Collect only ddgs recursively; keep CrewAI/GPT Researcher/LangChain selective.
+try:
+    hiddenimports += collect_submodules("ddgs")
+except Exception:
+    pass
+
 datas = [("gptr_config.json", ".")]
 for package in ["crewai", "gpt_researcher"]:
     try:
@@ -40,12 +49,19 @@ a = Analysis(
     binaries=[],
     datas=datas,
     hiddenimports=hiddenimports,
-    hookspath=[],
+    # CrewAI resolves translation JSON relative to package __file__. The custom
+    # hook keeps CrewAI source modules outside PYZ so that path is a real folder.
+    hookspath=["hooks"],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
         "tkinter", "matplotlib", "IPython", "notebook", "jupyter",
         "torch", "tensorflow", "tensorflow_intel",
+        # python-magic probes native libmagic during import on Windows. It is
+        # pulled by optional unstructured loaders, but Atlas' shipped GPTR path
+        # uses SCRAPER=bs and its packaged deep self-test uses TextLoader.
+        # Excluding it also avoids PyInstaller's isolated import crash.
+        "magic",
     ],
     noarchive=False,
     optimize=0,
