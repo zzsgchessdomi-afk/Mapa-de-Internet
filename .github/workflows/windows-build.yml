@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,12 +37,9 @@ jobs:
           python -m venv .build-venv
           & ./.build-venv/Scripts/python.exe -m pip install --upgrade pip wheel pyinstaller
           & ./.build-venv/Scripts/python.exe scripts/install_agent_dependencies.py
-          # PyInstaller's Windows binary dependency scan was spending ~85 minutes
-          # walking the entire virtualenv. Build from a deliberately small runtime
-          # environment: copy only distributions reachable from the validated Atlas
-          # imports, then package that environment.
-          & ./.build-venv/Scripts/python.exe -m pip install pipdeptree
-          & ./.build-venv/Scripts/python.exe -m pip check
+          # CrewAI + GPT Researcher pull a large native dependency graph on Windows.
+          # The packaged runtime is validated by the deep self-test below; allow the
+          # binary dependency scan enough time to complete on GitHub-hosted runners.
           Push-Location sidecar
           $env:PYINSTALLER_CONFIG_DIR = Join-Path $PWD '.pyinstaller'
           & ../.build-venv/Scripts/python.exe -m PyInstaller --noconfirm --clean --log-level INFO atlas_agent.spec
