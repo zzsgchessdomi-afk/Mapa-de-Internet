@@ -1,14 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_data_files, copy_metadata
+# ATLANEX Windows sidecar: deliberately keep the PyInstaller graph small.
+# CrewAI/GPT Researcher have broad optional integrations; importing their
+# ecosystems as hidden imports makes PyInstaller inspect native packages that
+# this sidecar never uses.
+from PyInstaller.utils.hooks import copy_metadata
 
-# Keep Atlas' real runtime packages, but explicitly exclude heavyweight optional
-# ecosystems that are not used by server.py. This prevents PyInstaller from
-# recursively scanning thousands of optional scientific/ML/database modules.
 hiddenimports = [
     "crewai",
     "crewai.llm",
     "gpt_researcher",
-    "litellm",
     "fastapi",
     "uvicorn",
     "uvicorn.logging",
@@ -19,16 +19,28 @@ hiddenimports = [
     "httpx",
     "pydantic",
 ]
+
 datas = [("gptr_config.json", ".")]
-for package in ["crewai", "gpt_researcher"]:
-    try:
-        datas += collect_data_files(package, include_py_files=False)
-    except Exception:
-        pass
+for package in ("crewai", "gpt-researcher"):
     try:
         datas += copy_metadata(package)
     except Exception:
         pass
+
+# These are optional integration/document/ML stacks for the frameworks above.
+# server.py does not use them. Excluding them is important on Windows because
+# their native DLL graphs were the point where previous CI builds stalled.
+excludes = [
+    "tkinter", "matplotlib", "IPython", "notebook", "jupyter", "jupyterlab",
+    "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
+    "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
+    "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
+    "cv2", "PIL.ImageQt",
+    "unstructured", "unstructured_client",
+    "chromadb", "lancedb", "onnxruntime",
+    "boto3", "botocore", "sagemaker",
+    "pymongo", "MySQLdb", "pysqlite2",
+]
 
 a = Analysis(
     ["server.py"],
@@ -39,15 +51,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[
-        "tkinter", "matplotlib", "IPython", "notebook", "jupyter", "jupyterlab",
-        "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
-        "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
-        "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
-        "cv2", "PIL.ImageQt",
-        "boto3", "botocore", "sagemaker",
-        "pymongo", "MySQLdb", "pysqlite2",
-    ],
+    excludes=excludes,
     noarchive=False,
     optimize=0,
 )
