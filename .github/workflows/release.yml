@@ -8,7 +8,7 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,6 +23,8 @@ jobs:
         run: npm run check
       - name: Research provider contract
         run: npm run test:contract
+      - name: No-localhost architecture gate
+        run: npm run test:no-localhost
       - name: Build bundled CrewAI + GPT Researcher engine
         working-directory: desktop
         shell: pwsh
@@ -33,7 +35,8 @@ jobs:
           & ./.build-venv/Scripts/python.exe -m pip install --upgrade pip wheel pyinstaller
           & ./.build-venv/Scripts/python.exe scripts/install_agent_dependencies.py
           Push-Location sidecar
-          & ../.build-venv/Scripts/python.exe -m PyInstaller --noconfirm --clean atlas_agent.spec
+          $env:PYINSTALLER_CONFIG_DIR = Join-Path $PWD '.pyinstaller'
+          & ../.build-venv/Scripts/python.exe -m PyInstaller --noconfirm --clean --log-level INFO atlas_agent.spec
           Pop-Location
           if (Test-Path bundled-agent-engine) { Remove-Item bundled-agent-engine -Recurse -Force }
           Copy-Item sidecar/dist/atlas-agent-engine bundled-agent-engine -Recurse
@@ -56,7 +59,7 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $exe = Get-ChildItem dist/Internet-Atlas-Portable-*.exe | Select-Object -First 1
+          $exe = Get-ChildItem dist/Atlanex-Portable-*.exe | Select-Object -First 1
           if (-not $exe) { throw 'Portable EXE not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-portable.json'
           $p = Start-Process -FilePath $exe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
@@ -66,13 +69,13 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $setup = Get-ChildItem dist/Internet-Atlas-Setup-*.exe | Select-Object -First 1
+          $setup = Get-ChildItem dist/Atlanex-Setup-*.exe | Select-Object -First 1
           if (-not $setup) { throw 'NSIS installer not found' }
           $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -PassThru -Wait
           if ($install.ExitCode -ne 0) { throw "NSIS silent install failed: $($install.ExitCode)" }
           Start-Sleep -Seconds 2
-          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Internet Atlas.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $appExe) { throw 'Installed Internet Atlas.exe not found' }
+          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Atlanex.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $appExe) { throw 'Installed Atlanex.exe not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-installed.json'
           $test = Start-Process -FilePath $appExe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
           if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
