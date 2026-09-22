@@ -11,7 +11,7 @@
     "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs",
     "test:contract": "node tests/research-contract.mjs",
     "audit:release": "node scripts/release_audit.mjs",
-    "test:capsule": "node tests/capsule-contract.mjs",
+    "test:capsule": "node tests/capsule-contract.mjs && node tests/index-inline-syntax.mjs",
     "capsule:verify": "node scripts/capsule_cli.mjs verify"
   },
   "dependencies": {
