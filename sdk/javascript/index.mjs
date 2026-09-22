@@ -15,7 +15,13 @@ export const {
   keyFingerprint,
   signCapsule,
   verifySignature,
-  publicJwkFromPrivateJwk,\n  timelineProfile,\n  compareCapsulesAdvanced,\n  incidentWindow,\n  minimizeCapsule,\n  createRegressionTestcase,\n  runRegressionTestcase
+  publicJwkFromPrivateJwk,
+  timelineProfile,
+  compareCapsulesAdvanced,
+  incidentWindow,
+  minimizeCapsule,
+  createRegressionTestcase,
+  runRegressionTestcase
 }=Capsule;
 
 export default Capsule;
