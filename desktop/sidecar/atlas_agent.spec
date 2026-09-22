@@ -57,6 +57,11 @@ a = Analysis(
     excludes=[
         "tkinter", "matplotlib", "IPython", "notebook", "jupyter",
         "torch", "tensorflow", "tensorflow_intel",
+        # python-magic probes native libmagic during import on Windows. It is
+        # pulled by optional unstructured loaders, but Atlas' shipped GPTR path
+        # uses SCRAPER=bs and its packaged deep self-test uses TextLoader.
+        # Excluding it also avoids PyInstaller's isolated import crash.
+        "magic",
     ],
     noarchive=False,
     optimize=0,
