@@ -52,6 +52,6 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz, a.scripts, [], exclude_binaries=True,
     name="atlas-agent-engine", debug=False,
-    bootloader_ignore_signals=False, strip=False, upx=False, console=False,
+    bootloader_ignore_signals=False, strip=False, upx=False, console=True,
 )
 coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="atlas-agent-engine")
