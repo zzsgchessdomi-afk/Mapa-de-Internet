@@ -25,6 +25,8 @@ jobs:
         run: npm run test:contract
       - name: No-localhost architecture gate
         run: npm run test:no-localhost
+      - name: Atlanex brand consistency
+        run: npm run test:brand
       - name: Build bundled CrewAI + GPT Researcher engine
         working-directory: desktop
         shell: pwsh
