@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlanex AI Capsule Viewer</title>
+<style>
+:root{color-scheme:dark;--bg:#071019;--panel:#0d1824;--line:#24364a;--muted:#8da0b5;--text:#edf7ff;--ok:#72efb6;--bad:#ff718d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#071019,#02060a);color:var(--text);font:14px system-ui,Segoe UI,sans-serif}
+header{position:sticky;top:0;padding:18px 22px;border-bottom:1px solid var(--line);background:rgba(7,16,25,.94);backdrop-filter:blur(16px);z-index:5}
+header b{font-size:18px}header span{color:var(--muted);margin-left:9px}
+main{max-width:1280px;margin:auto;padding:20px;display:grid;gap:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#102030;color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}.btn.primary{background:#17364a}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px;min-width:0}.panel h2{font-size:13px;margin:0 0 10px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{border:1px solid var(--line);border-radius:10px;padding:9px}.stat b{display:block;font-size:16px}.stat span{font-size:11px;color:var(--muted)}
+.row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}.row:last-child{border-bottom:0}.row small{color:var(--muted)}.hash{font:11px ui-monospace,Consolas,monospace;word-break:break-all}.ok{color:var(--ok)}.bad{color:var(--bad)}.empty{color:var(--muted);padding:16px 4px}.timeline{max-height:420px;overflow:auto}.event{display:grid;grid-template-columns:64px 100px 1fr;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,.05)}.event time,.event span{color:var(--muted);font-size:11px}.evidence{max-height:420px;overflow:auto}.diffBox{white-space:pre-wrap;font:12px ui-monospace,Consolas,monospace;color:#c8d7e8;max-height:420px;overflow:auto}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.event{grid-template-columns:55px 80px 1fr}}
+</style>
+<script src="../lib/capsule-core.js"></script>
+</head>
+<body>
+<header><b>ATLANEX AI CAPSULE VIEWER</b><span>integrity · signature · replay · diff · minimal reproduction</span></header>
+<main>
+  <div class="toolbar">
+    <button class="btn primary" id="openA">Abrir Capsule A</button>
+    <button class="btn" id="openB">Abrir Capsule B</button>
+    <button class="btn" id="minimize" disabled>Minimizar A</button>
+    <button class="btn" id="testcase" disabled>Generar testcase</button>
+    <input id="fileA" type="file" accept=".aicapsule,application/json" hidden>
+    <input id="fileB" type="file" accept=".aicapsule,application/json" hidden>
+  </div>
+
+  <section class="panel">
+    <h2>Capsule A</h2>
+    <div id="statusA" class="empty">Abre una Capsule para verificarla.</div>
+    <div id="summaryA" class="summary"></div>
+  </section>
+
+  <div class="grid">
+    <section class="panel"><h2>Replay timeline</h2><div id="timeline" class="timeline empty">Sin timeline.</div></section>
+    <section class="panel"><h2>Evidencia</h2><div id="evidence" class="evidence empty">Sin evidencia.</div></section>
+  </div>
+
+  <section class="panel">
+    <h2>Comparación A → B</h2>
+    <div id="diff" class="diffBox empty">Abre una segunda Capsule para comparar.</div>
+  </section>
+</main>
+<script>
+const C=globalThis.AtlanexCapsule;
+let A=null,B=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function download(name,obj){
+ const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+async function read(file){return JSON.parse(await file.text())}
+async function verify(capsule){
+ const integrity=await C.verifyCapsule(capsule);
+ const signature=capsule?.integrity?.signature?await C.verifySignature(capsule):null;
+ return {integrity,signature}
+}
+function renderA(capsule,checks){
+ const s=C.summary(capsule),ok=checks.integrity.ok&&(!checks.signature||checks.signature.ok);
+ $('statusA').className=ok?'ok':'bad';
+ $('statusA').innerHTML=`<b>${ok?'VERIFIED':'INVALID'}</b> · ${checks.signature?'firma '+(checks.signature.ok?'válida':'inválida'):'sin firma'}<br><span class="hash">${esc(s.sha256||'')}</span>`;
+ $('summaryA').innerHTML=[
+  ['Proyecto',s.project||'—'],['Objetivo',s.objective||'—'],['Eventos',s.timelineEvents],['Evidencias',s.evidenceCount]
+ ].map(([k,v])=>`<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+ $('timeline').className='timeline';
+ $('timeline').innerHTML=(capsule.timeline||[]).map(e=>`<div class="event"><time>+${((Number(e.t)||0)/1000).toFixed(1)}s</time><b>${esc(e.stage||'')}</b><span>${esc(e.label||'')}${e.detail?' · '+esc(e.detail):''}</span></div>`).join('')||'<div class="empty">Sin eventos.</div>';
+ $('evidence').className='evidence';
+ $('evidence').innerHTML=(capsule.evidence||[]).map(e=>`<div class="row"><b>${esc(e.entity||'evidence')} · ${esc(e.criterion||'')}</b><br><small>${esc(e.sourceUrl||'')}</small><div>${esc(e.quote||'')}</div><div class="hash">${esc(e.sha256||'')}</div></div>`).join('')||'<div class="empty">Sin evidencia.</div>';
+ $('minimize').disabled=!checks.integrity.ok;$('testcase').disabled=!checks.integrity.ok;
+}
+function renderDiff(){
+ if(!A||!B)return;
+ const d=C.compareCapsulesAdvanced(A,B);
+ $('diff').className='diffBox';
+ $('diff').textContent=JSON.stringify({
+   hashes:[d.leftSha256,d.rightSha256],
+   runChanges:d.runChanges,
+   totals:d.totals,
+   timeline:{
+     eventCount:[d.timeline.left,d.timeline.right],
+     durationMs:[d.timeline.durationBeforeMs,d.timeline.durationAfterMs],
+     added:d.timeline.added,
+     removed:d.timeline.removed,
+     stageDelta:d.timeline.stageDelta,
+     newIncidentEvents:d.timeline.newIncidentEvents
+   },
+   evidence:{
+     added:d.evidence.added,
+     removed:d.evidence.removed,
+     changed:d.evidence.changedDetails
+   }
+ },null,2)
+}
+$('openA').onclick=()=>$('fileA').click();$('openB').onclick=()=>$('fileB').click();
+$('fileA').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{A=await read(f);const checks=await verify(A);renderA(A,checks);if(B)renderDiff()}catch(err){$('statusA').className='bad';$('statusA').textContent=String(err?.message||err)}e.target.value=''};
+$('fileB').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{B=await read(f);const checks=await verify(B);if(!checks.integrity.ok)throw new Error(checks.integrity.errors.join('; '));if(checks.signature&&!checks.signature.ok)throw new Error(checks.signature.errors.join('; '));renderDiff()}catch(err){$('diff').className='bad';$('diff').textContent=String(err?.message||err)}e.target.value=''};
+$('minimize').onclick=async()=>{if(!A)return;const m=await C.minimizeCapsule(A);download('minimal-reproduction.aicapsule',m)};
+$('testcase').onclick=async()=>{if(!A)return;const t=await C.createRegressionTestcase(A);download('aicapsule-testcase.json',t)};
+</script>
+</body>
+</html>
