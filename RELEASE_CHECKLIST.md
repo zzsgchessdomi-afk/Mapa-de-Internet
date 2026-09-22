@@ -1,4 +1,4 @@
-# Internet Atlas 29.1.0 — Release Gate
+# Atlanex 29.1.0 — Release Gate
 
 This file separates what is proven in the current environment from what still requires a real Windows release run.
 
@@ -17,10 +17,12 @@ This file separates what is proven in the current environment from what still re
 - [x] Stable project state key with legacy migration
 - [x] Third-party notice + exact-build Python license inventory workflow
 
-## Enforced by Windows CI, but not executed in this Linux environment
+## Enforced by Windows CI
 
+- [ ] No-localhost architecture gate passes (Electron IPC + stdio JSON-RPC)
+- [ ] Renderer loads from packaged files without an HTTP loopback server
 - [ ] Install all Desktop dependencies on Windows
-- [ ] Build the PyInstaller CrewAI/GPT Researcher engine and pass `--self-test-deep`
+- [ ] Build the PyInstaller CrewAI/GPT Researcher + Gemini adapter engine and pass `--self-test-deep`
 - [ ] Run bundled agent-engine `--self-test`
 - [ ] Generate runtime dependency license inventory
 - [ ] Build x64 NSIS installer
@@ -35,7 +37,7 @@ This file separates what is proven in the current environment from what still re
 
 - [ ] Install on a clean Windows machine
 - [ ] Run one live web mission end-to-end
-- [ ] Run one real CrewAI/GPT Researcher mission through the Puter bridge
+- [ ] Configure a real Gemini API key and run one CrewAI/GPT Researcher mission end-to-end
 - [ ] Add a PDF and confirm its evidence/snapshot in the installed build
 - [ ] Close the window, confirm tray monitor stays alive, then reopen
 - [ ] Enable start-with-Windows and test after login/reboot

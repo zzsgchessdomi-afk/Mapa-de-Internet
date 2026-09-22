@@ -1,14 +1,14 @@
 {
-  "name": "internet-atlas",
+  "name": "atlanex",
   "version": "29.1.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=20"
   },
-  "description": "Internet Atlas autonomous evidence-first research workspace",
+  "description": "Atlanex autonomous evidence-first research workspace",
   "scripts": {
-    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs",
+    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs && node --check tests/no-localhost-architecture.mjs && node --check tests/brand-consistency.mjs",
     "test:contract": "node tests/research-contract.mjs",
     "audit:release": "node scripts/release_audit.mjs",
     "test:capsule": "node tests/capsule-contract.mjs && node tests/capsule-signature.mjs && node tests/capsule-sdk.mjs && node tests/capsule-replay-minimizer.mjs && node tests/capsule-viewer-syntax.mjs && node tests/index-inline-syntax.mjs",
@@ -19,7 +19,9 @@
     "capsule:minimize": "node scripts/capsule_cli.mjs minimize",
     "capsule:testcase": "node scripts/capsule_cli.mjs testcase",
     "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase",
-    "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs"
+    "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs",
+    "test:no-localhost": "node tests/no-localhost-architecture.mjs",
+    "test:brand": "node tests/brand-consistency.mjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"

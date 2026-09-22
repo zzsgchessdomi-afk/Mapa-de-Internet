@@ -28,6 +28,10 @@ jobs:
         run: npm run check
       - name: Research provider contract
         run: npm run test:contract
+      - name: No-localhost architecture gate
+        run: npm run test:no-localhost
+      - name: Atlanex brand consistency
+        run: npm run test:brand
       - name: Build bundled CrewAI + GPT Researcher engine
         working-directory: desktop
         shell: pwsh
@@ -65,7 +69,7 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $exe = Get-ChildItem dist/Internet-Atlas-Portable-*.exe | Select-Object -First 1
+          $exe = Get-ChildItem dist/Atlanex-Portable-*.exe | Select-Object -First 1
           if (-not $exe) { throw 'Portable EXE not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-portable.json'
           $p = Start-Process -FilePath $exe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
@@ -75,13 +79,13 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $setup = Get-ChildItem dist/Internet-Atlas-Setup-*.exe | Select-Object -First 1
+          $setup = Get-ChildItem dist/Atlanex-Setup-*.exe | Select-Object -First 1
           if (-not $setup) { throw 'NSIS installer not found' }
           $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -PassThru -Wait
           if ($install.ExitCode -ne 0) { throw "NSIS silent install failed: $($install.ExitCode)" }
           Start-Sleep -Seconds 2
-          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Internet Atlas.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $appExe) { throw 'Installed Internet Atlas.exe not found' }
+          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Atlanex.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $appExe) { throw 'Installed Atlanex.exe not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-installed.json'
           $test = Start-Process -FilePath $appExe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
           if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
@@ -97,7 +101,7 @@ jobs:
           Get-ChildItem dist/*.exe | ForEach-Object { "$(Get-FileHash $_.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash)  $($_.Name)" } | Set-Content dist/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Internet-Atlas-Windows
+          name: Atlanex-Windows
           path: |
             desktop/dist/*.exe
             desktop/dist/SHA256SUMS.txt

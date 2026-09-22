@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#02050a"><title>Internet Atlas — Autonomous Evidence Research</title>
+<meta name="theme-color" content="#02050a"><title>Atlanex — Autonomous Evidence Research</title>
 <style>
 :root{--bg:#02050a;--panel:rgba(7,12,22,.87);--p2:rgba(9,15,27,.97);--line:rgba(255,255,255,.085);--text:#eef7ff;--muted:#7e8ca6;
 --cyan:#79e7ff;--violet:#aa8cff;--gold:#ffd678;--green:#72efb6;--red:#ff718d;--pink:#ff91c8;--shadow:0 28px 100px rgba(0,0,0,.56)}
@@ -405,7 +405,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 <body>
 <section class="mcRoot" id="mcRoot">
   <header class="mcTop">
-    <div class="mcBrand"><div class="mcLogo"></div><div><b>Internet Atlas</b><small>AUTONOMOUS EVIDENCE RESEARCH</small></div></div>
+    <div class="mcBrand"><div class="mcLogo"></div><div><b>Atlanex</b><small>AUTONOMOUS EVIDENCE RESEARCH</small></div></div>
     <form class="mcSearch" id="mcSearchForm"><input id="mcQuery" autocomplete="off" spellcheck="false" placeholder="Investiga una empresa, producto, tecnología u oportunidad…"><button class="btn primary">Investigar</button></form>
     <div class="mcTopActions">
       <div class="mcStatus"><i></i><span id="mcSystemText">Sistema listo</span></div>
@@ -543,7 +543,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </section>
 
 <div class="nativeTitlebar" id="nativeTitlebar">
- <div class="ntBrand">INTERNET ATLAS</div><div class="ntProject" id="ntProject">Workspace</div><div class="ntGrow"></div>
+ <div class="ntBrand">ATLANEX</div><div class="ntProject" id="ntProject">Workspace</div><div class="ntGrow"></div>
  <div class="winControls"><button class="winBtn" data-win="minimize">—</button><button class="winBtn" data-win="maximize">□</button><button class="winBtn close" data-win="close">×</button></div>
 </div>
 <div class="activityRail" id="activityRail">
@@ -566,12 +566,12 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </section>
 
 
-<div id="atlasFatal" style="display:none;position:fixed;z-index:9999;inset:0;background:#050912;color:#e8f2ff;padding:28px;font:14px system-ui;overflow:auto"><h2 style="margin:0 0 10px">Internet Atlas no pudo iniciar</h2><p id="atlasFatalText" style="color:#9fb0c4;line-height:1.5"></p><button onclick="location.reload()" style="padding:9px 13px;border-radius:9px;border:1px solid #29425f;background:#0b1625;color:white">Reintentar</button></div><script>window.addEventListener('error',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent=(e.message||'Error de inicio')+' · '+(e.filename||'')+':'+(e.lineno||'');b.style.display='block'}});window.addEventListener('unhandledrejection',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent='Error asíncrono: '+String(e.reason?.message||e.reason||'desconocido');b.style.display='block'}});</script><div class="appFrame"></div>
+<div id="atlasFatal" style="display:none;position:fixed;z-index:9999;inset:0;background:#050912;color:#e8f2ff;padding:28px;font:14px system-ui;overflow:auto"><h2 style="margin:0 0 10px">Atlanex no pudo iniciar</h2><p id="atlasFatalText" style="color:#9fb0c4;line-height:1.5"></p><button onclick="location.reload()" style="padding:9px 13px;border-radius:9px;border:1px solid #29425f;background:#0b1625;color:white">Reintentar</button></div><script>window.addEventListener('error',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent=(e.message||'Error de inicio')+' · '+(e.filename||'')+':'+(e.lineno||'');b.style.display='block'}});window.addEventListener('unhandledrejection',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent='Error asíncrono: '+String(e.reason?.message||e.reason||'desconocido');b.style.display='block'}});</script><div class="appFrame"></div>
 <section class="splash" id="splash">
   <div class="splashCard">
     <div class="x19Launch">
       <div class="x19Mark"></div>
-      <div class="x19Name">Internet Atlas</div>
+      <div class="x19Name">Atlanex</div>
       <h1 class="x19Title">Investiga. Conecta. Decide.</h1>
       <div class="x19Sub">Escribe una misión. Atlas puede investigar por ciclos, perseguir gaps de evidencia, verificar fuentes por snapshot SHA-256 y detenerse cuando cumple un objetivo medible.</div>
       <form class="x19Command" id="launchForm">
@@ -607,7 +607,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </div>
 
 <canvas id="stage"></canvas><div class="vig"></div>
-<div class="brand glass" id="brandHome" style="cursor:pointer"><div class="logo"></div><div><b>INTERNET ATLAS</b><small>EVIDENCE RESEARCH SYSTEM</small></div></div>
+<div class="brand glass" id="brandHome" style="cursor:pointer"><div class="logo"></div><div><b>ATLANEX</b><small>EVIDENCE RESEARCH SYSTEM</small></div></div>
 <form class="command glass" id="form"><input id="q" autocomplete="off" spellcheck="false" placeholder="Objetivo: encuentra X que cumpla A, B y C; compáralo y explícame por qué."><button class="btn primary">Investigar</button></form>
 <div class="topright glass"><button class="btn" id="agentsBtn">Agentes</button><button class="btn" id="replayBtn">Replay</button><button class="btn" id="forkBtn">Fork</button><button class="btn" id="runsBtn">Runs</button><button class="btn" id="toolsBtn">Herramientas ▾</button></div>
 <div class="toolsMenu glass" id="toolsMenu"><button class="btn" id="healthBtn">Salud</button><button class="btn" id="presentBtn">Presentar</button><button class="btn" id="aiBtn">IA</button><button class="btn" id="deep">Profundizar</button><button class="btn" id="monitor">Monitor</button><button class="btn" id="exportData">Datos</button><button class="btn" id="decisionPack">Decision Pack</button><button class="btn gold" id="export">Informe</button></div>
@@ -674,8 +674,16 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
    <div class="engineCard">
      <div class="engineCardTop"><b>Research Engine</b><span class="engineBadge" id="agentEngineBadge">comprobando</span></div>
      <p id="agentEngineText">Buscando sidecar Python…</p>
+     <div class="agentInstall" style="margin-top:8px">
+       <b>Gemini cloud</b>
+       <div style="display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap">
+         <input id="agentGeminiKey" type="password" autocomplete="off" placeholder="Gemini API key" style="flex:1;min-width:180px;background:#050a10;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 8px;font-size:8px">
+         <button class="btn" id="agentGeminiSave">Guardar</button>
+       </div>
+       <div class="agentMini" id="agentGeminiStatus" style="margin-top:6px">Comprobando configuración…</div>
+     </div>
      <div class="agentProgress"><div id="agentProgress"></div></div>
-     <div class="agentToolbar"><button class="btn primary" id="agentSetup">Preparar motor</button><button class="btn" id="agentHealth">Comprobar</button><button class="btn" id="agentDoctor">Diagnóstico</button><button class="btn" id="agentRepair">Reparar</button><button class="btn" id="agentClose">Cerrar</button></div>
+     <div class="agentToolbar"><button class="btn primary" id="agentSetup">Iniciar motor</button><button class="btn" id="agentHealth">Comprobar</button><button class="btn" id="agentDoctor">Diagnóstico</button><button class="btn" id="agentRepair">Reparar</button><button class="btn" id="agentClose">Cerrar</button></div>
    </div>
    <div class="section"><div class="label">Pipeline</div>
      <div class="agentFlow">
@@ -692,7 +700,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
    </div>
    <div class="section"><div class="label">Ejecución</div><div class="agentLog" id="agentLog">Motor todavía no iniciado.</div></div>
    <div class="section"><div class="label">Resultado</div><div class="agentResult" id="agentResult">—</div></div>
-   <div class="agentInstall" id="agentInstallNote">En la versión instalada, CrewAI + GPT Researcher vienen dentro de Atlas Desktop. No instala Python ni descarga un LLM local en el PC del comprador.</div>
+   <div class="agentInstall" id="agentInstallNote">CrewAI + GPT Researcher vienen dentro de Atlanex Desktop. No descarga un LLM local: usan Gemini cloud por HTTPS y el proceso interno se comunica por stdio.</div>
    <div class="section" style="margin-top:12px"><div class="label">Diagnóstico</div><div class="agentResult" id="agentDoctorOutput">Sin ejecutar.</div></div>
  </div>
 </aside>
@@ -713,7 +721,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
  <div class="section"><div class="label">Registro de decisiones</div><div class="machineLog" id="machineLog"><div class="machineEvent"><b>READY</b><span>Esperando una misión.</span></div></div></div>
  <div class="monitorCard"><h3>Persistent Monitor · Desktop</h3><p>Atlas puede quedarse en la bandeja de Windows, revisar las URLs vigiladas por SHA-256 y avisar cuando cambie el contenido.</p>
   <div class="monitorToggles"><label><input type="checkbox" id="monitorEnabled" checked> monitor activo</label><label><input type="checkbox" id="monitorStartup"> iniciar con Windows</label><button class="btn" id="monitorSync">Sincronizar</button><button class="btn" id="monitorNow">Revisar ahora</button></div>
-  <div class="monitorJobs" id="monitorJobs"><div class="sub">Disponible en Atlas Desktop.</div></div>
+  <div class="monitorJobs" id="monitorJobs"><div class="sub">Disponible en Atlanex Desktop.</div></div>
  </div>
 </aside>
 <div class="snapshotModal" id="snapshotModal">
@@ -811,7 +819,7 @@ const safeStore={
  removeItem(k){try{window['localStorage'].removeItem(k);return true}catch{_memoryStore.delete(k);return false}},
  persistent(){try{const k='__atlas_store_test';window['localStorage'].setItem(k,'1');window['localStorage'].removeItem(k);return true}catch{return false}}
 };
-const IS_RESTRICTED_ORIGIN=['file:','content:','about:','data:'].includes(location.protocol);
+const IS_RESTRICTED_ORIGIN=!globalThis.atlasDesktop?.isDesktop&&['file:','content:','about:','data:'].includes(location.protocol);
 
 const SRC={websearch:{label:'Web Search',color:'#65d6ff',trust:.62},wikipedia:{label:'Wikipedia',color:'#79e7ff',trust:.82},wikidata:{label:'Wikidata',color:'#72efb6',trust:.86},github:{label:'GitHub',color:'#aa8cff',trust:.72},stackoverflow:{label:'Stack Overflow',color:'#ffb15c',trust:.60},hackernews:{label:'Hacker News',color:'#ff91c8',trust:.52},npm:{label:'npm',color:'#ff718d',trust:.66},openalex:{label:'OpenAlex',color:'#ffd678',trust:.91},crossref:{label:'Crossref',color:'#8ee6ba',trust:.92},arxiv:{label:'arXiv',color:'#e79a9a',trust:.90},publicapis:{label:'Public APIs',color:'#72d8ff',trust:.70},web:{label:'Web',color:'#79e7ff',trust:.76},manual:{label:'Fuente añadida',color:'#8ef0c2',trust:.80},localfile:{label:'Documento local',color:'#b5a1ff',trust:.88}};
 let W=innerWidth,H=innerHeight,DPR=1,state=loadState(),project=null,current=null,criteria=[],rawResults=[],entities=[],nodes=[],edges=[],byId=new Map(),selected=null,compareIds=[],token=0,researchStartedAt=0,auditLog=null,researchDiagnostics=[],aiState={engine:null,model:'auto',loading:false,abort:false,lastError:null},healthState={},failedQueries=[],tourIndex=0,openRunIds=[],commandSelection=0,agentState={mode:'hybrid',runId:null,poll:null,installed:false,running:false},replayBuffer=[],replayTimer=null,pendingFork=null,replaySelectedIndex=0;
@@ -883,7 +891,7 @@ async function runHealthCheck(){
     {name:'Motor local',status:'ok',detail:`${API_SNAPSHOT.length} APIs embebidas disponibles`,ms:0},
     {name:'Persistencia',status:safeStore.persistent()?'ok':'warn',detail:safeStore.persistent()?'almacenamiento persistente':'memoria temporal mientras esta pestaña siga abierta',ms:0},
     {name:'Puter AI',status:globalThis.puter?.ai?.chat?'ok':'warn',detail:globalThis.puter?.ai?.chat?'cargado':'se carga solo al pulsar Activar IA',ms:0},
-    {name:'CrewAI / GPT Researcher',status:'warn',detail:'requiere Atlas Desktop',ms:0}
+    {name:'CrewAI / GPT Researcher',status:'warn',detail:'requiere Atlanex Desktop',ms:0}
    ]
  }else{
    probes=await Promise.all([
@@ -934,20 +942,6 @@ function nextTour(){if(tourIndex<TOUR.length-1){tourIndex++;renderTour()}else{$(
 
 
 function normalizePuterModel(model){const m=String(model||'gpt-5.6-luna').replace(/^openai[:/]/i,'').replace(/^puter[:/]/i,'');return (!m||m==='atlas-auto'||m==='auto')?'gpt-5.6-luna':m}
-if(globalThis.atlasDesktop?.onLLMRequest){
- globalThis.atlasDesktop.onLLMRequest(async req=>{
-   try{
-     await ensurePuter();
-     const model=normalizePuterModel(req.model);
-     const messages=Array.isArray(req.messages)?req.messages:[{role:'user',content:String(req.prompt||'')}];
-     const resp=await puter.ai.chat(messages,{model});
-     const text=puterText(resp);
-     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:true,text,model})
-   }catch(e){
-     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:false,error:String(e?.message||e)})
-   }
- })
-}
 function agentLog(text){
  const e=$('agentLog');const line=`[${new Date().toLocaleTimeString()}] ${text}`;e.textContent=(e.textContent==='Motor todavía no iniciado.'?'':e.textContent+'\n')+line;e.scrollTop=e.scrollHeight
 }
@@ -961,6 +955,28 @@ function setAgentEngine(kind,title,text){
  const b=$('agentEngineBadge');b.className='engineBadge'+(kind?' '+kind:'');b.textContent=title;$('agentEngineText').textContent=text||''
 }
 
+async function refreshGeminiConfig(){
+ if(!IS_DESKTOP||!globalThis.atlasDesktop?.geminiStatus)return null;
+ try{
+  const s=await globalThis.atlasDesktop.geminiStatus();
+  const el=$('agentGeminiStatus');
+  if(el)el.textContent=s?.configured?`Gemini configurado · ${s.model||'gemini-2.5-flash'} · clave cifrada en Windows`:`Falta Gemini API key · ${s?.secureStorage?'almacenamiento seguro listo':'almacenamiento seguro no disponible'}`;
+  return s
+ }catch(e){if($('agentGeminiStatus'))$('agentGeminiStatus').textContent='No pude leer la configuración de Gemini';return null}
+}
+async function saveGeminiConfig(){
+ if(!IS_DESKTOP||!globalThis.atlasDesktop?.configureGemini)return;
+ const input=$('agentGeminiKey'),key=String(input?.value||'').trim();
+ if(!key)return toast('Pega tu Gemini API key');
+ try{
+  $('agentGeminiStatus').textContent='Guardando de forma cifrada…';
+  const s=await globalThis.atlasDesktop.configureGemini(key,'gemini-2.5-flash');
+  input.value='';
+  $('agentGeminiStatus').textContent=s?.configured?`Gemini configurado · ${s.model} · clave cifrada en Windows`:'Gemini no quedó configurado';
+  await checkAgentEngine();
+  toast('Gemini configurado para Agent Engine')
+ }catch(e){$('agentGeminiStatus').textContent=String(e?.message||e);toast('No pude guardar Gemini',4200)}
+}
 function renderDoctor(d){
  const box=$('agentDoctorOutput');
  if(!d){box.textContent='Sin datos.';return}
@@ -978,14 +994,14 @@ async function runAgentDoctor(){
    const smoke=d?.ready?await globalThis.atlasDesktop.agentSmoke():null;
    if(smoke)d.smoke=smoke;
    renderDoctor(d);
-   if(d?.ready&&smoke?.ok){setAgentEngine('ready','validado','Imports, bridge y runtime smoke test correctos');agentLog('Doctor: motor validado')}
+   if(d?.ready&&smoke?.ok){setAgentEngine('ready','validado','Imports, stdio RPC y Gemini correctos');agentLog('Doctor: motor validado')}
    else{setAgentEngine('error','requiere atención','Usa Reparar si faltan dependencias o el smoke test falla');agentLog('Doctor encontró problemas')}
  }catch(e){$('agentDoctorOutput').textContent=String(e?.message||e)}
 }
 async function repairAgentEngine(){
  if(!IS_DESKTOP)return;
- if(!confirm('Atlas eliminará solo el entorno Python interno de agentes y lo reinstalará. ¿Continuar?'))return;
- setAgentEngine('running','reparando','Reconstruyendo entorno CrewAI + GPT Researcher…');agentLog('Reparación iniciada');
+ if(!confirm('Atlanex reiniciará el Agent Engine interno. ¿Continuar?'))return;
+ setAgentEngine('running','reiniciando','Reiniciando CrewAI + GPT Researcher…');agentLog('Reinicio iniciado');
  await globalThis.atlasDesktop.repairAgents();
  let tries=0;
  const timer=setInterval(async()=>{
@@ -997,18 +1013,20 @@ async function repairAgentEngine(){
  },1000)
 }
 async function checkAgentEngine(){
- if(!IS_DESKTOP){setAgentEngine('error','desktop requerido','CrewAI/GPT Researcher corren en Atlas Desktop.');return null}
+ if(!IS_DESKTOP){setAgentEngine('error','desktop requerido','CrewAI/GPT Researcher corren en Atlanex Desktop.');return null}
  try{
    const h=await globalThis.atlasDesktop.agentHealth();
-   agentState.installed=!!h?.ready;
-   if(h?.ready)setAgentEngine('ready','listo',`CrewAI ${h.crewai?'✓':'×'} · GPT Researcher ${h.gpt_researcher?'✓':'×'} · Python ${h.python||'?'}`);
-   else setAgentEngine('error','sin instalar',h?.message||'Instala el motor de agentes.');
+   agentState.installed=!!h?.runtime_ready;
+   if(h?.ready)setAgentEngine('ready','listo',`CrewAI ${h.crewai?'✓':'×'} · GPT Researcher ${h.gpt_researcher?'✓':'×'} · Gemini ${h.model||''} · stdio`);
+   else if(h?.runtime_ready&&!h?.gemini_configured)setAgentEngine('error','configura Gemini','Motor incluido y listo · falta guardar la Gemini API key.');
+   else setAgentEngine('error','motor incompleto',h?.message||'El Agent Engine no está disponible.');
+   await refreshGeminiConfig();
    return h
  }catch(e){setAgentEngine('error','offline',String(e?.message||e));return null}
 }
 async function setupAgentEngine(){
- if(!IS_DESKTOP)return toast('Abre Atlas Desktop para instalar el motor');
- setAgentEngine('running','instalando','Creando entorno Python e instalando CrewAI + GPT Researcher…');$('agentProgress').style.width='8%';agentLog('Inicio de instalación del Research Engine');
+ if(!IS_DESKTOP)return toast('Abre Atlanex Desktop para instalar el motor');
+ setAgentEngine('running','iniciando','Iniciando CrewAI + GPT Researcher por stdio…');$('agentProgress').style.width='8%';agentLog('Inicio del Research Engine');
  try{
    await globalThis.atlasDesktop.setupAgents();
    let tries=0;
@@ -1016,8 +1034,8 @@ async function setupAgentEngine(){
      tries++;const s=await globalThis.atlasDesktop.agentSetupStatus();
      $('agentProgress').style.width=(s?.progress||Math.min(95,10+tries*2))+'%';
      if(s?.line)agentLog(s.line);
-     if(s?.done){clearInterval(t);$('agentProgress').style.width=s.ok?'100%':'0%';await checkAgentEngine();agentLog(s.ok?'Motor instalado.':'Instalación falló: '+(s.error||''))}
-     if(tries>180){clearInterval(t);agentLog('La instalación sigue en proceso; puedes volver a comprobar más tarde.')}
+     if(s?.done){clearInterval(t);$('agentProgress').style.width=s.ok?'100%':'0%';await checkAgentEngine();agentLog(s.ok?'Motor iniciado.':'Inicio falló: '+(s.error||''))}
+     if(tries>180){clearInterval(t);agentLog('El inicio del motor superó el tiempo esperado.')}
    },1000)
  }catch(e){setAgentEngine('error','error',String(e?.message||e));agentLog(String(e?.message||e))}
 }
@@ -1025,7 +1043,7 @@ async function runAgentPipeline(){
  if(!IS_DESKTOP)return toast('El pipeline CrewAI/GPT Researcher está disponible en Desktop');
  if(agentState.running)return;
  const objective=($('q').value||current?.objective||'').trim();if(!objective)return toast('Escribe un objetivo primero');
- const h=await checkAgentEngine();if(!h?.ready){$('agentPanel').classList.add('show');return toast('Instala el motor de agentes primero')}
+ const h=await checkAgentEngine();if(!h?.ready){$('agentPanel').classList.add('show');return toast(h?.runtime_ready?'Configura Gemini primero':'Agent Engine no disponible')}
  resetAgentStages();$('agentResult').textContent='Trabajando…';$('agentLog').textContent='';agentState.running=true;
  setAgentEngine('running','ejecutando',`${agentState.mode} · ${objective.slice(0,70)}`);agentLog(`Objetivo: ${objective}`);
  try{
@@ -1061,6 +1079,7 @@ function initSoftwareMode(){
  if(IS_DESKTOP){
    document.body.classList.add('desktop-mode');
    globalThis.atlasDesktop.getVersion?.().then(v=>consoleWrite(`Desktop runtime ${v||''}`)).catch(()=>{});
+   refreshGeminiConfig();
  }
  let saved={};try{saved=JSON.parse(safeStore.getItem('internet-atlas-layout-v1')||safeStore.getItem('atlas-x20-layout')||'{}')}catch{}
  if(saved.left)document.documentElement.style.setProperty('--leftW',saved.left+'px');
@@ -1237,7 +1256,10 @@ async function researchPass(q,tk){
      return []
    }
  }
- if(location.protocol.startsWith('http')){
+ if(globalThis.atlasDesktop?.research){
+   try{const d=await globalThis.atlasDesktop.research(q);researchDiagnostics.push({q,mode:'desktop-ipc',providerCount:d.providerCount||0,diagnostics:d.diagnostics||[],count:d.results?.length||0});if(tk===token&&d.results?.length)return d.results}
+   catch(e){failedQueries.push({q,at:Date.now(),mode:'desktop-ipc',error:String(e?.message||e)})}
+ }else if(location.protocol.startsWith('http')){
    try{const d=await fetch('/api/research?q='+encodeURIComponent(q)).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});researchDiagnostics.push({q,mode:'backend',providerCount:d.providerCount||0,diagnostics:d.diagnostics||[],count:d.results?.length||0});if(tk===token&&d.results?.length)return d.results}
    catch(e){failedQueries.push({q,at:Date.now(),mode:'backend',error:String(e?.message||e)})}
  }
@@ -1342,7 +1364,8 @@ async function addSnapshot(e,data,url){
  return snapshot
 }
 async function fetchInspectable(url){
- if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlas Desktop o una versión servida');
+ if(globalThis.atlasDesktop?.inspectUrl)return await globalThis.atlasDesktop.inspectUrl(url);
+ if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlanex Desktop o una versión servida');
  const r=await fetch('/api/inspect?url='+encodeURIComponent(url));
  const d=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
@@ -1726,7 +1749,7 @@ function decisionPackHtml(){
  const rows=top.map(e=>`<tr><td><b>${esc(e.title)}</b><br><small>${esc(e.domain||'')}</small></td><td>${e.score}</td>${criteria.map(c=>`<td>${esc(plain(e.criteria?.[c.id]))}</td>`).join('')}</tr>`).join('');
  const evidence=top.map(e=>`<section><h3>${esc(e.title)}</h3>${criteria.map(c=>{const r=e.criteria?.[c.id];return `<p><b>${esc(c.label)}:</b> ${esc(plain(r))}<br><small>${esc((r?.evidence||[])[0]||'Sin evidencia directa')}</small></p>`}).join('')}</section>`).join('');
  const block=blockers.length?`<ul>${blockers.map(b=>`<li>${esc(b.entity)} — ${esc(b.criterion)} (${esc(b.status)})</li>`).join('')}</ul>`:'<p>Sin bloqueadores obligatorios detectados.</p>';
- const aiSection=current.aiBrief?`<h2>AI Brief</h2><p>${esc(current.aiBrief)}</p>`:'';return `<!doctype html><meta charset="utf-8"><title>Internet Atlas Decision Pack</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5;color:#111}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}small{color:#666}section{border-top:1px solid #ddd;padding:12px 0}
+ const aiSection=current.aiBrief?`<h2>AI Brief</h2><p>${esc(current.aiBrief)}</p>`:'';return `<!doctype html><meta charset="utf-8"><title>Atlanex Decision Pack</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5;color:#111}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}small{color:#666}section{border-top:1px solid #ddd;padding:12px 0}
 .aiPanel{position:fixed;z-index:75;right:14px;top:76px;width:360px;max-height:calc(100vh - 95px);overflow:auto;border-radius:18px;padding:14px;transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none;transition:.2s}
 .aiPanel.show{transform:none;opacity:1;pointer-events:auto}.aiHeader{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.aiHeader h2{font-size:16px;margin:5px 0 2px}
 .aiStatus{display:flex;gap:7px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);margin:10px 0}
@@ -2314,7 +2337,7 @@ function attachSnapshotExtraction(e,snapshot){
  e.signals.prices=[...new Set([...(e.signals.prices||[]),...(ex.signals.prices||[])])].slice(0,12);e.evidence.price=e.signals.prices;e.excerpt=clean(snapshot.text).slice(0,1600);e.inspected=true;e.inspectedAt=Date.now();e.inspectError=null
 }
 async function ingestLocalFiles(){
- if(!globalThis.atlasDesktop?.pickResearchFiles)return toast('La importación de archivos requiere Atlas Desktop');
+ if(!globalThis.atlasDesktop?.pickResearchFiles)return toast('La importación de archivos requiere Atlanex Desktop');
  const files=await atlasDesktop.pickResearchFiles();if(!files?.length)return;const good=files.filter(f=>f.text&&!f.error),bad=files.filter(f=>f.error);if(!good.length)return toast(bad[0]?.error||'No se importaron documentos');
  const oldEntities=entities||[];for(const f of good)rawResults.unshift({id:'local-'+f.contentHash.slice(0,16),source:'localfile',type:'document',title:f.name,url:'',description:`${f.kind==='pdf'?'PDF':'Documento'} local · ${(f.size/1024).toFixed(0)} KB`,meta:[f.kind,'local'],localDocument:true,contentHash:f.contentHash});
  entities=preserveEntityState(oldEntities,groupEntities(rawResults));
@@ -2324,7 +2347,7 @@ async function ingestLocalFiles(){
 }
 async function addManualSource(){
  const input=$('manualSourceUrl'),url=input.value.trim();if(!url)return;
- if(IS_RESTRICTED_ORIGIN)return toast('Abre Atlas Desktop para inspeccionar URLs reales');
+ if(IS_RESTRICTED_ORIGIN)return toast('Abre Atlanex Desktop para inspeccionar URLs reales');
  try{new URL(url)}catch{return toast('URL inválida')}
  setStatus('INSPECCIONANDO FUENTE',url);
  try{
@@ -2642,9 +2665,9 @@ function monitorJobsPayload(){
  const jobs=[];for(const p of (state.projects||[]))for(const w of (p.watch||[]))if(w.url)jobs.push({id:`${p.id}::${w.id}`,title:`${p.name} · ${w.title}`,url:w.url,intervalMinutes:Number(w.intervalMinutes)||360,enabled:w.monitorEnabled!==false,lastHash:w.snapshots?.at?.(-1)?.contentHash||''});
  return jobs
 }
-async function syncDesktopMonitors(silent=false){if(!globalThis.atlasDesktop?.monitorSync){if(!silent)toast('Persistent Monitor requiere Atlas Desktop');return null}try{const s=await atlasDesktop.monitorSync(monitorJobsPayload());renderDesktopMonitor(s);return s}catch(e){if(!silent)toast('Monitor: '+String(e?.message||e).slice(0,90));return null}}
+async function syncDesktopMonitors(silent=false){if(!globalThis.atlasDesktop?.monitorSync){if(!silent)toast('Persistent Monitor requiere Atlanex Desktop');return null}try{const s=await atlasDesktop.monitorSync(monitorJobsPayload());renderDesktopMonitor(s);return s}catch(e){if(!silent)toast('Monitor: '+String(e?.message||e).slice(0,90));return null}}
 function renderDesktopMonitor(s=null){
- const box=$('monitorJobs');if(!box)return;if(!globalThis.atlasDesktop?.monitorList){box.innerHTML='<div class="sub">Disponible en Atlas Desktop.</div>';return}
+ const box=$('monitorJobs');if(!box)return;if(!globalThis.atlasDesktop?.monitorList){box.innerHTML='<div class="sub">Disponible en Atlanex Desktop.</div>';return}
  const jobs=s?.jobs||[];box.innerHTML=jobs.length?jobs.map(j=>`<div class="monitorJob"><b>${esc(j.title)}${j.changed?' · CAMBIO':''}</b><span>${j.lastChecked?new Date(j.lastChecked).toLocaleString():'sin revisar'}${j.lastError?' · '+esc(j.lastError):''}</span><select data-monitor-frequency="${esc(j.id)}" style="margin-top:5px;background:#08131f;color:#aebfd2;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px;font-size:6px"><option value="15" ${j.intervalMinutes===15?'selected':''}>cada 15 min</option><option value="60" ${j.intervalMinutes===60?'selected':''}>cada 1 h</option><option value="360" ${j.intervalMinutes===360?'selected':''}>cada 6 h</option><option value="1440" ${j.intervalMinutes===1440?'selected':''}>cada 24 h</option></select></div>`).join(''):'<div class="sub">No hay URLs sincronizadas.</div>';
  box.querySelectorAll('[data-monitor-frequency]').forEach(sel=>sel.onchange=async()=>{const [pid,eid]=sel.dataset.monitorFrequency.split('::');const p=(state.projects||[]).find(x=>x.id===pid),w=p?.watch?.find(x=>x.id===eid);if(w){w.intervalMinutes=Number(sel.value);saveState();await syncDesktopMonitors(true);toast('Frecuencia actualizada')}})
 }
@@ -2704,7 +2727,7 @@ function exportData(){
 function exportReport(){
  if(!current)return toast('Primero investiga');const head='<th>Entidad</th><th>Score</th>'+criteria.map(c=>`<th>${esc(c.label)}</th>`).join('');const rows=entities.slice(0,20).map(e=>`<tr><td>${esc(e.title)}</td><td>${e.score}</td>${criteria.map(c=>`<td>${esc(plain(e.criteria?.[c.id]))}</td>`).join('')}</tr>`).join('');
  const claims=entities.slice(0,8).map(e=>`<h3>${esc(e.title)}</h3>${criteria.map(c=>{const r=e.criteria?.[c.id];return `<p><b>${esc(c.label)}:</b> ${esc(plain(r))}<br><small>${esc((r?.evidence||[])[0]||'Sin evidencia extraída')}</small></p>`}).join('')}`).join('');
- const audit=current.audit||{};const diff=current.diff||{};const auditHtml=`<h2>Auditoría</h2><p>Modo: ${esc(audit.mode||'')} · Profundidad: ${esc(audit.depth||'')} · Consultas: ${(audit.queries||[]).length} · Inspecciones: ${audit.inspected||0} · Duración: ${((audit.durationMs||0)/1000).toFixed(1)} s</p><h2>Cambios</h2><p>Nuevos: ${(diff.added||[]).map(x=>esc(x.title)).join(', ')||'ninguno'}<br>Retirados: ${(diff.removed||[]).map(x=>esc(x.title)).join(', ')||'ninguno'}</p>`;const doc=`<!doctype html><meta charset="utf-8"><title>Internet Atlas Report</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px;text-align:left}small{color:#666}
+ const audit=current.audit||{};const diff=current.diff||{};const auditHtml=`<h2>Auditoría</h2><p>Modo: ${esc(audit.mode||'')} · Profundidad: ${esc(audit.depth||'')} · Consultas: ${(audit.queries||[]).length} · Inspecciones: ${audit.inspected||0} · Duración: ${((audit.durationMs||0)/1000).toFixed(1)} s</p><h2>Cambios</h2><p>Nuevos: ${(diff.added||[]).map(x=>esc(x.title)).join(', ')||'ninguno'}<br>Retirados: ${(diff.removed||[]).map(x=>esc(x.title)).join(', ')||'ninguno'}</p>`;const doc=`<!doctype html><meta charset="utf-8"><title>Atlanex Report</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px;text-align:left}small{color:#666}
 .templates{display:flex;gap:5px;flex-wrap:wrap}.template{font-size:8px;padding:5px 7px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);color:#9eacc0}.template:hover{color:#fff;background:rgba(255,255,255,.06)}
 .auditgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.audititem{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.023)}.audititem b{display:block;font-size:9px}.audititem span{font-size:7px;color:var(--muted)}
 .change{padding:8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,.023)}.change b{font-size:9px;display:block}.change span{font-size:8px;color:#96a4b9}.plus{color:var(--green)!important}.minus{color:var(--red)!important}.delta{color:var(--gold)!important}
@@ -2945,7 +2968,7 @@ $('machineOpen').onclick=async()=>{$('machinePanel').classList.add('show');await
 $('machineClose').onclick=()=>$('machinePanel').classList.remove('show');$('machineRun').onclick=runIAMachine;$('machineStop').onclick=stopIAMachine;
 $('machineTarget').oninput=()=>{$('machineTargetValue').textContent=$('machineTarget').value+'%'};
 $('monitorSync').onclick=()=>syncDesktopMonitors(false);
-$('monitorNow').onclick=async()=>{if(!globalThis.atlasDesktop?.monitorRunNow)return toast('Requiere Atlas Desktop');const s=await atlasDesktop.monitorRunNow();renderDesktopMonitor(s);toast('Monitores revisados')};
+$('monitorNow').onclick=async()=>{if(!globalThis.atlasDesktop?.monitorRunNow)return toast('Requiere Atlanex Desktop');const s=await atlasDesktop.monitorRunNow();renderDesktopMonitor(s);toast('Monitores revisados')};
 $('monitorEnabled').onchange=async()=>{if(globalThis.atlasDesktop?.monitorConfig)renderDesktopMonitor(await atlasDesktop.monitorConfig({enabled:$('monitorEnabled').checked}))};
 $('monitorStartup').onchange=async()=>{if(globalThis.atlasDesktop?.monitorConfig)renderDesktopMonitor(await atlasDesktop.monitorConfig({startWithWindows:$('monitorStartup').checked}))};
 $('snapshotClose').onclick=()=>$('snapshotModal').classList.remove('show');$('snapshotSearchInput').oninput=()=>{snapshotView.hitIndex=-1;renderSnapshotText()};
@@ -2990,6 +3013,7 @@ addEventListener('resize',()=>{if(mcVisible)requestAnimationFrame(renderMissionG
 $('agentsBtn').onclick=()=>{$('agentPanel').classList.add('show');checkAgentEngine()};
 $('agentClose').onclick=()=>$('agentPanel').classList.remove('show');
 $('agentSetup').onclick=setupAgentEngine;
+$('agentGeminiSave').onclick=saveGeminiConfig;
 $('agentHealth').onclick=checkAgentEngine;
 $('agentDoctor').onclick=runAgentDoctor;
 $('agentRepair').onclick=repairAgentEngine;

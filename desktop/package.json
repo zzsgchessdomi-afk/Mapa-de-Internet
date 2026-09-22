@@ -1,7 +1,7 @@
 {
-  "name": "internet-atlas-desktop",
+  "name": "atlanex-desktop",
   "version": "29.1.0",
-  "description": "Internet Atlas — Autonomous Evidence Research",
+  "description": "Atlanex — Autonomous Evidence Research",
   "type": "module",
   "main": "main.js",
   "scripts": {
@@ -16,8 +16,8 @@
     "electron-builder": "26.15.3"
   },
   "build": {
-    "appId": "com.internetatlas.desktop",
-    "productName": "Internet Atlas",
+    "appId": "com.atlanex.desktop",
+    "productName": "Atlanex",
     "files": [
       "main.js",
       "preload.cjs",
@@ -51,9 +51,9 @@
       "createStartMenuShortcut": true,
       "perMachine": false,
       "allowElevation": true,
-      "shortcutName": "Internet Atlas",
+      "shortcutName": "Atlanex",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "Internet-Atlas-Setup-${version}-${arch}.${ext}"
+      "artifactName": "Atlanex-Setup-${version}-${arch}.${ext}"
     },
     "extraResources": [
       {
@@ -65,7 +65,7 @@
       }
     ],
     "portable": {
-      "artifactName": "Internet-Atlas-Portable-${version}-${arch}.${ext}"
+      "artifactName": "Atlanex-Portable-${version}-${arch}.${ext}"
     }
   },
   "dependencies": {
