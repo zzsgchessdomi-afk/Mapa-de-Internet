@@ -44,6 +44,8 @@ jobs:
           Copy-Item sidecar/dist/atlas-agent-engine bundled-agent-engine -Recurse
           & ./.build-venv/Scripts/python.exe scripts/collect_python_licenses.py
           Copy-Item ../THIRD_PARTY_NOTICES.md bundled-agent-engine/THIRD_PARTY_NOTICES.md
+          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine self-test failed: $LASTEXITCODE" }
           & ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
           if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine deep self-test failed: $LASTEXITCODE" }
       - name: Install Electron dependencies
