@@ -19,7 +19,8 @@
     "capsule:minimize": "node scripts/capsule_cli.mjs minimize",
     "capsule:testcase": "node scripts/capsule_cli.mjs testcase",
     "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase",
-    "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs"
+    "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs",
+    "audit:all": "npm run check && npm run test:contract && npm run test:capsule && npm run benchmark:capsule && npm run audit:release"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"
