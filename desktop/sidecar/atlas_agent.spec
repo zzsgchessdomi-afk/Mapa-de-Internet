@@ -1,18 +1,30 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
-# Keep the bundle focused on the two engines Atlas actually imports.
-# collect_all(langchain_community/...) pulled thousands of optional integrations
-# into the Windows build and made PyInstaller spend >90 minutes analysing them.
-engine_packages = ["crewai", "gpt_researcher"]
-hiddenimports = []
+# Do NOT recursively collect CrewAI/GPT Researcher/LangChain.
+# PyInstaller's normal import graph starts from server.py; explicit entries below
+# cover the runtime imports used by Atlas without dragging every optional plugin.
+hiddenimports = [
+    "crewai",
+    "crewai.llm",
+    "gpt_researcher",
+    "litellm",
+    "langchain",
+    "langchain_core",
+    "langchain_community",
+    "langchain_openai",
+    "fastapi",
+    "uvicorn",
+    "uvicorn.logging",
+    "uvicorn.loops.auto",
+    "uvicorn.protocols.http.auto",
+    "uvicorn.protocols.websockets.auto",
+    "uvicorn.lifespan.on",
+    "httpx",
+    "pydantic",
+]
 datas = [("gptr_config.json", ".")]
-
-for package in engine_packages:
-    try:
-        hiddenimports += collect_submodules(package)
-    except Exception:
-        pass
+for package in ["crewai", "gpt_researcher"]:
     try:
         datas += collect_data_files(package, include_py_files=False)
     except Exception:
@@ -22,25 +34,12 @@ for package in engine_packages:
     except Exception:
         pass
 
-# These are imported directly by server.py or by the engine entry paths used at runtime.
-hiddenimports += [
-    "fastapi",
-    "uvicorn",
-    "httpx",
-    "pydantic",
-    "litellm",
-    "langchain",
-    "langchain_core",
-    "langchain_community",
-    "langchain_openai",
-]
-
 a = Analysis(
     ["server.py"],
     pathex=[],
     binaries=[],
     datas=datas,
-    hiddenimports=sorted(set(hiddenimports)),
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
