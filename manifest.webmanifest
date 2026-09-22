@@ -1,6 +1,6 @@
 {
-  "name": "Internet Atlas",
-  "short_name": "Atlas",
+  "name": "Atlanex",
+  "short_name": "Atlanex",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
