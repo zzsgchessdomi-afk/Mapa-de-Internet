@@ -1,0 +1,21 @@
+name: Source ZIP
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/source-zip.yml'
+jobs:
+  package-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create clean ATLANEX source bundle
+        shell: bash
+        run: |
+          zip -r ATLANEX-source.zip . -x ".git/*" "node_modules/*" "desktop/node_modules/*" "desktop/dist/*" "desktop/.build-venv/*"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATLANEX-source
+          path: ATLANEX-source.zip
+          if-no-files-found: error
