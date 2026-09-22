@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:atlanex:aicapsule:0.1",
+  "title": "Atlanex AI Capsule 0.1",
+  "type": "object",
+  "required": ["format","specVersion","createdAt","producer","incident","timeline","evidence","artifacts","metadata","integrity"],
+  "properties": {
+    "format": {"const": "aicapsule"},
+    "specVersion": {"const": "0.1.0"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "producer": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {"name":{"type":"string","minLength":1},"version":{"type":"string"}},
+      "additionalProperties": true
+    },
+    "project": {"type":["object","null"]},
+    "incident": {
+      "type": "object",
+      "required": ["kind","title"],
+      "properties": {"kind":{"type":"string"},"title":{"type":"string"},"status":{"type":"string"}},
+      "additionalProperties": true
+    },
+    "run": {"type":["object","null"]},
+    "timeline": {"type":"array","items":{"type":"object"}},
+    "evidence": {
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "entity":{"type":"string"},
+          "criterion":{"type":"string"},
+          "quote":{"type":"string"},
+          "sourceUrl":{"type":"string"},
+          "sha256":{"type":"string","pattern":"^[a-fA-F0-9]{64}$"},
+          "fetchedAt":{"type":"string"},
+          "verification":{"type":"string"}
+        },
+        "additionalProperties":true
+      }
+    },
+    "artifacts": {"type":"object"},
+    "metadata": {"type":"object"},
+    "integrity": {
+      "type":"object",
+      "required":["algorithm","canonicalization","payloadSha256","redactions"],
+      "properties":{
+        "algorithm":{"const":"SHA-256"},
+        "canonicalization":{"const":"sorted-json-v1"},
+        "payloadSha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+        "redactions":{"type":"integer","minimum":0},
+        "signature":{
+          "type":"object",
+          "required":["algorithm","keyId","publicKey","value"],
+          "properties":{
+            "algorithm":{"const":"ES256"},
+            "keyId":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"},
+            "publicKey":{
+              "type":"object",
+              "required":["kty","crv","x","y"],
+              "properties":{
+                "kty":{"const":"EC"},
+                "crv":{"const":"P-256"},
+                "x":{"type":"string"},
+                "y":{"type":"string"}
+              },
+              "additionalProperties":false
+            },
+            "value":{"type":"string","pattern":"^[A-Za-z0-9_-]+$"}
+          },
+          "additionalProperties":false
+        }
+      },
+      "additionalProperties":true
+    }
+  },
+  "additionalProperties": true
+}
