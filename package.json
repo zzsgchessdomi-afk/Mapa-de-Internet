@@ -8,11 +8,13 @@
   },
   "description": "Internet Atlas autonomous evidence-first research workspace",
   "scripts": {
-    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs",
+    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs",
     "test:contract": "node tests/research-contract.mjs",
     "audit:release": "node scripts/release_audit.mjs",
-    "test:capsule": "node tests/capsule-contract.mjs && node tests/index-inline-syntax.mjs",
-    "capsule:verify": "node scripts/capsule_cli.mjs verify"
+    "test:capsule": "node tests/capsule-contract.mjs && node tests/capsule-signature.mjs && node tests/capsule-sdk.mjs && node tests/index-inline-syntax.mjs",
+    "capsule:verify": "node scripts/capsule_cli.mjs verify",
+    "capsule:sign": "node scripts/capsule_cli.mjs sign",
+    "capsule:verify-signature": "node scripts/capsule_cli.mjs verify-signature"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"

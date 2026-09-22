@@ -78,4 +78,36 @@ A snapshot hash records provenance of the source material. Capsule integrity pro
 
 ## Compatibility
 
-0.1 intentionally does not prescribe a particular LLM, agent framework, trace backend or UI. Future revisions may add signatures, embedded snapshots, replay instructions and provider adapters while preserving this portable core.
+0.1 intentionally does not prescribe a particular LLM, agent framework, trace backend or UI. Future revisions may add embedded snapshots, richer replay instructions and provider adapters while preserving this portable core.
+
+## Optional ES256 signature
+
+A Capsule may include an optional signature inside `integrity.signature`:
+
+```json
+{
+  "algorithm": "ES256",
+  "keyId": "sha256:<fingerprint>",
+  "publicKey": {"kty":"EC","crv":"P-256","x":"...","y":"..."},
+  "value": "<base64url signature>"
+}
+```
+
+The signature is calculated over the lowercase hexadecimal `integrity.payloadSha256` value using ECDSA P-256 with SHA-256. The signature lives inside `integrity`, which is excluded from the payload digest, so signing does not alter the captured payload hash.
+
+`keyId` is the SHA-256 fingerprint of the canonical public-key material `{crv,kty,x,y}`. A signature verified only with the public key embedded in the Capsule proves self-consistency: the Capsule was signed by the holder of the corresponding private key. It does **not** by itself establish the real-world identity of that holder. For identity/trust, verifiers should supply a public JWK obtained through an independent trusted channel and compare its fingerprint.
+
+Private signing keys must never be stored inside a Capsule.
+
+## Machine-readable schema
+
+The 0.1 format has a JSON Schema at `schemas/aicapsule-0.1.schema.json`. Implementations may add fields for forward-compatible extensions; required 0.1 fields retain their documented meanings.
+
+## Reference implementations
+
+- Browser/global implementation: `lib/capsule-core.js`
+- JavaScript/Node SDK entrypoint: `sdk/javascript/index.mjs`
+- CLI: `scripts/capsule_cli.mjs`
+- GitHub Action: `.github/actions/verify-aicapsule/action.yml`
+
+The GitHub Action always verifies payload integrity. It can additionally require a valid ES256 signature and can verify that signature with an independently supplied trusted public JWK.

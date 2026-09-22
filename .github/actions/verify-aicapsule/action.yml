@@ -1,0 +1,36 @@
+name: Verify Atlanex AI Capsule
+description: Verify AI Capsule integrity and optionally require an ES256 signature.
+inputs:
+  capsule-path:
+    description: Path to the .aicapsule file.
+    required: true
+  require-signature:
+    description: Set to true to require a valid capsule signature.
+    required: false
+    default: "false"
+  trusted-public-key:
+    description: Optional path to a trusted P-256 public JWK. When supplied, the signature must verify with this key.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Verify capsule
+      shell: bash
+      env:
+        CAPSULE_PATH: ${{ inputs.capsule-path }}
+        REQUIRE_SIGNATURE: ${{ inputs.require-signature }}
+        TRUSTED_PUBLIC_KEY: ${{ inputs.trusted-public-key }}
+      run: |
+        set -euo pipefail
+        ROOT="$(cd "$GITHUB_ACTION_PATH/../../.." && pwd)"
+        test -f "$CAPSULE_PATH"
+        node "$ROOT/scripts/capsule_cli.mjs" verify "$CAPSULE_PATH"
+        if [[ "$REQUIRE_SIGNATURE" == "true" || -n "$TRUSTED_PUBLIC_KEY" ]]; then
+          if [[ -n "$TRUSTED_PUBLIC_KEY" ]]; then
+            test -f "$TRUSTED_PUBLIC_KEY"
+            node "$ROOT/scripts/capsule_cli.mjs" verify-signature "$CAPSULE_PATH" "$TRUSTED_PUBLIC_KEY"
+          else
+            node "$ROOT/scripts/capsule_cli.mjs" verify-signature "$CAPSULE_PATH"
+          fi
+        fi

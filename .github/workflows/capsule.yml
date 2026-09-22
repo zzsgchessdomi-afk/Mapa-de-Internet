@@ -5,23 +5,29 @@ on:
     branches: [main]
     paths:
       - "lib/capsule-core.js"
-      - "tests/capsule-contract.mjs"
-      - "tests/index-inline-syntax.mjs"
-      - "index.html"
       - "scripts/capsule_cli.mjs"
       - "AICAPSULE_SPEC.md"
       - "package.json"
+      - "index.html"
+      - "schemas/**"
+      - "sdk/**"
+      - "tests/capsule-*.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - ".github/actions/verify-aicapsule/**"
       - ".github/workflows/capsule.yml"
   pull_request:
     branches: [main]
     paths:
       - "lib/capsule-core.js"
-      - "tests/capsule-contract.mjs"
-      - "tests/index-inline-syntax.mjs"
-      - "index.html"
       - "scripts/capsule_cli.mjs"
       - "AICAPSULE_SPEC.md"
       - "package.json"
+      - "index.html"
+      - "schemas/**"
+      - "sdk/**"
+      - "tests/capsule-*.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - ".github/actions/verify-aicapsule/**"
       - ".github/workflows/capsule.yml"
   workflow_dispatch:
 
@@ -38,4 +44,13 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --ignore-scripts
+      - run: npm run check
       - run: npm run test:capsule
+      - name: Create signed Capsule fixture
+        run: node tests/create-signed-fixture.mjs
+      - name: Verify signed Capsule with Atlanex Action
+        uses: ./.github/actions/verify-aicapsule
+        with:
+          capsule-path: tests/.tmp-signed.aicapsule
+          require-signature: "true"
+          trusted-public-key: tests/.tmp-public.jwk.json
