@@ -2424,6 +2424,7 @@ async function openAICapsuleFile(file){
    const check=await globalThis.AtlanexCapsule.verifyCapsule(capsule);
    renderCapsuleStatus(capsule,check);
    if(!check.ok)return toast('Capsule inválida: '+check.errors[0],5000);
+   globalThis.__atlanexOpenedCapsule=capsule;
    toast(`Capsule verificada · ${check.evidenceCount} evidencias · ${check.timelineEvents} eventos`,4200);
  }catch(e){
    renderCapsuleStatus(null,{ok:false,errors:[String(e?.message||e)]});
@@ -2448,7 +2449,7 @@ async function compareAICapsuleFile(file){
    toast('Comparación de Capsules lista',3500)
  }catch(e){toast('No pude comparar esa Capsule: '+String(e?.message||e).slice(0,120),4500)}
 }
-\nfunction renderSourceIntelligence(){
+function renderSourceIntelligence(){
  const map=new Map();
  for(const r of rawResults){
    const k=r.source||'unknown';if(!map.has(k))map.set(k,{count:0,domains:new Set()});
@@ -2916,7 +2917,9 @@ $('mcRightToggle').onclick=()=>$('mcRight').classList.toggle('mobileShow');
 document.querySelectorAll('[data-mc-tab]').forEach(b=>b.onclick=()=>switchMCTab(b.dataset.mcTab));
 $('closeEvidenceGaps').onclick=closeEvidenceGaps;
 $('capsuleExport').onclick=exportAICapsule;
-$('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();\n$('capsuleCompare').onclick=()=>{if(!globalThis.__atlanexOpenedCapsule)return toast('Primero abre una Capsule base');$('capsuleCompareInput').click()};\n$('capsuleCompareInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await compareAICapsuleFile(file);e.target.value=''};
+$('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();
+$('capsuleCompare').onclick=()=>{if(!globalThis.__atlanexOpenedCapsule)return toast('Primero abre una Capsule base');$('capsuleCompareInput').click()};
+$('capsuleCompareInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await compareAICapsuleFile(file);e.target.value=''};
 $('capsuleOpenInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await openAICapsuleFile(file);e.target.value=''};
 $('caseExport').onclick=exportCaseFile;
 $('proofBundleExport').onclick=exportProofBundle;
