@@ -1,13 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-# ATLANEX Windows sidecar: deliberately keep the PyInstaller graph small.
-# CrewAI/GPT Researcher have broad optional integrations; importing their
-# ecosystems as hidden imports makes PyInstaller inspect native packages that
-# this sidecar never uses.
+# ATLANEX Windows sidecar. The agent frameworks expose many optional plugins;
+# exclude stacks the sidecar does not exercise so PyInstaller does not walk
+# unrelated native DLL graphs.
 from PyInstaller.utils.hooks import copy_metadata
 
 hiddenimports = [
     "crewai",
     "crewai.llm",
+    "litellm",
     "gpt_researcher",
     "fastapi",
     "uvicorn",
@@ -21,15 +21,12 @@ hiddenimports = [
 ]
 
 datas = [("gptr_config.json", ".")]
-for package in ("crewai", "gpt-researcher"):
+for package in ("crewai", "gpt-researcher", "litellm"):
     try:
         datas += copy_metadata(package)
     except Exception:
         pass
 
-# These are optional integration/document/ML stacks for the frameworks above.
-# server.py does not use them. Excluding them is important on Windows because
-# their native DLL graphs were the point where previous CI builds stalled.
 excludes = [
     "tkinter", "matplotlib", "IPython", "notebook", "jupyter", "jupyterlab",
     "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
