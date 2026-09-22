@@ -31,6 +31,16 @@ const wf=text(".github/workflows/windows-build.yml");
 ok("portable acceptance workflow",wf.includes("--acceptance-test")&&wf.includes("Internet-Atlas-Portable"));
 ok("NSIS install acceptance",wf.includes("NSIS")&&wf.includes("Installed app acceptance"));
 ok("deep agent CI",wf.includes("--self-test-deep"));
+ok("Capsule CI gate",wf.includes("npm run test:capsule"));
+ok("Capsule benchmark CI gate",wf.includes("npm run benchmark:capsule"));
+const preload=text("desktop/preload.cjs");
+for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-evidence","atlas:agent-health","atlas:agent-doctor","atlas:agent-smoke","atlas:agent-start","atlas:agent-run","atlas:agent-cancel","atlas:monitor-list","atlas:monitor-sync","atlas:monitor-run-now","atlas:monitor-config"]){
+  ok("IPC "+channel,preload.includes(channel)&&main.includes(channel),channel);
+}
+const spec=text("desktop/sidecar/atlas_agent.spec");
+ok("PyInstaller LiteLLM runtime",spec.includes('"litellm"')&&spec.includes('"gpt_researcher"'));
+ok("PyInstaller heavy native pruning",["chromadb","lancedb","onnxruntime","unstructured"].every(x=>spec.includes(x)));
+
 const result={ok:!fail.length,version:pkg.version,checks,failures:fail,sha256:crypto.createHash("sha256").update(html).digest("hex")};
 console.log(JSON.stringify(result,null,2));
 process.exit(fail.length?1:0);
