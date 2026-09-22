@@ -11,10 +11,14 @@
     "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs",
     "test:contract": "node tests/research-contract.mjs",
     "audit:release": "node scripts/release_audit.mjs",
-    "test:capsule": "node tests/capsule-contract.mjs && node tests/capsule-signature.mjs && node tests/capsule-sdk.mjs && node tests/index-inline-syntax.mjs",
+    "test:capsule": "node tests/capsule-contract.mjs && node tests/capsule-signature.mjs && node tests/capsule-sdk.mjs && node tests/capsule-replay-minimizer.mjs && node tests/capsule-viewer-syntax.mjs && node tests/index-inline-syntax.mjs",
     "capsule:verify": "node scripts/capsule_cli.mjs verify",
     "capsule:sign": "node scripts/capsule_cli.mjs sign",
-    "capsule:verify-signature": "node scripts/capsule_cli.mjs verify-signature"
+    "capsule:verify-signature": "node scripts/capsule_cli.mjs verify-signature",
+    "capsule:compare-advanced": "node scripts/capsule_cli.mjs compare-advanced",
+    "capsule:minimize": "node scripts/capsule_cli.mjs minimize",
+    "capsule:testcase": "node scripts/capsule_cli.mjs testcase",
+    "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"
