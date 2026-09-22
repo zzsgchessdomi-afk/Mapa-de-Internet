@@ -45,9 +45,9 @@ const stableA=C.stableStringify({b:2,a:1,nested:{z:3,a:4}});
 const stableB=C.stableStringify({nested:{a:4,z:3},a:1,b:2});
 assert.equal(stableA,stableB);
 
-console.log(JSON.stringify({
+const capsule2=await C.createCapsule({\n  producer:{name:"Atlanex",version:"test"},\n  project:{id:"p1",name:"Capsule Test"},\n  incident:{kind:"agent-failure",title:"Tool returned inconsistent evidence"},\n  run:{id:"r2",objective:"Verify an API again",mode:"compare"},\n  timeline:[{t:0,stage:"planner",label:"start"},{t:200,stage:"evidence",label:"snapshot"},{t:400,stage:"analysis",label:"changed"}],\n  evidence:[{entity:"Example",criterion:"API",quote:"API changed",sourceUrl:"https://example.com/",sha256:"b".repeat(64),verification:"exact-source-snapshot"}]\n});\nconst diff=C.compareCapsules(capsule,capsule2);\nassert.equal(diff.samePayload,false);\nassert.equal(diff.evidence.changed.length,1);\nassert.equal(diff.timeline.delta,1);\nassert.ok(diff.runChanges.some(x=>x.field==="objective"));\n\nconsole.log(JSON.stringify({
   ok:true,
   sha256:capsule.integrity.payloadSha256,
   redactions:capsule.integrity.redactions,
-  tamperDetected:!bad.ok
+  tamperDetected:!bad.ok,\n  compareChanged:diff.evidence.changed.length
 }));
