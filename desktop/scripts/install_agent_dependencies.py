@@ -10,10 +10,8 @@ BASE = [
     "crewai==1.15.22",
 ]
 GPTR = "gpt-researcher==0.15.1"
-# json5 is shared by both engines. GPT Researcher requires >=0.12, so use that
-# and validate CrewAI's Atlas execution path explicitly instead of knowingly
-# shipping an environment that pip reports as inconsistent.
-IGNORED = {"json5", "aiofiles"}
+IGNORED_GPTR = {"json5", "aiofiles", "unstructured-client"}
+RUNTIME_OVERRIDES = ["json5>=0.12,<1", "aiofiles~=24.1.0"]
 
 def pip(*args: str) -> None:
     cmd=[sys.executable,"-m","pip",*args]
@@ -30,7 +28,7 @@ def main() -> int:
     reqs=[]
     for raw in md.requires("gpt-researcher") or []:
         req=Requirement(raw)
-        if normalized(req.name) in IGNORED:
+        if normalized(req.name) in IGNORED_GPTR:
             continue
         if req.marker and not req.marker.evaluate({"extra":""}):
             continue
@@ -39,9 +37,7 @@ def main() -> int:
         p=Path(td)/"requirements.txt"
         p.write_text("\n".join(reqs)+"\n",encoding="utf-8")
         pip("install","-r",str(p))
-    pip("install","json5>=0.12.0","aiofiles~=24.1.0")
-    # unstructured-client's newer aiofiles requirement is not on Atlas' runtime
-    # path. Validate the imports and exact engine entry points we actually ship.
+    pip("install",*RUNTIME_OVERRIDES)
     probe = (
         "import importlib.metadata as m; "
         "import fastapi,httpx,crewai,gpt_researcher,pywintypes; "
