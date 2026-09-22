@@ -18,13 +18,27 @@ def pkg_version(name):
     except:return None
 
 def health_payload():
-    crew=gptr=False;errs=[]
-    try:import crewai;crew=True
+    crew=gptr=ddgs_ok=translation_ok=False;errs=[];translation_path=None
+    try:
+        import crewai
+        crew=True
+        translation_path=Path(crewai.__file__).resolve().parent/"translations"/"en.json"
+        translation_ok=translation_path.is_file()
+        if not translation_ok:errs.append("crewai translation missing: "+str(translation_path))
     except Exception as e:errs.append("crewai: "+str(e))
     try:import gpt_researcher;gptr=True
     except Exception as e:errs.append("gpt_researcher: "+str(e))
-    return {"ready":crew and gptr,"crewai":crew,"crewai_version":pkg_version("crewai"),
+    try:
+        from ddgs import DDGS
+        from gpt_researcher.retrievers.duckduckgo.duckduckgo import Duckduckgo
+        probe=Duckduckgo("atlas health probe")
+        ddgs_ok=DDGS is not None and callable(getattr(probe,"search",None))
+    except Exception as e:errs.append("ddgs/duckduckgo retriever: "+str(e))
+    return {"ready":crew and gptr and ddgs_ok and translation_ok,
+            "crewai":crew,"crewai_version":pkg_version("crewai"),
+            "crewai_translation":translation_ok,"crewai_translation_path":str(translation_path) if translation_path else None,
             "gpt_researcher":gptr,"gpt_researcher_version":pkg_version("gpt-researcher"),
+            "ddgs":ddgs_ok,"ddgs_version":pkg_version("ddgs"),
             "fastapi_version":pkg_version("fastapi"),"python":sys.version.split()[0],
             "python_executable":sys.executable,"bridge":BRIDGE,
             "message":"; ".join(errs) if errs else "ready"}
@@ -187,12 +201,25 @@ def _start_mock():
 
 def runtime_self_test(deep=False):
     global BRIDGE,MODEL
-    h=health_payload();out={"ok":False,"deep":bool(deep),"health":h,"crewai_runtime":False,"gpt_researcher_runtime":False,"gpt_researcher_deep":False}
+    h=health_payload();out={"ok":False,"deep":bool(deep),"health":h,
+                            "crewai_translation":False,"crewai_runtime":False,
+                            "ddgs_runtime":False,"duckduckgo_retriever_runtime":False,
+                            "gpt_researcher_runtime":False,"gpt_researcher_deep":False}
     if not h["ready"]:out["error"]="required packages are not importable";return out
     old_bridge,old_model=BRIDGE,MODEL;s=None
     try:
         s=_start_mock();BRIDGE=f"http://127.0.0.1:{s.server_address[1]}/v1";MODEL="atlas-self-test"
         os.environ["OPENAI_API_KEY"]="atlas-self-test";os.environ["OPENAI_BASE_URL"]=BRIDGE
+        import crewai
+        translation=Path(crewai.__file__).resolve().parent/"translations"/"en.json"
+        if not translation.is_file():raise RuntimeError("CrewAI translation resource missing beside frozen package: "+str(translation))
+        out["crewai_translation"]=True;out["crewai_translation_path"]=str(translation)
+        from ddgs import DDGS
+        from gpt_researcher.retrievers.duckduckgo.duckduckgo import Duckduckgo
+        retriever=Duckduckgo("atlas packaged retriever self-test")
+        if DDGS is None:raise RuntimeError("ddgs.DDGS is unavailable")
+        if not callable(getattr(retriever,"search",None)):raise RuntimeError("GPT Researcher DuckDuckGo retriever is unavailable")
+        out["ddgs_runtime"]=True;out["duckduckgo_retriever_runtime"]=True
         from crewai import Agent,Task,Crew,Process
         a=Agent(role="Atlas Runtime Tester",goal="Return a short successful validation.",backstory="Runtime test agent.",llm=atlas_llm(),verbose=False,allow_delegation=False,max_iter=1)
         t=Task(description="Say that the Atlas CrewAI runtime is operational.",expected_output="One short validation sentence.",agent=a)
@@ -211,7 +238,10 @@ def runtime_self_test(deep=False):
                 report=str(asyncio.run(go()))
                 if len(report.strip())<20:raise RuntimeError("GPT Researcher deep report was empty")
                 out["gpt_researcher_deep"]=True;out["report_chars"]=len(report)
-        out["ok"]=out["crewai_runtime"] and out["gpt_researcher_runtime"] and (out["gpt_researcher_deep"] if deep else True)
+        out["ok"]=(out["crewai_translation"] and out["crewai_runtime"]
+                   and out["ddgs_runtime"] and out["duckduckgo_retriever_runtime"]
+                   and out["gpt_researcher_runtime"]
+                   and (out["gpt_researcher_deep"] if deep else True))
     except Exception as e:out["error"]=str(e);out["traceback"]=traceback.format_exc()[-7000:]
     finally:
         BRIDGE,MODEL=old_bridge,old_model
