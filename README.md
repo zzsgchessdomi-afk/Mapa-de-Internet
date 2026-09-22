@@ -32,3 +32,10 @@ This source tree is a production candidate. A release should not be marketed as 
 - verify from the terminal/CI with `npm run capsule:verify -- path/to/file.aicapsule`
 - independent contract test with `npm run test:capsule`
 - interoperability draft in `AICAPSULE_SPEC.md`
+
+### Replay / Viewer / Minimizer
+- advanced Capsule comparison reports timeline additions/removals, duration deltas, stage-count changes, new incident events and evidence hash changes
+- `tools/capsule-viewer.html` opens Capsules independently of the main workspace and supports integrity/signature verification, A→B diff, minimal reproduction export and testcase export
+- the incident minimizer selects a deterministic replay window around the first failure/conflict/mismatch-style event and carries only the evidence needed for that window
+- regression testcases embed the minimized fixture plus required stages/evidence hashes and can be executed with `npm run capsule:run-testcase -- file.testcase.json`
+- Capsule CI now runs the desktop app preparation step and asserts that both `lib/capsule-core.js` and the Viewer are actually present in the packaged app payload

@@ -12,6 +12,10 @@ function usage(){
     "  verify <file.aicapsule>",
     "  summary <file.aicapsule>",
     "  compare <left.aicapsule> <right.aicapsule>",
+    "  compare-advanced <left.aicapsule> <right.aicapsule>",
+    "  minimize <file.aicapsule> [output.aicapsule]",
+    "  testcase <file.aicapsule> [output.json]",
+    "  run-testcase <testcase.json>",
     "  keygen <output-prefix>",
     "  sign <file.aicapsule> <private.jwk.json> [output.aicapsule]",
     "  verify-signature <file.aicapsule> [trusted-public.jwk.json]"
@@ -71,6 +75,48 @@ try{
     }
     console.log(JSON.stringify(C.compareCapsules(left,right),null,2));
     process.exit(0);
+  }
+
+  if(command==="compare-advanced"){
+    if(!args[1]||!args[2]){usage();process.exit(2)}
+    const [left,right]=await Promise.all([readCapsule(args[1]),readCapsule(args[2])]);
+    const [leftCheck,rightCheck]=await Promise.all([C.verifyCapsule(left),C.verifyCapsule(right)]);
+    if(!leftCheck.ok||!rightCheck.ok){
+      console.error(JSON.stringify({left:leftCheck,right:rightCheck},null,2));
+      process.exit(1);
+    }
+    console.log(JSON.stringify(C.compareCapsulesAdvanced(left,right),null,2));
+    process.exit(0);
+  }
+
+  if(command==="minimize"){
+    const capsulePath=args[1],outputPath=args[2];
+    if(!capsulePath){usage();process.exit(2)}
+    const capsule=await readCapsule(capsulePath);
+    const minimized=await C.minimizeCapsule(capsule);
+    const out=path.resolve(outputPath||capsulePath.replace(/\.aicapsule$/i,"")+".minimal.aicapsule");
+    await fs.writeFile(out,JSON.stringify(minimized,null,2)+"\n","utf8");
+    console.log(JSON.stringify({ok:true,output:out,sha256:minimized.integrity.payloadSha256,timelineEvents:minimized.timeline.length,evidenceCount:minimized.evidence.length},null,2));
+    process.exit(0);
+  }
+
+  if(command==="testcase"){
+    const capsulePath=args[1],outputPath=args[2];
+    if(!capsulePath){usage();process.exit(2)}
+    const capsule=await readCapsule(capsulePath);
+    const testcase=await C.createRegressionTestcase(capsule);
+    const out=path.resolve(outputPath||capsulePath.replace(/\.aicapsule$/i,"")+".testcase.json");
+    await fs.writeFile(out,JSON.stringify(testcase,null,2)+"\n","utf8");
+    console.log(JSON.stringify({ok:true,output:out,fixtureSha256:testcase.fixture.integrity.payloadSha256},null,2));
+    process.exit(0);
+  }
+
+  if(command==="run-testcase"){
+    if(!args[1]){usage();process.exit(2)}
+    const testcase=await readJson(args[1],"testcase");
+    const result=await C.runRegressionTestcase(testcase);
+    console.log(JSON.stringify(result,null,2));
+    process.exit(result.ok?0:1);
   }
 
   if(command==="sign"){

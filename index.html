@@ -531,7 +531,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
         <section class="mcEvidence">
           <div class="mcBoxHead"><b>Case File</b><span id="caseCount">0 pruebas</span></div>
           <div class="mcEvidenceBody">
-            <div class="caseToolbar"><button class="btn primary" id="capsuleExport">Exportar AI Capsule</button><button class="btn" id="capsuleOpen">Abrir Capsule</button><button class="btn" id="capsuleCompare">Comparar Capsule</button><button class="btn" id="caseExport">Dossier</button><button class="btn" id="proofBundleExport">Proof bundle</button><button class="btn" id="caseClear">Vaciar</button></div>
+            <div class="caseToolbar"><button class="btn primary" id="capsuleExport">Exportar AI Capsule</button><button class="btn" id="capsuleOpen">Abrir Capsule</button><button class="btn" id="capsuleCompare">Comparar Capsule</button><button class="btn" id="capsuleViewer">Viewer</button><button class="btn" id="capsuleMinimize">Minimizar</button><button class="btn" id="capsuleTestcase">Testcase</button><button class="btn" id="caseExport">Dossier</button><button class="btn" id="proofBundleExport">Proof bundle</button><button class="btn" id="caseClear">Vaciar</button></div>
             <input id="capsuleOpenInput" type="file" accept=".aicapsule,application/json" hidden><input id="capsuleCompareInput" type="file" accept=".aicapsule,application/json" hidden>
             <div id="capsuleStatus" class="caseEmpty" style="margin-bottom:8px">AI Capsule 0.1 listo: exporta el run, su timeline y la evidencia con integridad SHA-256.</div>
             <div id="caseItems"></div>
@@ -2451,15 +2451,53 @@ async function compareAICapsuleFile(file){
    const right=JSON.parse(await file.text());
    const [a,b]=await Promise.all([globalThis.AtlanexCapsule.verifyCapsule(left),globalThis.AtlanexCapsule.verifyCapsule(right)]);
    if(!a.ok||!b.ok)return toast('No puedo comparar: una Capsule no supera integridad',5000);
-   const d=globalThis.AtlanexCapsule.compareCapsules(left,right),box=$('capsuleStatus');
-   box.innerHTML=`<div class="proofBundle"><b>CAPSULE DIFF</b><br>
+   globalThis.__atlanexComparedCapsule=right;
+   const d=globalThis.AtlanexCapsule.compareCapsulesAdvanced(left,right),box=$('capsuleStatus');
+   box.innerHTML=`<div class="proofBundle"><b>CAPSULE ADVANCED DIFF</b><br>
    ${esc((d.leftSha256||'').slice(0,12))} → ${esc((d.rightSha256||'').slice(0,12))}<br>
-   Timeline: ${d.timeline.left} → ${d.timeline.right} (${d.timeline.delta>=0?'+':''}${d.timeline.delta})<br>
+   Timeline: ${d.timeline.left} → ${d.timeline.right} · duración ${Math.round(d.timeline.durationBeforeMs/1000)}s → ${Math.round(d.timeline.durationAfterMs/1000)}s<br>
+   Eventos: +${d.timeline.added.length} · -${d.timeline.removed.length} · incidentes nuevos ${d.timeline.newIncidentEvents.length}<br>
    Evidencia: +${d.evidence.added.length} · -${d.evidence.removed.length} · ${d.evidence.changed.length} modificadas · ${d.evidence.unchanged.length} iguales
-   ${d.runChanges.length?'<br>Run: '+d.runChanges.map(x=>esc(x.field)+' cambió').join(' · '):''}</div>`;
-   toast('Comparación de Capsules lista',3500)
+   ${d.timeline.stageDelta.length?'<br>Stages: '+d.timeline.stageDelta.map(x=>esc(x.stage)+' '+(x.delta>0?'+':'')+x.delta).join(' · '):''}
+   ${d.runChanges.length?'<br>Run: '+d.runChanges.map(x=>esc(x.field)+' cambió').join(' · '):''}
+   ${d.timeline.newIncidentEvents.length?'<br><span class="bad">Nuevos incidentes: '+d.timeline.newIncidentEvents.slice(0,4).map(x=>esc(x.stage+': '+x.label)).join(' · ')+'</span>':''}</div>`;
+   toast('Comparación avanzada lista',3500)
  }catch(e){toast('No pude comparar esa Capsule: '+String(e?.message||e).slice(0,120),4500)}
 }
+
+async function capsuleForTooling(){
+ if(globalThis.__atlanexOpenedCapsule)return globalThis.__atlanexOpenedCapsule;
+ return await buildAICapsule()
+}
+async function minimizeCurrentCapsule(){
+ try{
+  const source=await capsuleForTooling(),minimal=await globalThis.AtlanexCapsule.minimizeCapsule(source);
+  const base=(project.name||'Atlanex').replace(/[^\w-]+/g,'_');
+  downloadBlob(base+'_minimal.aicapsule',JSON.stringify(minimal,null,2),'application/vnd.aicapsule+json');
+  renderCapsuleStatus(minimal,await globalThis.AtlanexCapsule.verifyCapsule(minimal));
+  globalThis.__atlanexOpenedCapsule=minimal;
+  toast(`Reproducción mínima · ${minimal.timeline.length} eventos · ${minimal.evidence.length} evidencias`,4200)
+ }catch(e){toast('Minimizador: '+String(e?.message||e).slice(0,140),5000)}
+}
+async function exportCapsuleTestcase(){
+ try{
+  const source=await capsuleForTooling(),testcase=await globalThis.AtlanexCapsule.createRegressionTestcase(source);
+  const base=(project.name||'Atlanex').replace(/[^\w-]+/g,'_');
+  downloadBlob(base+'_capsule.testcase.json',JSON.stringify(testcase,null,2),'application/json');
+  const result=await globalThis.AtlanexCapsule.runRegressionTestcase(testcase);
+  toast(result.ok?'Testcase generado y validado':'Testcase generado con errores',4200)
+ }catch(e){toast('Testcase: '+String(e?.message||e).slice(0,140),5000)}
+}
+async function openCapsuleViewer(){
+ try{
+  const source=await capsuleForTooling();
+  const w=window.open('./tools/capsule-viewer.html','atlanexCapsuleViewer','width=1240,height=860');
+  if(!w)return toast('No pude abrir Capsule Viewer',4200);
+  const send=()=>{try{w.postMessage({type:'aicapsule:load',capsule:source},'*')}catch{}};
+  setTimeout(send,350);setTimeout(send,900)
+ }catch(e){toast('Viewer: '+String(e?.message||e).slice(0,140),5000)}
+}
+
 function renderSourceIntelligence(){
  const map=new Map();
  for(const r of rawResults){
@@ -2930,6 +2968,9 @@ $('closeEvidenceGaps').onclick=closeEvidenceGaps;
 $('capsuleExport').onclick=exportAICapsule;
 $('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();
 $('capsuleCompare').onclick=()=>{if(!globalThis.__atlanexOpenedCapsule)return toast('Primero abre una Capsule base');$('capsuleCompareInput').click()};
+$('capsuleViewer').onclick=openCapsuleViewer;
+$('capsuleMinimize').onclick=minimizeCurrentCapsule;
+$('capsuleTestcase').onclick=exportCapsuleTestcase;
 $('capsuleCompareInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await compareAICapsuleFile(file);e.target.value=''};
 $('capsuleOpenInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await openAICapsuleFile(file);e.target.value=''};
 $('caseExport').onclick=exportCaseFile;

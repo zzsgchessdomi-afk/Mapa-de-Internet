@@ -11,6 +11,7 @@ fs.rmSync(app,{recursive:true,force:true});
 fs.mkdirSync(path.join(app,"api"),{recursive:true});
 fs.mkdirSync(path.join(app,"lib"),{recursive:true});
 fs.mkdirSync(path.join(app,"icons"),{recursive:true});
+fs.mkdirSync(path.join(app,"tools"),{recursive:true});
 
 for(const rel of ["index.html","manifest.webmanifest","sw.js","THIRD_PARTY_NOTICES.md"]){
   fs.copyFileSync(path.join(root,rel),path.join(app,rel));
@@ -18,7 +19,10 @@ for(const rel of ["index.html","manifest.webmanifest","sw.js","THIRD_PARTY_NOTIC
 for(const rel of ["inspect.js","research.js"]){
   fs.copyFileSync(path.join(root,"api",rel),path.join(app,"api",rel));
 }
-fs.copyFileSync(path.join(root,"lib","scanner.js"),path.join(app,"lib","scanner.js"));
+for(const rel of ["scanner.js","capsule-core.js"]){
+  fs.copyFileSync(path.join(root,"lib",rel),path.join(app,"lib",rel));
+}
+fs.copyFileSync(path.join(root,"tools","capsule-viewer.html"),path.join(app,"tools","capsule-viewer.html"));
 
 const icon="iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA7klEQVR4nO1WSQ7CMAykqBy5U/XeZ/EKntFX8CzuqM+AU1BVeZKZKSgUYamXJh6P7XhpDsfTY1dR9jWN/wl8BYHWUbrcJng2Dp2E1ShVkDPsEqFToBhX7hcjgIAiD5W7SeQ3kANLZ0q0shGYA6mPi9WHb0DNuUKGIjAXx3tWLyTAen+9T6+PkQi3GAHkxdIoIlGKgtWKkTE2EqsJvFO2SeDcx3lF/1cRQBWxNIaMlyoqbMXj0FGlqHocVQSVArcrMnqQgNv9VDx5HDPEFB15HCdwZR/ICb2SOeD2MHLBnPvSUpqk2lb8CdnmLPgpAk/iCGSamI/QYgAAAABJRU5ErkJggg==";
 fs.writeFileSync(path.join(app,"icons","icon-192.png"),Buffer.from(icon,"base64"));
