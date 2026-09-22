@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "lib/capsule-core.js"
-      - "tests/capsule-contract.mjs"
+      - "tests/capsule-contract.mjs"\n      - "tests/index-inline-syntax.mjs"\n      - "index.html"
       - "scripts/capsule_cli.mjs"
       - "AICAPSULE_SPEC.md"
       - "package.json"
