@@ -1,0 +1,81 @@
+# AI Capsule 0.1 — Atlanex interoperability draft
+
+AI Capsule is a portable JSON incident/evidence container for AI-agent and research runs.
+
+## Goals
+
+- move a captured run between tools without depending on one model vendor;
+- preserve the ordered timeline, evidence references and run metadata;
+- redact common credentials before export;
+- detect post-export tampering with a canonical SHA-256 digest;
+- remain readable with ordinary JSON tooling.
+
+The filename extension is `.aicapsule`. The contents are UTF-8 JSON.
+
+## Required top-level fields
+
+```json
+{
+  "format": "aicapsule",
+  "specVersion": "0.1.0",
+  "createdAt": "ISO-8601 timestamp",
+  "producer": {"name": "Atlanex"},
+  "project": {},
+  "incident": {},
+  "run": {},
+  "timeline": [],
+  "evidence": [],
+  "artifacts": {},
+  "metadata": {},
+  "integrity": {
+    "algorithm": "SHA-256",
+    "canonicalization": "sorted-json-v1",
+    "payloadSha256": "64 lowercase hex characters",
+    "redactions": 0
+  }
+}
+```
+
+## Canonical integrity
+
+The digest is calculated over every top-level field except `integrity`. Object keys are recursively sorted before JSON serialization. Arrays retain order. Undefined/non-JSON values are normalized before hashing.
+
+Any change to the captured payload must make verification fail.
+
+## Secret redaction
+
+The reference implementation redacts credential-shaped keys such as API keys, authorization headers, tokens, passwords, cookies, sessions and private keys. It also redacts common bearer/API-key patterns inside strings and URLs.
+
+Redaction is a safety layer, not a proof that a capsule contains no sensitive information. Producers should avoid capturing unnecessary private data.
+
+## Timeline
+
+`timeline` contains ordered events. Atlanex currently uses fields such as:
+
+```json
+{"t": 1250, "stage": "evidence", "label": "Snapshot captured", "detail": "..."}
+```
+
+`t` is milliseconds from the start of the run when available.
+
+## Evidence
+
+An evidence entry may contain:
+
+```json
+{
+  "entity": "Example",
+  "criterion": "Commercial API",
+  "quote": "Exact text captured from the source",
+  "sourceUrl": "https://example.com/",
+  "sha256": "<snapshot SHA-256>",
+  "fetchedAt": "ISO-8601 timestamp",
+  "verification": "exact-source-snapshot"
+}
+```
+
+A snapshot hash records provenance of the source material. Capsule integrity protects the evidence record itself; verifying a source snapshot requires the corresponding snapshot bytes/text.
+
+## Compatibility
+
+0.1 intentionally does not prescribe a particular LLM, agent framework, trace backend or UI. Future revisions may add signatures, embedded snapshots, replay instructions and provider adapters while preserving this portable core.
