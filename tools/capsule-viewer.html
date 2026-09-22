@@ -97,6 +97,10 @@ function renderDiff(){
 $('openA').onclick=()=>$('fileA').click();$('openB').onclick=()=>$('fileB').click();
 $('fileA').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{A=await read(f);const checks=await verify(A);renderA(A,checks);if(B)renderDiff()}catch(err){$('statusA').className='bad';$('statusA').textContent=String(err?.message||err)}e.target.value=''};
 $('fileB').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{B=await read(f);const checks=await verify(B);if(!checks.integrity.ok)throw new Error(checks.integrity.errors.join('; '));if(checks.signature&&!checks.signature.ok)throw new Error(checks.signature.errors.join('; '));renderDiff()}catch(err){$('diff').className='bad';$('diff').textContent=String(err?.message||err)}e.target.value=''};
+addEventListener('message',async e=>{
+ if(e.data?.type!=='aicapsule:load'||!e.data.capsule)return;
+ try{A=e.data.capsule;const checks=await verify(A);renderA(A,checks);if(B)renderDiff()}catch(err){$('statusA').className='bad';$('statusA').textContent=String(err?.message||err)}
+});
 $('minimize').onclick=async()=>{if(!A)return;const m=await C.minimizeCapsule(A);download('minimal-reproduction.aicapsule',m)};
 $('testcase').onclick=async()=>{if(!A)return;const t=await C.createRegressionTestcase(A);download('aicapsule-testcase.json',t)};
 </script>
