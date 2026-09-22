@@ -400,6 +400,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 }
 </style>
 <link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
+<script src="./lib/capsule-core.js"></script>
 </head>
 <body>
 <section class="mcRoot" id="mcRoot">
@@ -530,7 +531,9 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
         <section class="mcEvidence">
           <div class="mcBoxHead"><b>Case File</b><span id="caseCount">0 pruebas</span></div>
           <div class="mcEvidenceBody">
-            <div class="caseToolbar"><button class="btn primary" id="caseExport">Exportar dossier</button><button class="btn" id="proofBundleExport">Proof bundle JSON</button><button class="btn" id="caseClear">Vaciar</button></div>
+            <div class="caseToolbar"><button class="btn primary" id="capsuleExport">Exportar AI Capsule</button><button class="btn" id="capsuleOpen">Abrir Capsule</button><button class="btn" id="caseExport">Dossier</button><button class="btn" id="proofBundleExport">Proof bundle</button><button class="btn" id="caseClear">Vaciar</button></div>
+            <input id="capsuleOpenInput" type="file" accept=".aicapsule,application/json" hidden>
+            <div id="capsuleStatus" class="caseEmpty" style="margin-bottom:8px">AI Capsule 0.1 listo: exporta el run, su timeline y la evidencia con integridad SHA-256.</div>
             <div id="caseItems"></div>
           </div>
         </section>
@@ -2355,6 +2358,79 @@ function exportProofBundle(){
  };
  downloadBlob((project.name||'Atlas').replace(/[^\w-]+/g,'_')+'_Proof_Bundle.json',JSON.stringify(bundle,null,2),'application/json')
 }
+
+function capsuleEvidence(){
+ return (project.caseFile||[]).map(x=>({
+   id:x.id||null,
+   entity:x.entity||'',
+   criterion:x.criterion||'',
+   value:x.value??null,
+   quote:x.evidence?.[0]||'',
+   sourceUrl:x.snapshot?.url||x.proof?.url||'',
+   sha256:x.snapshot?.contentHash||x.proof?.contentHash||'',
+   fetchedAt:x.snapshot?.fetchedAt||x.proof?.fetchedAt||'',
+   snapshotId:x.proof?.snapshotId||'',
+   verification:x.verified?'exact-source-snapshot':'unverified'
+ }))
+}
+function capsuleRunState(){
+ if(!current)return null;
+ return {
+   id:current.id||null,objective:current.objective||'',mode:current.mode||null,depth:current.depth||null,
+   coverage:current.coverage??null,memo:current.memo||'',aiBrief:current.aiBrief||'',
+   audit:current.audit||null,researchDiagnostics:current.audit?.researchDiagnostics||current.researchDiagnostics||[],
+   entities:(current.entities||entities||[]).slice(0,60).map(e=>({
+     id:e.id||null,title:e.title||'',url:e.url||'',score:e.score??null,kind:e.kind||null,
+     criteria:e.criteria||{},sources:(e.sources||[]).slice(0,12)
+   }))
+ }
+}
+async function buildAICapsule(){
+ const C=globalThis.AtlanexCapsule;if(!C)throw new Error('Capsule Engine no cargado');
+ if(!current&&!(project.caseFile||[]).length)throw new Error('No hay run ni evidencia para capturar');
+ return await C.createCapsule({
+   producer:{name:'Atlanex',version:'29.1.0'},
+   project:{id:project.id,name:project.name},
+   incident:{kind:'research-run',title:current?.objective||project.name,status:current?'captured':'evidence-only'},
+   run:current?{id:current.id||null,objective:current.objective||'',mode:current.mode||null,depth:current.depth||null,coverage:current.coverage??null}:null,
+   timeline:Array.isArray(current?.replay)?current.replay:[],
+   evidence:capsuleEvidence(),
+   artifacts:{runState:capsuleRunState(),caseFile:project.caseFile||[]},
+   metadata:{atlanexSchema:29,desktop:!!IS_DESKTOP,proofModel:'exact-source-snapshot'}
+ })
+}
+async function exportAICapsule(){
+ try{
+   const capsule=await buildAICapsule();
+   const base=(project.name||'Atlanex').replace(/[^\w-]+/g,'_');
+   downloadBlob(base+'_'+(current?.id||'case')+'.aicapsule',JSON.stringify(capsule,null,2),'application/vnd.aicapsule+json');
+   renderCapsuleStatus(capsule,{ok:true,actualSha256:capsule.integrity.payloadSha256,evidenceCount:capsule.evidence.length,timelineEvents:capsule.timeline.length,redactions:capsule.integrity.redactions});
+   toast('AI Capsule exportada · '+capsule.integrity.payloadSha256.slice(0,12));
+ }catch(e){toast('Capsule: '+String(e?.message||e).slice(0,140),4500)}
+}
+function renderCapsuleStatus(capsule,check){
+ const box=$('capsuleStatus');if(!box)return;
+ const s=globalThis.AtlanexCapsule?.summary?.(capsule)||{};
+ const evidence=(capsule?.evidence||[]).slice(0,4);
+ box.innerHTML=`<div class="proofBundle"><b>${check?.ok?'CAPSULE VERIFIED':'CAPSULE INVALID'}</b><br>
+ SHA-256 ${esc(check?.actualSha256||s.sha256||'')}<br>
+ ${esc(s.objective||'Sin objetivo')} · ${Number(s.evidenceCount||0)} evidencias · ${Number(s.timelineEvents||0)} eventos · ${Number(check?.redactions||capsule?.integrity?.redactions||0)} secretos redactados
+ ${check?.errors?.length?'<br><span class="bad">'+check.errors.map(esc).join(' · ')+'</span>':''}
+ ${evidence.length?'<br><br>'+evidence.map(e=>'• '+esc(e.entity||'evidence')+' · '+esc(e.criterion||'')+' · '+esc((e.sha256||'').slice(0,12))).join('<br>'):''}</div>`;
+}
+async function openAICapsuleFile(file){
+ try{
+   const capsule=JSON.parse(await file.text());
+   const check=await globalThis.AtlanexCapsule.verifyCapsule(capsule);
+   renderCapsuleStatus(capsule,check);
+   if(!check.ok)return toast('Capsule inválida: '+check.errors[0],5000);
+   toast(`Capsule verificada · ${check.evidenceCount} evidencias · ${check.timelineEvents} eventos`,4200);
+ }catch(e){
+   renderCapsuleStatus(null,{ok:false,errors:[String(e?.message||e)]});
+   toast('No pude abrir esa Capsule',4200)
+ }
+}
+
 function renderSourceIntelligence(){
  const map=new Map();
  for(const r of rawResults){
@@ -2822,6 +2898,9 @@ $('mcRightToggle').onclick=()=>$('mcRight').classList.toggle('mobileShow');
 
 document.querySelectorAll('[data-mc-tab]').forEach(b=>b.onclick=()=>switchMCTab(b.dataset.mcTab));
 $('closeEvidenceGaps').onclick=closeEvidenceGaps;
+$('capsuleExport').onclick=exportAICapsule;
+$('capsuleOpen').onclick=()=>$('capsuleOpenInput').click();
+$('capsuleOpenInput').onchange=async e=>{const file=e.target.files?.[0];if(file)await openAICapsuleFile(file);e.target.value=''};
 $('caseExport').onclick=exportCaseFile;
 $('proofBundleExport').onclick=exportProofBundle;
 $('manualSourceAdd').onclick=addManualSource;
