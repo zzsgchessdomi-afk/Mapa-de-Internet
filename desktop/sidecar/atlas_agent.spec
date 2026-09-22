@@ -1,26 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
-# Keep Atlas' real runtime packages, but explicitly exclude heavyweight optional
-# ecosystems that are not used by server.py. This prevents PyInstaller from
-# recursively scanning thousands of optional scientific/ML/database modules.
+# Atlanex packages the real agent runtime but does not embed a web server.
+# The Electron host talks to this process over stdin/stdout JSON-RPC.
 hiddenimports = [
     "crewai",
     "crewai.llm",
+    "crewai.llms.base_llm",
     "gpt_researcher",
     "litellm",
-    "fastapi",
-    "uvicorn",
-    "uvicorn.logging",
-    "uvicorn.loops.auto",
-    "uvicorn.protocols.http.auto",
-    "uvicorn.protocols.websockets.auto",
-    "uvicorn.lifespan.on",
     "httpx",
     "pydantic",
+    "langchain_google_genai",
+    "google.ai.generativelanguage",
+    "google.api_core",
 ]
 datas = [("gptr_config.json", ".")]
-for package in ["crewai", "gpt_researcher"]:
+for package in ["crewai", "gpt_researcher", "langchain_google_genai"]:
     try:
         datas += collect_data_files(package, include_py_files=False)
     except Exception:
@@ -40,6 +36,7 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        "fastapi", "uvicorn", "starlette",
         "tkinter", "matplotlib", "IPython", "notebook", "jupyter", "jupyterlab",
         "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
         "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
