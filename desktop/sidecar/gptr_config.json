@@ -1,9 +1,9 @@
 {
   "RETRIEVER": "duckduckgo",
-  "FAST_LLM": "openai:gpt-5.6-luna",
-  "SMART_LLM": "openai:gpt-5.6-luna",
-  "STRATEGIC_LLM": "openai:gpt-5.6-luna",
-  "EMBEDDING": "openai:atlas-feature-hash-384",
+  "FAST_LLM": "google_genai:gemini-2.5-flash",
+  "SMART_LLM": "google_genai:gemini-2.5-flash",
+  "STRATEGIC_LLM": "google_genai:gemini-2.5-flash",
+  "EMBEDDING": "google_genai:models/gemini-embedding-001",
   "CURATE_SOURCES": true,
   "REPORT_FORMAT": "APA",
   "MAX_ITERATIONS": 3,

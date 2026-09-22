@@ -674,8 +674,16 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
    <div class="engineCard">
      <div class="engineCardTop"><b>Research Engine</b><span class="engineBadge" id="agentEngineBadge">comprobando</span></div>
      <p id="agentEngineText">Buscando sidecar Python…</p>
+     <div class="agentInstall" style="margin-top:8px">
+       <b>Gemini cloud</b>
+       <div style="display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap">
+         <input id="agentGeminiKey" type="password" autocomplete="off" placeholder="Gemini API key" style="flex:1;min-width:180px;background:#050a10;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 8px;font-size:8px">
+         <button class="btn" id="agentGeminiSave">Guardar</button>
+       </div>
+       <div class="agentMini" id="agentGeminiStatus" style="margin-top:6px">Comprobando configuración…</div>
+     </div>
      <div class="agentProgress"><div id="agentProgress"></div></div>
-     <div class="agentToolbar"><button class="btn primary" id="agentSetup">Preparar motor</button><button class="btn" id="agentHealth">Comprobar</button><button class="btn" id="agentDoctor">Diagnóstico</button><button class="btn" id="agentRepair">Reparar</button><button class="btn" id="agentClose">Cerrar</button></div>
+     <div class="agentToolbar"><button class="btn primary" id="agentSetup">Iniciar motor</button><button class="btn" id="agentHealth">Comprobar</button><button class="btn" id="agentDoctor">Diagnóstico</button><button class="btn" id="agentRepair">Reparar</button><button class="btn" id="agentClose">Cerrar</button></div>
    </div>
    <div class="section"><div class="label">Pipeline</div>
      <div class="agentFlow">
@@ -692,7 +700,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
    </div>
    <div class="section"><div class="label">Ejecución</div><div class="agentLog" id="agentLog">Motor todavía no iniciado.</div></div>
    <div class="section"><div class="label">Resultado</div><div class="agentResult" id="agentResult">—</div></div>
-   <div class="agentInstall" id="agentInstallNote">En la versión instalada, CrewAI + GPT Researcher vienen dentro de Atlas Desktop. No instala Python ni descarga un LLM local en el PC del comprador.</div>
+   <div class="agentInstall" id="agentInstallNote">CrewAI + GPT Researcher vienen dentro de Atlanex Desktop. No descarga un LLM local: usan Gemini cloud por HTTPS y el proceso interno se comunica por stdio.</div>
    <div class="section" style="margin-top:12px"><div class="label">Diagnóstico</div><div class="agentResult" id="agentDoctorOutput">Sin ejecutar.</div></div>
  </div>
 </aside>
@@ -811,7 +819,7 @@ const safeStore={
  removeItem(k){try{window['localStorage'].removeItem(k);return true}catch{_memoryStore.delete(k);return false}},
  persistent(){try{const k='__atlas_store_test';window['localStorage'].setItem(k,'1');window['localStorage'].removeItem(k);return true}catch{return false}}
 };
-const IS_RESTRICTED_ORIGIN=['file:','content:','about:','data:'].includes(location.protocol);
+const IS_RESTRICTED_ORIGIN=!globalThis.atlasDesktop?.isDesktop&&['file:','content:','about:','data:'].includes(location.protocol);
 
 const SRC={websearch:{label:'Web Search',color:'#65d6ff',trust:.62},wikipedia:{label:'Wikipedia',color:'#79e7ff',trust:.82},wikidata:{label:'Wikidata',color:'#72efb6',trust:.86},github:{label:'GitHub',color:'#aa8cff',trust:.72},stackoverflow:{label:'Stack Overflow',color:'#ffb15c',trust:.60},hackernews:{label:'Hacker News',color:'#ff91c8',trust:.52},npm:{label:'npm',color:'#ff718d',trust:.66},openalex:{label:'OpenAlex',color:'#ffd678',trust:.91},crossref:{label:'Crossref',color:'#8ee6ba',trust:.92},arxiv:{label:'arXiv',color:'#e79a9a',trust:.90},publicapis:{label:'Public APIs',color:'#72d8ff',trust:.70},web:{label:'Web',color:'#79e7ff',trust:.76},manual:{label:'Fuente añadida',color:'#8ef0c2',trust:.80},localfile:{label:'Documento local',color:'#b5a1ff',trust:.88}};
 let W=innerWidth,H=innerHeight,DPR=1,state=loadState(),project=null,current=null,criteria=[],rawResults=[],entities=[],nodes=[],edges=[],byId=new Map(),selected=null,compareIds=[],token=0,researchStartedAt=0,auditLog=null,researchDiagnostics=[],aiState={engine:null,model:'auto',loading:false,abort:false,lastError:null},healthState={},failedQueries=[],tourIndex=0,openRunIds=[],commandSelection=0,agentState={mode:'hybrid',runId:null,poll:null,installed:false,running:false},replayBuffer=[],replayTimer=null,pendingFork=null,replaySelectedIndex=0;
@@ -934,20 +942,6 @@ function nextTour(){if(tourIndex<TOUR.length-1){tourIndex++;renderTour()}else{$(
 
 
 function normalizePuterModel(model){const m=String(model||'gpt-5.6-luna').replace(/^openai[:/]/i,'').replace(/^puter[:/]/i,'');return (!m||m==='atlas-auto'||m==='auto')?'gpt-5.6-luna':m}
-if(globalThis.atlasDesktop?.onLLMRequest){
- globalThis.atlasDesktop.onLLMRequest(async req=>{
-   try{
-     await ensurePuter();
-     const model=normalizePuterModel(req.model);
-     const messages=Array.isArray(req.messages)?req.messages:[{role:'user',content:String(req.prompt||'')}];
-     const resp=await puter.ai.chat(messages,{model});
-     const text=puterText(resp);
-     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:true,text,model})
-   }catch(e){
-     globalThis.atlasDesktop.respondLLMRequest(req.id,{ok:false,error:String(e?.message||e)})
-   }
- })
-}
 function agentLog(text){
  const e=$('agentLog');const line=`[${new Date().toLocaleTimeString()}] ${text}`;e.textContent=(e.textContent==='Motor todavía no iniciado.'?'':e.textContent+'\n')+line;e.scrollTop=e.scrollHeight
 }
@@ -961,6 +955,28 @@ function setAgentEngine(kind,title,text){
  const b=$('agentEngineBadge');b.className='engineBadge'+(kind?' '+kind:'');b.textContent=title;$('agentEngineText').textContent=text||''
 }
 
+async function refreshGeminiConfig(){
+ if(!IS_DESKTOP||!globalThis.atlasDesktop?.geminiStatus)return null;
+ try{
+  const s=await globalThis.atlasDesktop.geminiStatus();
+  const el=$('agentGeminiStatus');
+  if(el)el.textContent=s?.configured?`Gemini configurado · ${s.model||'gemini-2.5-flash'} · clave cifrada en Windows`:`Falta Gemini API key · ${s?.secureStorage?'almacenamiento seguro listo':'almacenamiento seguro no disponible'}`;
+  return s
+ }catch(e){if($('agentGeminiStatus'))$('agentGeminiStatus').textContent='No pude leer la configuración de Gemini';return null}
+}
+async function saveGeminiConfig(){
+ if(!IS_DESKTOP||!globalThis.atlasDesktop?.configureGemini)return;
+ const input=$('agentGeminiKey'),key=String(input?.value||'').trim();
+ if(!key)return toast('Pega tu Gemini API key');
+ try{
+  $('agentGeminiStatus').textContent='Guardando de forma cifrada…';
+  const s=await globalThis.atlasDesktop.configureGemini(key,'gemini-2.5-flash');
+  input.value='';
+  $('agentGeminiStatus').textContent=s?.configured?`Gemini configurado · ${s.model} · clave cifrada en Windows`:'Gemini no quedó configurado';
+  await checkAgentEngine();
+  toast('Gemini configurado para Agent Engine')
+ }catch(e){$('agentGeminiStatus').textContent=String(e?.message||e);toast('No pude guardar Gemini',4200)}
+}
 function renderDoctor(d){
  const box=$('agentDoctorOutput');
  if(!d){box.textContent='Sin datos.';return}
@@ -978,14 +994,14 @@ async function runAgentDoctor(){
    const smoke=d?.ready?await globalThis.atlasDesktop.agentSmoke():null;
    if(smoke)d.smoke=smoke;
    renderDoctor(d);
-   if(d?.ready&&smoke?.ok){setAgentEngine('ready','validado','Imports, bridge y runtime smoke test correctos');agentLog('Doctor: motor validado')}
+   if(d?.ready&&smoke?.ok){setAgentEngine('ready','validado','Imports, stdio RPC y Gemini correctos');agentLog('Doctor: motor validado')}
    else{setAgentEngine('error','requiere atención','Usa Reparar si faltan dependencias o el smoke test falla');agentLog('Doctor encontró problemas')}
  }catch(e){$('agentDoctorOutput').textContent=String(e?.message||e)}
 }
 async function repairAgentEngine(){
  if(!IS_DESKTOP)return;
- if(!confirm('Atlas eliminará solo el entorno Python interno de agentes y lo reinstalará. ¿Continuar?'))return;
- setAgentEngine('running','reparando','Reconstruyendo entorno CrewAI + GPT Researcher…');agentLog('Reparación iniciada');
+ if(!confirm('Atlanex reiniciará el Agent Engine interno. ¿Continuar?'))return;
+ setAgentEngine('running','reiniciando','Reiniciando CrewAI + GPT Researcher…');agentLog('Reinicio iniciado');
  await globalThis.atlasDesktop.repairAgents();
  let tries=0;
  const timer=setInterval(async()=>{
@@ -997,18 +1013,20 @@ async function repairAgentEngine(){
  },1000)
 }
 async function checkAgentEngine(){
- if(!IS_DESKTOP){setAgentEngine('error','desktop requerido','CrewAI/GPT Researcher corren en Atlas Desktop.');return null}
+ if(!IS_DESKTOP){setAgentEngine('error','desktop requerido','CrewAI/GPT Researcher corren en Atlanex Desktop.');return null}
  try{
    const h=await globalThis.atlasDesktop.agentHealth();
-   agentState.installed=!!h?.ready;
-   if(h?.ready)setAgentEngine('ready','listo',`CrewAI ${h.crewai?'✓':'×'} · GPT Researcher ${h.gpt_researcher?'✓':'×'} · Python ${h.python||'?'}`);
-   else setAgentEngine('error','sin instalar',h?.message||'Instala el motor de agentes.');
+   agentState.installed=!!h?.runtime_ready;
+   if(h?.ready)setAgentEngine('ready','listo',`CrewAI ${h.crewai?'✓':'×'} · GPT Researcher ${h.gpt_researcher?'✓':'×'} · Gemini ${h.model||''} · stdio`);
+   else if(h?.runtime_ready&&!h?.gemini_configured)setAgentEngine('error','configura Gemini','Motor incluido y listo · falta guardar la Gemini API key.');
+   else setAgentEngine('error','motor incompleto',h?.message||'El Agent Engine no está disponible.');
+   await refreshGeminiConfig();
    return h
  }catch(e){setAgentEngine('error','offline',String(e?.message||e));return null}
 }
 async function setupAgentEngine(){
  if(!IS_DESKTOP)return toast('Abre Atlas Desktop para instalar el motor');
- setAgentEngine('running','instalando','Creando entorno Python e instalando CrewAI + GPT Researcher…');$('agentProgress').style.width='8%';agentLog('Inicio de instalación del Research Engine');
+ setAgentEngine('running','iniciando','Iniciando CrewAI + GPT Researcher por stdio…');$('agentProgress').style.width='8%';agentLog('Inicio del Research Engine');
  try{
    await globalThis.atlasDesktop.setupAgents();
    let tries=0;
@@ -1016,8 +1034,8 @@ async function setupAgentEngine(){
      tries++;const s=await globalThis.atlasDesktop.agentSetupStatus();
      $('agentProgress').style.width=(s?.progress||Math.min(95,10+tries*2))+'%';
      if(s?.line)agentLog(s.line);
-     if(s?.done){clearInterval(t);$('agentProgress').style.width=s.ok?'100%':'0%';await checkAgentEngine();agentLog(s.ok?'Motor instalado.':'Instalación falló: '+(s.error||''))}
-     if(tries>180){clearInterval(t);agentLog('La instalación sigue en proceso; puedes volver a comprobar más tarde.')}
+     if(s?.done){clearInterval(t);$('agentProgress').style.width=s.ok?'100%':'0%';await checkAgentEngine();agentLog(s.ok?'Motor iniciado.':'Inicio falló: '+(s.error||''))}
+     if(tries>180){clearInterval(t);agentLog('El inicio del motor superó el tiempo esperado.')}
    },1000)
  }catch(e){setAgentEngine('error','error',String(e?.message||e));agentLog(String(e?.message||e))}
 }
@@ -1025,7 +1043,7 @@ async function runAgentPipeline(){
  if(!IS_DESKTOP)return toast('El pipeline CrewAI/GPT Researcher está disponible en Desktop');
  if(agentState.running)return;
  const objective=($('q').value||current?.objective||'').trim();if(!objective)return toast('Escribe un objetivo primero');
- const h=await checkAgentEngine();if(!h?.ready){$('agentPanel').classList.add('show');return toast('Instala el motor de agentes primero')}
+ const h=await checkAgentEngine();if(!h?.ready){$('agentPanel').classList.add('show');return toast(h?.runtime_ready?'Configura Gemini primero':'Agent Engine no disponible')}
  resetAgentStages();$('agentResult').textContent='Trabajando…';$('agentLog').textContent='';agentState.running=true;
  setAgentEngine('running','ejecutando',`${agentState.mode} · ${objective.slice(0,70)}`);agentLog(`Objetivo: ${objective}`);
  try{
@@ -1061,6 +1079,7 @@ function initSoftwareMode(){
  if(IS_DESKTOP){
    document.body.classList.add('desktop-mode');
    globalThis.atlasDesktop.getVersion?.().then(v=>consoleWrite(`Desktop runtime ${v||''}`)).catch(()=>{});
+   refreshGeminiConfig();
  }
  let saved={};try{saved=JSON.parse(safeStore.getItem('internet-atlas-layout-v1')||safeStore.getItem('atlas-x20-layout')||'{}')}catch{}
  if(saved.left)document.documentElement.style.setProperty('--leftW',saved.left+'px');
@@ -1237,7 +1256,10 @@ async function researchPass(q,tk){
      return []
    }
  }
- if(location.protocol.startsWith('http')){
+ if(globalThis.atlasDesktop?.research){
+   try{const d=await globalThis.atlasDesktop.research(q);researchDiagnostics.push({q,mode:'desktop-ipc',providerCount:d.providerCount||0,diagnostics:d.diagnostics||[],count:d.results?.length||0});if(tk===token&&d.results?.length)return d.results}
+   catch(e){failedQueries.push({q,at:Date.now(),mode:'desktop-ipc',error:String(e?.message||e)})}
+ }else if(location.protocol.startsWith('http')){
    try{const d=await fetch('/api/research?q='+encodeURIComponent(q)).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});researchDiagnostics.push({q,mode:'backend',providerCount:d.providerCount||0,diagnostics:d.diagnostics||[],count:d.results?.length||0});if(tk===token&&d.results?.length)return d.results}
    catch(e){failedQueries.push({q,at:Date.now(),mode:'backend',error:String(e?.message||e)})}
  }
@@ -1342,7 +1364,8 @@ async function addSnapshot(e,data,url){
  return snapshot
 }
 async function fetchInspectable(url){
- if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlas Desktop o una versión servida');
+ if(globalThis.atlasDesktop?.inspectUrl)return await globalThis.atlasDesktop.inspectUrl(url);
+ if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlanex Desktop o una versión servida');
  const r=await fetch('/api/inspect?url='+encodeURIComponent(url));
  const d=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
@@ -2990,6 +3013,7 @@ addEventListener('resize',()=>{if(mcVisible)requestAnimationFrame(renderMissionG
 $('agentsBtn').onclick=()=>{$('agentPanel').classList.add('show');checkAgentEngine()};
 $('agentClose').onclick=()=>$('agentPanel').classList.remove('show');
 $('agentSetup').onclick=setupAgentEngine;
+$('agentGeminiSave').onclick=saveGeminiConfig;
 $('agentHealth').onclick=checkAgentEngine;
 $('agentDoctor').onclick=runAgentDoctor;
 $('agentRepair').onclick=repairAgentEngine;
