@@ -9,7 +9,7 @@ import inspectHandler from './app/api/inspect.js';
 
 const __dirname=path.dirname(fileURLToPath(import.meta.url));
 const appDir=path.join(__dirname,'app');
-app.setAppUserModelId('com.internetatlas.desktop');
+app.setAppUserModelId('com.atlanex.desktop');
 let mainWindow=null,tray=null,monitorTimer=null,sidecarProc=null,isQuitting=false;
 let sidecarBuffer='',rpcSeq=0,sidecarLastError='';
 const rpcPending=new Map();
@@ -137,7 +137,7 @@ function loadMonitor(){try{const x=JSON.parse(fs.readFileSync(monitorPath(),'utf
 function saveMonitor(x){try{fs.mkdirSync(path.dirname(monitorPath()),{recursive:true});fs.writeFileSync(monitorPath(),JSON.stringify(x,null,2));return true}catch{return false}}
 function cleanJob(j){try{const u=new URL(String(j?.url||''));if(!['http:','https:'].includes(u.protocol))return null;return{id:String(j.id||crypto.randomUUID()),title:String(j.title||u.href).slice(0,180),url:u.href,intervalMinutes:Math.max(15,Math.min(10080,Number(j.intervalMinutes)||360)),enabled:j.enabled!==false,lastChecked:Number(j.lastChecked)||0,nextCheck:Number(j.nextCheck)||0,lastHash:String(j.lastHash||''),lastTitle:String(j.lastTitle||''),changed:!!j.changed,failures:Number(j.failures)||0,lastError:j.lastError||null,history:Array.isArray(j.history)?j.history.slice(-30):[]}}catch{return null}}
 async function scanMonitor(url){const j=await inspectPayload(url),s=j.snapshot||{},h=String(s.contentHash||j.contentHash||'');if(!/^[a-f0-9]{64}$/i.test(h))throw new Error('SHA-256 ausente');return{hash:h,title:s.title||j.title||url,fetchedAt:s.fetchedAt||j.fetchedAt||new Date().toISOString()}}
-async function monitorTick(force=false){const s=loadMonitor();if(!s.enabled&&!force)return s;for(const job of s.jobs){if(!job.enabled||(!force&&job.nextCheck>Date.now()))continue;const now=Date.now();try{const before=job.lastHash||'',snap=await scanMonitor(job.url);Object.assign(job,{lastChecked:now,nextCheck:now+job.intervalMinutes*60000,lastHash:snap.hash,lastTitle:snap.title,changed:!!before&&before!==snap.hash,failures:0,lastError:null});job.history=[...(job.history||[]),{at:now,hash:snap.hash,previousHash:before||null,changed:job.changed,fetchedAt:snap.fetchedAt}].slice(-30);if(job.changed&&Notification.isSupported())new Notification({title:'Internet Atlas · cambio detectado',body:job.title}).show()}catch(e){job.lastChecked=now;job.failures=(job.failures||0)+1;job.lastError=String(e?.message||e);job.nextCheck=now+Math.min(job.intervalMinutes,60)*60000}}saveMonitor(s);return s}
+async function monitorTick(force=false){const s=loadMonitor();if(!s.enabled&&!force)return s;for(const job of s.jobs){if(!job.enabled||(!force&&job.nextCheck>Date.now()))continue;const now=Date.now();try{const before=job.lastHash||'',snap=await scanMonitor(job.url);Object.assign(job,{lastChecked:now,nextCheck:now+job.intervalMinutes*60000,lastHash:snap.hash,lastTitle:snap.title,changed:!!before&&before!==snap.hash,failures:0,lastError:null});job.history=[...(job.history||[]),{at:now,hash:snap.hash,previousHash:before||null,changed:job.changed,fetchedAt:snap.fetchedAt}].slice(-30);if(job.changed&&Notification.isSupported())new Notification({title:'Atlanex · cambio detectado',body:job.title}).show()}catch(e){job.lastChecked=now;job.failures=(job.failures||0)+1;job.lastError=String(e?.message||e);job.nextCheck=now+Math.min(job.intervalMinutes,60)*60000}}saveMonitor(s);return s}
 function startMonitor(){clearInterval(monitorTimer);monitorTimer=setInterval(()=>monitorTick(false).catch(()=>{}),60000);setTimeout(()=>monitorTick(false).catch(()=>{}),6000)}
 function setLogin(v){try{app.setLoginItemSettings({openAtLogin:!!v,args:v?['--background']:[]});return app.getLoginItemSettings().openAtLogin}catch{return false}}
 
@@ -165,7 +165,7 @@ function createWindow(show=true){
  mainWindow.on('closed',()=>{mainWindow=null});
  return mainWindow
 }
-function createTray(){try{const p=path.join(appDir,'icons','icon-192.png');if(!fs.existsSync(p))return;tray=new Tray(nativeImage.createFromPath(p).resize({width:18,height:18}));tray.setToolTip('Internet Atlas');tray.setContextMenu(Menu.buildFromTemplate([{label:'Abrir Atlas',click:()=>{mainWindow?.show();mainWindow?.focus()}},{label:'Revisar monitores ahora',click:()=>monitorTick(true).catch(()=>{})},{type:'separator'},{label:'Salir completamente',click:()=>{isQuitting=true;app.quit()}}]));tray.on('double-click',()=>mainWindow?.show())}catch{}}
+function createTray(){try{const p=path.join(appDir,'icons','icon-192.png');if(!fs.existsSync(p))return;tray=new Tray(nativeImage.createFromPath(p).resize({width:18,height:18}));tray.setToolTip('Atlanex');tray.setContextMenu(Menu.buildFromTemplate([{label:'Abrir Atlas',click:()=>{mainWindow?.show();mainWindow?.focus()}},{label:'Revisar monitores ahora',click:()=>monitorTick(true).catch(()=>{})},{type:'separator'},{label:'Salir completamente',click:()=>{isQuitting=true;app.quit()}}]));tray.on('double-click',()=>mainWindow?.show())}catch{}}
 function acceptanceLog(payload){try{const p=process.env.ATLAS_ACCEPTANCE_LOG;if(p)fs.writeFileSync(p,JSON.stringify(payload,null,2),'utf8')}catch{}}
 async function rendererCheck(win){
  const consoleErrors=[],preloadErrors=[];
@@ -244,7 +244,7 @@ else{
 ipcMain.handle('atlas:window',(_e,a)=>{if(!mainWindow)return false;if(a==='minimize')mainWindow.minimize();else if(a==='maximize')mainWindow.isMaximized()?mainWindow.unmaximize():mainWindow.maximize();else if(a==='close')mainWindow.close();else if(a==='fullscreen')mainWindow.setFullScreen(!mainWindow.isFullScreen());return true});
 ipcMain.handle('atlas:save-project',async(_e,{text,defaultName})=>{const x=await dialog.showSaveDialog(mainWindow,{title:'Guardar proyecto Atlas',defaultPath:path.join(app.getPath('documents'),defaultName||'Atlas_Project.atlas.json'),filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePath)return false;fs.writeFileSync(x.filePath,text,'utf8');return true});
 ipcMain.handle('atlas:open-project',async()=>{const x=await dialog.showOpenDialog(mainWindow,{title:'Abrir proyecto Atlas',properties:['openFile'],filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePaths[0])return null;return{path:x.filePaths[0],text:fs.readFileSync(x.filePaths[0],'utf8')}});
-ipcMain.handle('atlas:notify',(_e,{title,body})=>{if(Notification.isSupported())new Notification({title:title||'Internet Atlas',body:body||''}).show();return true});
+ipcMain.handle('atlas:notify',(_e,{title,body})=>{if(Notification.isSupported())new Notification({title:title||'Atlanex',body:body||''}).show();return true});
 ipcMain.handle('atlas:research',async(_e,{q}={})=>await researchPayload(q));
 ipcMain.handle('atlas:inspect',async(_e,{url}={})=>await inspectPayload(url));
 ipcMain.handle('atlas:gemini-status',()=>geminiStatus());
