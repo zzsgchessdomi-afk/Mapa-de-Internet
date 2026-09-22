@@ -1,18 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
-# Do NOT recursively collect CrewAI/GPT Researcher/LangChain.
-# PyInstaller's normal import graph starts from server.py; explicit entries below
-# cover the runtime imports used by Atlas without dragging every optional plugin.
+# Keep Atlas' real runtime packages, but explicitly exclude heavyweight optional
+# ecosystems that are not used by server.py. This prevents PyInstaller from
+# recursively scanning thousands of optional scientific/ML/database modules.
 hiddenimports = [
     "crewai",
     "crewai.llm",
     "gpt_researcher",
     "litellm",
-    "langchain",
-    "langchain_core",
-    "langchain_community",
-    "langchain_openai",
     "fastapi",
     "uvicorn",
     "uvicorn.logging",
@@ -44,8 +40,13 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        "tkinter", "matplotlib", "IPython", "notebook", "jupyter",
-        "torch", "tensorflow", "tensorflow_intel",
+        "tkinter", "matplotlib", "IPython", "notebook", "jupyter", "jupyterlab",
+        "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
+        "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
+        "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
+        "cv2", "PIL.ImageQt",
+        "boto3", "botocore", "sagemaker",
+        "pymongo", "MySQLdb", "pysqlite2",
     ],
     noarchive=False,
     optimize=0,
