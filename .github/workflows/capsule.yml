@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - "lib/capsule-core.js"
-      - "tests/capsule-contract.mjs"\n      - "tests/index-inline-syntax.mjs"\n      - "index.html"
+      - "tests/capsule-contract.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - "index.html"
       - "scripts/capsule_cli.mjs"
       - "AICAPSULE_SPEC.md"
       - "package.json"
@@ -15,6 +17,8 @@ on:
     paths:
       - "lib/capsule-core.js"
       - "tests/capsule-contract.mjs"
+      - "tests/index-inline-syntax.mjs"
+      - "index.html"
       - "scripts/capsule_cli.mjs"
       - "AICAPSULE_SPEC.md"
       - "package.json"
