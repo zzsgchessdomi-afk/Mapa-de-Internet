@@ -253,5 +253,14 @@ if __name__=="__main__":
     import argparse,uvicorn
     p=argparse.ArgumentParser();p.add_argument("--port",type=int,default=int(os.getenv("PORT","8765")));p.add_argument("--self-test",action="store_true");p.add_argument("--self-test-deep",action="store_true");a=p.parse_args()
     if a.self_test or a.self_test_deep:
-        result=runtime_self_test(deep=a.self_test_deep);print(json.dumps(result,ensure_ascii=False));sys.exit(0 if result.get("ok") else 2)
+        result=runtime_self_test(deep=a.self_test_deep)
+        payload=json.dumps(result,ensure_ascii=False)
+        print(payload)
+        log_path=os.getenv("ATLAS_SELF_TEST_LOG","").strip()
+        if log_path:
+            try:Path(log_path).write_text(payload,encoding="utf-8")
+            except Exception as e:
+                # Do not hide the real test result if diagnostics cannot be written.
+                pass
+        sys.exit(0 if result.get("ok") else 2)
     uvicorn.run(APP,host="127.0.0.1",port=a.port,log_level="warning")
