@@ -9,6 +9,8 @@ on:
       - "AICAPSULE_SPEC.md"
       - "package.json"
       - "index.html"
+      - "tools/capsule-viewer.html"
+      - "desktop/scripts/prepare_app.mjs"
       - "schemas/**"
       - "sdk/**"
       - "tests/capsule-*.mjs"
@@ -23,6 +25,8 @@ on:
       - "AICAPSULE_SPEC.md"
       - "package.json"
       - "index.html"
+      - "tools/capsule-viewer.html"
+      - "desktop/scripts/prepare_app.mjs"
       - "schemas/**"
       - "sdk/**"
       - "tests/capsule-*.mjs"
@@ -46,6 +50,13 @@ jobs:
       - run: npm install --ignore-scripts
       - run: npm run check
       - run: npm run test:capsule
+      - name: Verify desktop Capsule payload
+        shell: bash
+        run: |
+          node desktop/scripts/prepare_app.mjs
+          test -f desktop/app/lib/capsule-core.js
+          test -f desktop/app/tools/capsule-viewer.html
+          grep -q 'capsule-core.js' desktop/app/index.html
       - name: Create signed Capsule fixture
         run: node tests/create-signed-fixture.mjs
       - name: Verify signed Capsule with Atlanex Action
