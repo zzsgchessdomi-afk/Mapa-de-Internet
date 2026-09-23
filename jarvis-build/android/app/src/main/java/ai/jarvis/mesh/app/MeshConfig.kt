@@ -23,7 +23,8 @@ class MeshConfig(context: Context) {
         val o = JSONObject(raw)
         return TrustedPeer(
             o.getString("device_id"), o.getString("label"),
-            o.getString("signing_public_key_b64"), o.getString("encryption_public_key_b64")
+            o.getString("signing_public_key_b64"), o.getString("encryption_public_key_b64"),
+            o.optString("relay_url").takeIf { it.startsWith("ws://") || it.startsWith("wss://") }
         )
     }
 
@@ -33,6 +34,7 @@ class MeshConfig(context: Context) {
             .put("label", peer.label)
             .put("signing_public_key_b64", peer.signingPublicKeyB64)
             .put("encryption_public_key_b64", peer.encryptionPublicKeyB64)
+        peer.relayUrl?.let { o.put("relay_url", it) }
         prefs.edit().putString("peer", o.toString()).apply()
     }
 }
