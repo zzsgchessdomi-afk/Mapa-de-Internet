@@ -40,7 +40,7 @@ for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-ev
 }
 const spec=text("desktop/sidecar/atlas_agent.spec");
 ok("PyInstaller LiteLLM runtime",spec.includes('"litellm"')&&spec.includes('"gpt_researcher"'));
-ok("PyInstaller heavy native pruning",["chromadb","lancedb","onnxruntime","unstructured"].every(x=>spec.includes(x)));
+ok("PyInstaller packaged runtime policy",["lancedb","onnxruntime","unstructured","magic"].every(x=>spec.includes(`"${x}"`))&&spec.includes('collect_data_files("crewai")')&&spec.includes('langchain_classic.retrievers'),"prune optional native stacks; preserve CrewAI prompts + GPT Researcher runtime imports");
 
 const result={ok:!fail.length,version:pkg.version,checks,failures:fail,sha256:crypto.createHash("sha256").update(html).digest("hex")};
 console.log(JSON.stringify(result,null,2));
