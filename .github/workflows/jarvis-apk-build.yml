@@ -1,9 +1,6 @@
 name: JARVIS APK Build
 
 on:
-  push:
-    branches:
-      - jarvis-apk-build-v06
   workflow_dispatch:
 
 permissions:
