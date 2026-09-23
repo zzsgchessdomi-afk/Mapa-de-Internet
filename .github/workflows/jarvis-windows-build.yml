@@ -69,10 +69,79 @@ jobs:
           Write-Host "size=$($file.Length)"
           Get-FileHash "dist/JARVIS Mesh.exe" -Algorithm SHA256
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          if (!(Test-Path $iscc)) { throw "Inno Setup compiler missing" }
+
+      - name: Create commercial-style installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path installer | Out-Null
+          @'
+          #define MyAppName "JARVIS Mesh"
+          #define MyAppVersion "0.8.0"
+          #define MyAppExeName "JARVIS Mesh.exe"
+
+          [Setup]
+          AppId={{8C1FE057-3D21-45BD-A4D0-0CBFB8D74538}
+          AppName={#MyAppName}
+          AppVersion={#MyAppVersion}
+          AppPublisher=JARVIS Mesh
+          DefaultDirName={localappdata}\Programs\JARVIS Mesh
+          DefaultGroupName=JARVIS Mesh
+          DisableProgramGroupPage=yes
+          OutputDir=installer
+          OutputBaseFilename=JARVIS-Mesh-Setup-v0.8
+          Compression=lzma2
+          SolidCompression=yes
+          WizardStyle=modern
+          PrivilegesRequired=lowest
+          ArchitecturesAllowed=x64compatible
+          UninstallDisplayIcon={app}\{#MyAppExeName}
+
+          [Files]
+          Source: "dist\JARVIS Mesh.exe"; DestDir: "{app}"; Flags: ignoreversion
+
+          [Icons]
+          Name: "{autoprograms}\JARVIS Mesh"; Filename: "{app}\{#MyAppExeName}"
+          Name: "{autodesktop}\JARVIS Mesh"; Filename: "{app}\{#MyAppExeName}"
+
+          [Run]
+          Filename: "{app}\{#MyAppExeName}"; Description: "Abrir JARVIS Mesh"; Flags: nowait postinstall skipifsilent
+          '@ | Set-Content -Path "JARVIS-Mesh.iss" -Encoding UTF8
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "JARVIS-Mesh.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }
+
+      - name: Verify installer
+        shell: pwsh
+        run: |
+          if (!(Test-Path "installer/JARVIS-Mesh-Setup-v0.8.exe")) { throw "Installer missing" }
+          $file = Get-Item "installer/JARVIS-Mesh-Setup-v0.8.exe"
+          Write-Host "installer_size=$($file.Length)"
+          Get-FileHash "installer/JARVIS-Mesh-Setup-v0.8.exe" -Algorithm SHA256
+
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: JARVIS-Mesh-Windows-v0.8
           path: dist/JARVIS Mesh.exe
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-Mesh-Installer-v0.8
+          path: installer/JARVIS-Mesh-Setup-v0.8.exe
           if-no-files-found: error
           retention-days: 7
