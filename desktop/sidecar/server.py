@@ -180,8 +180,12 @@ class _MockHandler(__import__("http.server").server.BaseHTTPRequestHandler):
             messages=b.get("messages",[]);joined=" ".join(str(x).lower() for x in messages)
             if "agent_role_prompt" in joined or ("choose" in joined and "agent" in joined):
                 text=json.dumps({"server":"atlas-self-test","agent_role_prompt":"You are a local evidence research agent.","agent_name":"Atlas Self Test"})
-            elif "report" in joined:
-                text="Atlas local research report: the supplied local document states the test API has a free tier and commercial use is permitted. Source: local atlas-self-test.txt."
+            elif any(k in joined for k in ("sub quer","subquer","sub-quer","research questions","search queries","generate queries","queries for")):
+                # GPT Researcher parses this response as JSON and mutates the resulting
+                # list, so return the exact collection shape its planner contract needs.
+                text=json.dumps(["Atlas self-test source"])
+            elif "report" in joined or "write" in joined and "research" in joined:
+                text="Atlas self-test research report. The packaged GPT Researcher runtime completed planning, retrieval and report generation successfully."
             else:
                 text="Atlas self-test response. Evidence is provisional unless backed by source snapshot."
             self._send({"id":"self-test","object":"chat.completion","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"message":{"role":"assistant","content":text},"finish_reason":"stop"}]})
