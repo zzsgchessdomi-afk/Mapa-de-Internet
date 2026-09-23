@@ -203,6 +203,119 @@ class AndroidDeviceExecutor(
         return ExecutionResult(ok = true, data = mapOf("copied" to true, "characters" to text.length))
     }
 
+    private fun transferId(params: Map<String, Any?>): String? {
+        val id = (params["transfer_id"] as? String)?.trim().orEmpty()
+        return id.takeIf { it.matches(Regex("[A-Za-z0-9-]{8,64}")) }
+    }
+
+    private fun transferFile(id: String): File = File(context.cacheDir, "jarvis-transfer-$id.part")
+
+    private fun filePushBegin(params: Map<String, Any?>): ExecutionResult {
+        val id = transferId(params) ?: return ExecutionResult(ok = false, error = "Invalid transfer_id")
+        val rawName = (params["name"] as? String)?.trim().orEmpty()
+        val name = rawName.replace(Regex("[\\\\/:*?\"<>|]"), "_").take(120)
+        if (name.isBlank() || name == "." || name == "..") {
+            return ExecutionResult(ok = false, error = "Invalid file name")
+        }
+        val size = (params["size"] as? Number)?.toLong()
+            ?: return ExecutionResult(ok = false, error = "Missing file size")
+        if (size < 0 || size > 8L * 1024 * 1024) {
+            return ExecutionResult(ok = false, error = "File size must be <= 8 MiB")
+        }
+        val sha = (params["sha256"] as? String)?.lowercase().orEmpty()
+        if (!sha.matches(Regex("[0-9a-f]{64}"))) {
+            return ExecutionResult(ok = false, error = "Invalid SHA-256")
+        }
+        val mime = (params["mime"] as? String)?.trim().orEmpty().ifBlank { "application/octet-stream" }.take(100)
+        val file = transferFile(id)
+        file.delete()
+        file.parentFile?.mkdirs()
+        file.createNewFile()
+        context.getSharedPreferences("jarvis_file_transfer", Context.MODE_PRIVATE).edit()
+            .putString("$id.name", name)
+            .putString("$id.sha", sha)
+            .putString("$id.mime", mime)
+            .putLong("$id.size", size)
+            .putInt("$id.next", 0)
+            .apply()
+        return ExecutionResult(ok = true, data = mapOf("transfer_id" to id, "accepted" to true, "max_chunk_bytes" to 32768))
+    }
+
+    private fun filePushChunk(params: Map<String, Any?>): ExecutionResult {
+        val id = transferId(params) ?: return ExecutionResult(ok = false, error = "Invalid transfer_id")
+        val prefs = context.getSharedPreferences("jarvis_file_transfer", Context.MODE_PRIVATE)
+        if (!prefs.contains("$id.size")) return ExecutionResult(ok = false, error = "Unknown transfer")
+        val index = (params["index"] as? Number)?.toInt()
+            ?: return ExecutionResult(ok = false, error = "Missing chunk index")
+        val expected = prefs.getInt("$id.next", 0)
+        if (index != expected) return ExecutionResult(ok = false, error = "Expected chunk $expected, got $index")
+        val encoded = params["data_b64"] as? String
+            ?: return ExecutionResult(ok = false, error = "Missing chunk data")
+        val bytes = try {
+            Base64.decode(encoded, Base64.URL_SAFE)
+        } catch (_: IllegalArgumentException) {
+            return ExecutionResult(ok = false, error = "Invalid chunk encoding")
+        }
+        if (bytes.size > 32768) return ExecutionResult(ok = false, error = "Chunk too large")
+        val file = transferFile(id)
+        val targetSize = prefs.getLong("$id.size", -1)
+        if (file.length() + bytes.size > targetSize) {
+            return ExecutionResult(ok = false, error = "Transfer exceeds declared size")
+        }
+        file.outputStream().buffered().use { }
+        file.appendBytes(bytes)
+        prefs.edit().putInt("$id.next", expected + 1).apply()
+        return ExecutionResult(ok = true, data = mapOf("transfer_id" to id, "index" to index, "received_bytes" to file.length()))
+    }
+
+    private fun filePushCommit(params: Map<String, Any?>): ExecutionResult {
+        val id = transferId(params) ?: return ExecutionResult(ok = false, error = "Invalid transfer_id")
+        val prefs = context.getSharedPreferences("jarvis_file_transfer", Context.MODE_PRIVATE)
+        val expectedSize = prefs.getLong("$id.size", -1)
+        val expectedSha = prefs.getString("$id.sha", null)
+            ?: return ExecutionResult(ok = false, error = "Unknown transfer")
+        val file = transferFile(id)
+        if (!file.exists() || file.length() != expectedSize) {
+            return ExecutionResult(ok = false, error = "File size verification failed")
+        }
+        val digest = MessageDigest.getInstance("SHA-256").digest(file.readBytes())
+            .joinToString("") { "%02x".format(it) }
+        if (digest != expectedSha) {
+            file.delete()
+            return ExecutionResult(ok = false, error = "SHA-256 verification failed")
+        }
+        val name = prefs.getString("$id.name", "JARVIS-file") ?: "JARVIS-file"
+        val mime = prefs.getString("$id.mime", "application/octet-stream") ?: "application/octet-stream"
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, name)
+            put(MediaStore.Downloads.MIME_TYPE, mime)
+            put(MediaStore.Downloads.RELATIVE_PATH, "Download/JARVIS")
+            put(MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            ?: return ExecutionResult(ok = false, error = "Could not create Downloads entry")
+        return try {
+            resolver.openOutputStream(uri, "w")?.use { output ->
+                file.inputStream().use { input -> input.copyTo(output) }
+            } ?: throw IllegalStateException("Could not open Downloads output stream")
+            values.clear()
+            values.put(MediaStore.Downloads.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+            file.delete()
+            prefs.edit()
+                .remove("$id.name").remove("$id.sha").remove("$id.mime")
+                .remove("$id.size").remove("$id.next").apply()
+            ExecutionResult(ok = true, data = mapOf(
+                "transfer_id" to id, "saved" to true, "name" to name,
+                "bytes" to expectedSize, "sha256" to digest, "uri" to uri.toString(),
+            ))
+        } catch (e: Exception) {
+            resolver.delete(uri, null, null)
+            ExecutionResult(ok = false, error = "Could not save file: ${e.message ?: e::class.java.simpleName}")
+        }
+    }
+
     private fun openApp(params: Map<String, Any?>): ExecutionResult {
         val packageName = (params["package"] as? String)?.trim().orEmpty()
         if (packageName.isBlank() || packageName.length > 200 || !packageName.matches(Regex("[A-Za-z0-9_.]+"))) {
