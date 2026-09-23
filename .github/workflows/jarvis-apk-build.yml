@@ -1,6 +1,9 @@
 name: JARVIS APK Build
 
 on:
+  push:
+    branches:
+      - jarvis-apk-build-v06
   workflow_dispatch:
 
 permissions:
@@ -45,7 +48,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Mesh-v0.8-debug-apk
+          name: JARVIS-Mesh-v0.9-debug-apk
           path: jarvis-build/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
