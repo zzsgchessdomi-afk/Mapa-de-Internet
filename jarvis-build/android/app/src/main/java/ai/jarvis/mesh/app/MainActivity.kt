@@ -114,9 +114,14 @@ class MainActivity : Activity() {
         try {
             val peer = Pairing.verifyAndParse(peerOfferInput.text.toString().trim())
             config.savePeer(peer)
+            peer.relayUrl?.let {
+                config.relayUrl = it
+                relayInput.setText(it)
+            }
             val code = Pairing.comparisonCode(peer.signingPublicKeyB64, peer.encryptionPublicKeyB64)
             statusText.text = "PC verificado: ${peer.label} (${peer.deviceId}) — código $code"
-            toast("PC guardado. Compara el código $code en ambos dispositivos.")
+            val relayNote = peer.relayUrl?.let { " Relay configurado automáticamente." } ?: ""
+            toast("PC guardado. Compara el código $code en ambos dispositivos.$relayNote")
         } catch (e: Exception) {
             toast("No se guardó: ${e.message}")
         }
