@@ -23,6 +23,8 @@ hiddenimports = [
     "uvicorn.lifespan.on",
     "httpx",
     "pydantic",
+    "lxml",
+    "lxml.etree",
 ]
 
 datas = [("gptr_config.json", ".")]
@@ -57,7 +59,7 @@ excludes = [
     "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
     "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
     "nltk", "langchain", "sqlalchemy", "pdfminer",
-    "pdfplumber", "pypdfium2", "pypdfium2_raw", "lxml",
+    "pdfplumber", "pypdfium2", "pypdfium2_raw",
     "cv2", "PIL.ImageQt",
     "unstructured", "unstructured_client",
     # CrewAI imports its ChromaDB storage adapter at package import time even when
