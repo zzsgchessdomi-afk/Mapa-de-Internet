@@ -137,6 +137,10 @@ class MainActivity : Activity() {
         toast("JARVIS Mesh iniciado")
     }
 
-    private fun statusLine(): String = config.peer()?.let { "PC guardado: ${it.label}" } ?: "Sin PC emparejado"
+    private fun statusLine(): String {
+        val profile = config.assistantId?.let { "${config.assistantName}: $it" } ?: "JARVIS aún no sincronizada"
+        val peer = config.peer()?.let { "PC: ${it.label}" } ?: "Sin PC emparejado"
+        return "$profile · $peer"
+    }
     private fun toast(text: String) = Toast.makeText(this, text, Toast.LENGTH_LONG).show()
 }
