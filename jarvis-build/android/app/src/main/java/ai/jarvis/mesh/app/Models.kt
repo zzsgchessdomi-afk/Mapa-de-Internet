@@ -13,4 +13,5 @@ data class TrustedPeer(
     val label: String,
     val signingPublicKeyB64: String,
     val encryptionPublicKeyB64: String,
+    val relayUrl: String? = null,
 )
