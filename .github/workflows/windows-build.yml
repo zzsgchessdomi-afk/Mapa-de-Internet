@@ -24,6 +24,8 @@ jobs:
           python-version: '3.12'
       - name: Install root dependencies
         run: npm install --no-audit --no-fund
+      - name: Python sidecar syntax gate
+        run: python -m py_compile desktop/sidecar/server.py desktop/scripts/install_agent_dependencies.py desktop/scripts/collect_python_licenses.py
       - name: Full ATLANEX pre-release audit
         run: npm run audit:all
       - name: Build bundled CrewAI + GPT Researcher engine

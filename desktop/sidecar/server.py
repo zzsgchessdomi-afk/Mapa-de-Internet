@@ -211,14 +211,14 @@ def runtime_self_test(deep=False):
         os.environ.pop("DOC_PATH",None);os.environ["REPORT_SOURCE"]="web"
         r=GPTResearcher(query="Summarize the Atlas self-test source.",report_type="research_report",report_source="web",config_path=str(CONFIG_PATH))
         out["gpt_researcher_runtime"]=True
-            if deep:
-                async def go():
-                    await r.conduct_research();return await r.write_report()
-                # GPT Researcher writes progress messages to stderr. They are not test
-                # failures; acceptance consumes the structured JSON result below.
-                report=str(asyncio.run(go()))
-                if len(report.strip())<20:raise RuntimeError("GPT Researcher deep report was empty")
-                out["gpt_researcher_deep"]=True;out["report_chars"]=len(report)
+        if deep:
+            async def go():
+                await r.conduct_research();return await r.write_report()
+            # GPT Researcher writes progress messages to stderr. They are not test
+            # failures; acceptance consumes the structured JSON result below.
+            report=str(asyncio.run(go()))
+            if len(report.strip())<20:raise RuntimeError("GPT Researcher deep report was empty")
+            out["gpt_researcher_deep"]=True;out["report_chars"]=len(report)
         out["ok"]=out["crewai_runtime"] and out["gpt_researcher_runtime"] and (out["gpt_researcher_deep"] if deep else True)
     except Exception as e:out["error"]=str(e);out["traceback"]=traceback.format_exc()[-7000:]
     finally:
