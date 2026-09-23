@@ -32,6 +32,8 @@ excludes = [
     "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
     "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
     "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
+    "nltk", "langchain", "langchain_classic", "sqlalchemy", "pdfminer",
+    "pdfplumber", "pypdfium2", "pypdfium2_raw", "lxml",
     "cv2", "PIL.ImageQt",
     "unstructured", "unstructured_client",
     "chromadb", "lancedb", "onnxruntime",
