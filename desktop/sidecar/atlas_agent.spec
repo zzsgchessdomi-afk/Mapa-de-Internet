@@ -35,6 +35,11 @@ datas += collect_data_files("crewai")
 # GPT Researcher enumerates retriever directories from disk at runtime, so its
 # package files must exist physically in the frozen bundle (not only in PYZ).
 datas += collect_data_files("gpt_researcher", include_py_files=True)
+# DDGS is imported dynamically by GPT Researcher's DuckDuckGo retriever.
+# Freeze the complete package so the portable app cannot accidentally depend on
+# a globally installed Python environment.
+hiddenimports += collect_submodules("ddgs")
+datas += collect_data_files("ddgs")
 # tiktoken resolves encoding definitions through dynamically discovered plugins.
 hiddenimports += collect_submodules("tiktoken_ext")
 # Force the exact default CrewAI prompt asset into the frozen path expected by
@@ -58,7 +63,7 @@ hiddenimports += collect_submodules("langchain_classic.retrievers.document_compr
 hiddenimports += collect_submodules("langchain_classic.retrievers", filter=lambda n: n in {
     "langchain_classic.retrievers.contextual_compression",
 })
-for package in ("crewai", "gpt-researcher", "litellm", "fastapi", "langchain-classic", "langchain-core", "langchain-community"):
+for package in ("crewai", "gpt-researcher", "litellm", "fastapi", "langchain-classic", "langchain-core", "langchain-community", "ddgs"):
     try:
         datas += copy_metadata(package)
     except Exception:

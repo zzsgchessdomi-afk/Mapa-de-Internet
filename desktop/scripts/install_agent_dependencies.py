@@ -8,6 +8,7 @@ BASE = [
     "uvicorn[standard]>=0.30,<1",
     "httpx>=0.28.1,<1",
     "crewai==1.15.22",
+    "ddgs==9.16.0",
 ]
 GPTR = "gpt-researcher==0.15.1"
 IGNORED_GPTR = {"json5","aiofiles","unstructured","unstructured-client","python-magic"}
@@ -44,7 +45,7 @@ def main() -> int:
     # the packaged ATLANEX agent paths, so keep it out of the frozen runtime.
     pip("uninstall","-y","python-magic")
     installed={normalized(d.metadata["Name"]) for d in md.distributions() if d.metadata.get("Name")}
-    required=("fastapi","uvicorn","httpx","crewai","gpt-researcher","litellm","pywin32")
+    required=("fastapi","uvicorn","httpx","crewai","gpt-researcher","litellm","pywin32","ddgs")
     missing=[p for p in required if normalized(p) not in installed]
     if missing:
         raise RuntimeError("Required ATLANEX runtime packages are missing: "+repr(missing))
@@ -53,11 +54,13 @@ def main() -> int:
         raise RuntimeError("Heavy optional document stack leaked into Atlas runtime: "+repr(leaked))
     probe=(
         "import importlib.metadata as m; "
-        "import fastapi,httpx,crewai,gpt_researcher,litellm,pywintypes; "
+        "import fastapi,httpx,crewai,gpt_researcher,litellm,pywintypes,ddgs; "
+        "from ddgs import DDGS; "
         "from crewai import LLM,Agent,Task,Crew,Process; "
         "from gpt_researcher import GPTResearcher; "
+        "assert DDGS is not None; "
         "print({k:m.version(k) for k in "
-        "['fastapi','httpx','crewai','gpt-researcher','litellm','json5','aiofiles','pywin32']})"
+        "['fastapi','httpx','crewai','gpt-researcher','litellm','json5','aiofiles','pywin32','ddgs']})"
     )
     subprocess.check_call([sys.executable,"-c",probe])
     return 0
