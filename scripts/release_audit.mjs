@@ -40,8 +40,14 @@ for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-ev
 }
 const spec=text("desktop/sidecar/atlas_agent.spec");
 ok("PyInstaller LiteLLM runtime",spec.includes('"litellm"')&&spec.includes('"gpt_researcher"'));
-ok("PyInstaller packaged runtime policy",["lancedb","onnxruntime","unstructured","magic"].every(x=>spec.includes(`"${x}"`))&&spec.includes('collect_data_files("crewai")')&&spec.includes('langchain_classic.retrievers'),"prune optional native stacks; preserve CrewAI prompts + GPT Researcher runtime imports");
+ok("PyInstaller packaged runtime policy",["lancedb","onnxruntime","unstructured","magic"].every(x=>spec.includes(`"${x}"`))&&spec.includes('collect_data_files("crewai")')&&spec.includes('collect_data_files("gpt_researcher", include_py_files=True)')&&spec.includes('collect_submodules("tiktoken_ext")')&&spec.includes('gpt_researcher.retrievers.mcp'),"prune optional native stacks; preserve CrewAI/GPT Researcher runtime data + tiktoken plugins; exclude unsupported MCP retriever");
 
 const result={ok:!fail.length,version:pkg.version,checks,failures:fail,sha256:crypto.createHash("sha256").update(html).digest("hex")};
 console.log(JSON.stringify(result,null,2));
 process.exit(fail.length?1:0);
+
+// Parse every JSON manifest/config/schema during release audit instead of only
+// checking that files exist. This catches malformed config before Windows CI.
+for(const p of ["package.json","desktop/package.json","desktop/sidecar/gptr_config.json","manifest.webmanifest","vercel.json","schemas/aicapsule-0.1.schema.json"]){
+  try{JSON.parse(text(p));ok("valid JSON "+p,true,p)}catch(e){ok("valid JSON "+p,false,String(e?.message||e))}
+}
