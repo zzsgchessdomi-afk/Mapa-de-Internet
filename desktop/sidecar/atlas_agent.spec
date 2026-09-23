@@ -25,6 +25,8 @@ hiddenimports = [
     "pydantic",
     "lxml",
     "lxml.etree",
+    "lxml",
+    "lxml.etree",
 ]
 
 datas = [("gptr_config.json", ".")]
