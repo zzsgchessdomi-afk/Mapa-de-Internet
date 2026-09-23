@@ -46,8 +46,17 @@ jobs:
           Copy-Item sidecar/dist/atlas-agent-engine bundled-agent-engine -Recurse
           & ./.build-venv/Scripts/python.exe scripts/collect_python_licenses.py
           Copy-Item ../THIRD_PARTY_NOTICES.md bundled-agent-engine/THIRD_PARTY_NOTICES.md
-          & ./bundled-agent-engine/atlas-agent-engine.exe --self-test-deep
-          if ($LASTEXITCODE -ne 0) { throw "Bundled Agent Engine deep self-test failed: $LASTEXITCODE" }
+          # Validate from a clean working directory so the frozen EXE cannot accidentally
+          # import files from the repository or .build-venv. This mirrors Electron resources.
+          $engine = (Resolve-Path "./bundled-agent-engine/atlas-agent-engine.exe").Path
+          $oldPythonPath = $env:PYTHONPATH
+          Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+          Push-Location $env:RUNNER_TEMP
+          & $engine --self-test-deep
+          $engineExit = $LASTEXITCODE
+          Pop-Location
+          if ($null -ne $oldPythonPath) { $env:PYTHONPATH = $oldPythonPath }
+          if ($engineExit -ne 0) { throw "Bundled Agent Engine deep self-test failed: $engineExit" }
       - name: Install Electron dependencies
         working-directory: desktop
         run: npm install --no-audit --no-fund
