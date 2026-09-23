@@ -287,10 +287,10 @@ class AndroidDeviceExecutor(
         val name = prefs.getString("$id.name", "JARVIS-file") ?: "JARVIS-file"
         val mime = prefs.getString("$id.mime", "application/octet-stream") ?: "application/octet-stream"
         val values = ContentValues().apply {
-            put(MediaStore.Downloads.DISPLAY_NAME, name)
-            put(MediaStore.Downloads.MIME_TYPE, mime)
-            put(MediaStore.Downloads.RELATIVE_PATH, "Download/JARVIS")
-            put(MediaStore.Downloads.IS_PENDING, 1)
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, mime)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/JARVIS")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
         val resolver = context.contentResolver
         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
@@ -300,7 +300,7 @@ class AndroidDeviceExecutor(
                 file.inputStream().use { input -> input.copyTo(output) }
             } ?: throw IllegalStateException("Could not open Downloads output stream")
             values.clear()
-            values.put(MediaStore.Downloads.IS_PENDING, 0)
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             file.delete()
             prefs.edit()
