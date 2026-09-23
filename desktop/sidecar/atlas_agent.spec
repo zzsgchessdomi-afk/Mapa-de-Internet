@@ -48,7 +48,10 @@ except Exception:
     pass
 # GPT Researcher discovers retrievers dynamically at runtime; freeze the complete
 # retriever tree instead of relying on static import analysis.
-hiddenimports += collect_submodules("gpt_researcher.retrievers")
+# Only bundle retrievers ATLANEX actually supports. Importing every optional
+# retriever drags MCP and other extras into PyInstaller even though they are not
+# part of this product runtime.
+hiddenimports += collect_submodules("gpt_researcher.retrievers", filter=lambda n: n != "gpt_researcher.retrievers.mcp")
 # GPT Researcher imports these through langchain_classic at runtime; PyInstaller
 # cannot always see the dynamic package imports from __init__.py.
 hiddenimports += collect_submodules("langchain_classic.retrievers.document_compressors")
@@ -77,7 +80,7 @@ excludes = [
     "pymongo", "MySQLdb", "pysqlite2", "weasyprint", "fitz", "pymupdf",
     # python-magic crashes PyInstaller isolated binary-dependency scanning on Windows;
     # Atlas/GPT Researcher does not need libmagic for its supported packaged paths.
-    "magic",
+    "magic", "gpt_researcher.retrievers.mcp", "langchain_mcp_adapters",
 ]
 
 a = Analysis(
