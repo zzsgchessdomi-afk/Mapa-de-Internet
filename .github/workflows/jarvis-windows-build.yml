@@ -47,6 +47,23 @@ jobs:
             throw "v0.8 source integrity check failed"
           }
 
+          $patch09B64 = (Get-Content "jarvis-build/windows-single/p09_00.b64" -Raw).Trim()
+          [IO.File]::WriteAllBytes("windows_v09.patch", [Convert]::FromBase64String($patch09B64))
+          $patch09Hash = (Get-FileHash "windows_v09.patch" -Algorithm SHA256).Hash.ToLower()
+          Write-Host "v09_patch_sha256=$patch09Hash"
+          if ($patch09Hash -ne "dafa51907fb1e7a0b1c905ce1301f0966a97ebf9016e84d5073395bf128c1624") {
+            throw "v0.9 patch integrity check failed"
+          }
+
+          git apply --whitespace=nowarn "windows_v09.patch"
+          if ($LASTEXITCODE -ne 0) { throw "v0.9 patch apply failed" }
+
+          $v09Hash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
+          Write-Host "v09_source_sha256=$v09Hash"
+          if ($v09Hash -ne "0c67b6914aaf6ed8399360aedc0a2b56057ca185c5318fad37fa5c0ae8fd13cd") {
+            throw "v0.9 source integrity check failed"
+          }
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -84,7 +101,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path installer | Out-Null
           @'
           #define MyAppName "JARVIS Mesh"
-          #define MyAppVersion "0.8.0"
+          #define MyAppVersion "0.9.0"
           #define MyAppExeName "JARVIS Mesh.exe"
 
           [Setup]
@@ -96,7 +113,7 @@ jobs:
           DefaultGroupName=JARVIS Mesh
           DisableProgramGroupPage=yes
           OutputDir=installer
-          OutputBaseFilename=JARVIS-Mesh-Setup-v0.8
+          OutputBaseFilename=JARVIS-Mesh-Setup-v0.9
           Compression=lzma2
           SolidCompression=yes
           WizardStyle=modern
@@ -125,15 +142,15 @@ jobs:
       - name: Verify installer
         shell: pwsh
         run: |
-          if (!(Test-Path "installer/JARVIS-Mesh-Setup-v0.8.exe")) { throw "Installer missing" }
-          $file = Get-Item "installer/JARVIS-Mesh-Setup-v0.8.exe"
+          if (!(Test-Path "installer/JARVIS-Mesh-Setup-v0.9.exe")) { throw "Installer missing" }
+          $file = Get-Item "installer/JARVIS-Mesh-Setup-v0.9.exe"
           Write-Host "installer_size=$($file.Length)"
-          Get-FileHash "installer/JARVIS-Mesh-Setup-v0.8.exe" -Algorithm SHA256
+          Get-FileHash "installer/JARVIS-Mesh-Setup-v0.9.exe" -Algorithm SHA256
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Mesh-Windows-v0.8
+          name: JARVIS-Mesh-Windows-v0.9
           path: dist/JARVIS Mesh.exe
           if-no-files-found: error
           retention-days: 7
@@ -141,7 +158,7 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Mesh-Installer-v0.8
-          path: installer/JARVIS-Mesh-Setup-v0.8.exe
+          name: JARVIS-Mesh-Installer-v0.9
+          path: installer/JARVIS-Mesh-Setup-v0.9.exe
           if-no-files-found: error
           retention-days: 7
