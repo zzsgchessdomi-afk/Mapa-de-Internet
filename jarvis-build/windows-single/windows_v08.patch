@@ -1,0 +1,170 @@
+--- jarvis_windows_single.py
++++ jarvis_windows_single.py
+@@ -4,6 +4,7 @@
+ import base64
+ import hashlib
+ import json
++import mimetypes
+ import os
+ import secrets
+ import sqlite3
+@@ -14,7 +15,7 @@
+ from pathlib import Path
+ from typing import Any
+ import tkinter as tk
+-from tkinter import messagebox, ttk
++from tkinter import filedialog, messagebox, ttk
+ 
+ import websockets
+ from cryptography.hazmat.primitives import hashes, serialization
+@@ -29,6 +30,7 @@
+     "jarvis.profile.sync", "device.status", "device.ring", "device.location.request",
+     "media.play", "media.pause", "media.next", "media.previous", "media.volume.set",
+     "app.open", "notification.list", "clipboard.push",
++    "file.push.begin", "file.push.chunk", "file.push.commit",
+ }
+ HARD_DENY = {
+     "device.unlock", "screen_lock.bypass", "biometric.bypass", "credential.read",
+@@ -268,22 +270,80 @@
+             return None
+         return params
+ 
++    async def _command_ws(self, ws, peer: Peer, capability: str, params: dict[str, Any], timeout: float = 15) -> dict[str, Any]:
++        packet, command_id = self.make_command(peer, capability, params)
++        await ws.send(packet)
++        deadline = asyncio.get_running_loop().time() + timeout
++        while True:
++            remain = deadline - asyncio.get_running_loop().time()
++            if remain <= 0:
++                raise TimeoutError(f"Sin respuesta para {command_id}")
++            raw = await asyncio.wait_for(ws.recv(), remain)
++            result = self.open_response(peer, raw, command_id)
++            if result is not None:
++                self.memory.event("device.result", {"capability": capability, "result": result}, peer.device_id)
++                return result
++
+     async def command(self, relay: str, peer_id: str, capability: str, params: dict[str, Any], timeout: float = 15) -> dict[str, Any]:
+         peer = self.trust.get(peer_id)
+-        packet, command_id = self.make_command(peer, capability, params)
+         async with websockets.connect(relay) as ws:
+             await ws.send(self.registration())
+-            await ws.send(packet)
+-            deadline = asyncio.get_running_loop().time() + timeout
+-            while True:
+-                remain = deadline - asyncio.get_running_loop().time()
+-                if remain <= 0:
+-                    raise TimeoutError(f"Sin respuesta para {command_id}")
+-                raw = await asyncio.wait_for(ws.recv(), remain)
+-                result = self.open_response(peer, raw, command_id)
+-                if result is not None:
+-                    self.memory.event("device.result", {"capability": capability, "result": result}, peer_id)
+-                    return result
++            return await self._command_ws(ws, peer, capability, params, timeout)
++
++    @staticmethod
++    def _require_ok(result: dict[str, Any], operation: str) -> dict[str, Any]:
++        if not result.get("ok"):
++            raise RuntimeError(result.get("error") or f"{operation} falló")
++        data = result.get("data")
++        return data if isinstance(data, dict) else {}
++
++    async def push_file(self, relay: str, peer_id: str, file_path: str | Path, progress=None) -> dict[str, Any]:
++        path = Path(file_path)
++        if not path.is_file():
++            raise FileNotFoundError(path)
++        size = path.stat().st_size
++        if size > 8 * 1024 * 1024:
++            raise ValueError("La transferencia directa actual admite archivos de hasta 8 MiB")
++        digest = hashlib.sha256()
++        with path.open("rb") as fh:
++            for block in iter(lambda: fh.read(1024 * 1024), b""):
++                digest.update(block)
++        sha = digest.hexdigest()
++        transfer_id = uuid.uuid4().hex
++        mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
++        peer = self.trust.get(peer_id)
++        async with websockets.connect(relay) as ws:
++            await ws.send(self.registration())
++            sync = await self._command_ws(ws, peer, "jarvis.profile.sync", {
++                "assistant_id": self.assistant_id, "name": self.profile.get("name", "JARVIS"),
++                "created_at": self.profile.get("created_at", 0),
++            })
++            self._require_ok(sync, "Sincronización JARVIS")
++            begin = await self._command_ws(ws, peer, "file.push.begin", {
++                "transfer_id": transfer_id, "name": path.name, "size": size, "sha256": sha, "mime": mime,
++            })
++            begin_data = self._require_ok(begin, "Inicio de transferencia")
++            chunk_size = min(32768, max(1024, int(begin_data.get("max_chunk_bytes", 32768))))
++            sent = 0
++            index = 0
++            with path.open("rb") as fh:
++                while True:
++                    block = fh.read(chunk_size)
++                    if not block:
++                        break
++                    part = await self._command_ws(ws, peer, "file.push.chunk", {
++                        "transfer_id": transfer_id, "index": index,
++                        "data_b64": base64.urlsafe_b64encode(block).decode("ascii"),
++                    }, timeout=30)
++                    self._require_ok(part, f"Chunk {index}")
++                    sent += len(block)
++                    index += 1
++                    if progress:
++                        progress(sent, size)
++            commit = await self._command_ws(ws, peer, "file.push.commit", {"transfer_id": transfer_id}, timeout=30)
++            data = self._require_ok(commit, "Verificación final")
++            self.memory.event("file.sent", {"name": path.name, "bytes": size, "sha256": sha, "result": data}, peer_id)
++            return data
+ 
+     async def sync_profile(self, relay: str, peer_id: str):
+         return await self.command(relay, peer_id, "jarvis.profile.sync", {
+@@ -316,6 +376,7 @@
+         self.package = tk.StringVar(value="com.spotify.music")
+         self.volume = tk.IntVar(value=50)
+         self.clip = tk.StringVar()
++        self.file_path = tk.StringVar()
+         self._ui()
+         self.refresh_peers()
+ 
+@@ -349,6 +410,9 @@
+         ttk.Button(r3,text="Notificaciones",command=lambda:self.run_cap("notification.list",{"limit":20})).pack(side="left")
+         r4=ttk.Frame(actions); r4.pack(fill="x",pady=(8,0)); ttk.Label(r4,text="Portapapeles → móvil").pack(side="left")
+         ttk.Entry(r4,textvariable=self.clip).pack(side="left",fill="x",expand=True,padx=6); ttk.Button(r4,text="Enviar",command=lambda:self.run_cap("clipboard.push",{"text":self.clip.get()})).pack(side="left")
++        r5=ttk.Frame(actions); r5.pack(fill="x",pady=(8,0)); ttk.Label(r5,text="Archivo → Descargas/JARVIS").pack(side="left")
++        ttk.Entry(r5,textvariable=self.file_path,state="readonly").pack(side="left",fill="x",expand=True,padx=6)
++        ttk.Button(r5,text="Elegir",command=self.choose_file).pack(side="left"); ttk.Button(r5,text="Enviar archivo",command=self.send_file).pack(side="left",padx=6)
+         ttk.Label(root,textvariable=self.status).pack(anchor="w",pady=(10,4))
+         self.result=tk.Text(root,height=15,wrap="word",state="disabled"); self.result.pack(fill="both",expand=True)
+ 
+@@ -375,6 +439,31 @@
+         if not peer: messagebox.showwarning(APP_NAME,"Empareja primero el teléfono"); return None
+         return relay,peer
+ 
++    def choose_file(self):
++        path = filedialog.askopenfilename(title="Enviar archivo a JARVIS Android")
++        if path:
++            self.file_path.set(path)
++
++    def send_file(self):
++        valid=self.validated()
++        if not valid:return
++        path=self.file_path.get().strip()
++        if not path:
++            messagebox.showwarning(APP_NAME,"Elige primero un archivo")
++            return
++        self.status.set("Preparando transferencia cifrada…")
++        threading.Thread(target=self._file_worker,args=(*valid,path),daemon=True).start()
++
++    def _file_worker(self,relay,peer,path):
++        try:
++            def progress(sent,total):
++                pct = 100 if total == 0 else int(sent * 100 / total)
++                self.after(0,lambda:self.status.set(f"Enviando archivo… {pct}%"))
++            out=asyncio.run(self.jarvis.push_file(relay,peer,path,progress))
++            self.after(0,lambda:self.show(json.dumps(out,indent=2,ensure_ascii=False),"Archivo verificado y guardado en Android"))
++        except Exception as e:
++            self.after(0,lambda:self.show(str(e),"Error de transferencia"))
++
+     def run_cap(self,cap,params):
+         valid=self.validated()
+         if not valid:return
