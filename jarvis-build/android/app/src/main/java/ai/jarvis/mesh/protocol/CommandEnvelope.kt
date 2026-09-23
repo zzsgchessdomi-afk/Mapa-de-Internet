@@ -19,6 +19,7 @@ data class CommandEnvelope(
 object Capabilities {
     val safe = setOf(
         "device.status",
+        "jarvis.profile.sync",
         "mesh.result",
         "device.ring",
         "device.location.request",
