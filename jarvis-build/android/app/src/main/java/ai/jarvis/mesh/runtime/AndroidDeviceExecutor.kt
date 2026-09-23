@@ -1,6 +1,11 @@
 package ai.jarvis.mesh.runtime
 
 import android.Manifest
+import java.security.MessageDigest
+import java.io.File
+import android.util.Base64
+import android.provider.MediaStore
+import android.content.ContentValues
 import android.content.ComponentName
 import android.content.Context
 import android.content.ClipData
