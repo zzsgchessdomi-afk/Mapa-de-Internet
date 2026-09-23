@@ -2,13 +2,14 @@
 # ATLANEX Windows sidecar. The agent frameworks expose many optional plugins;
 # exclude stacks the sidecar does not exercise so PyInstaller does not walk
 # unrelated native DLL graphs.
-from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import copy_metadata, collect_data_files
 
 hiddenimports = [
     "crewai",
     "crewai.llm",
     "litellm",
     "gpt_researcher",
+    "langchain_classic",
     "fastapi",
     "uvicorn",
     "uvicorn.logging",
@@ -21,6 +22,10 @@ hiddenimports = [
 ]
 
 datas = [("gptr_config.json", ".")]
+# CrewAI loads its default prompts from crewai/translations/en.json at import time.
+# Include that package data explicitly so the frozen runtime works after it is moved
+# into Electron extraResources, not only beside the build environment.
+datas += collect_data_files("crewai", includes=["translations/*.json"])
 for package in ("crewai", "gpt-researcher", "litellm"):
     try:
         datas += copy_metadata(package)
@@ -32,7 +37,7 @@ excludes = [
     "torch", "torchvision", "torchaudio", "tensorflow", "tensorflow_intel",
     "jax", "jaxlib", "numba", "llvmlite", "numpy.testing",
     "pandas", "pyarrow", "scipy", "sklearn", "spacy", "thinc",
-    "nltk", "langchain", "langchain_classic", "sqlalchemy", "pdfminer",
+    "nltk", "langchain", "sqlalchemy", "pdfminer",
     "pdfplumber", "pypdfium2", "pypdfium2_raw", "lxml",
     "cv2", "PIL.ImageQt",
     "unstructured", "unstructured_client",
