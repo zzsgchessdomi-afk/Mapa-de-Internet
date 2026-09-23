@@ -11,8 +11,8 @@ android {
         applicationId = "ai.jarvis.mesh"
         minSdk = 33
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.8.0"
+        versionCode = 6
+        versionName = "0.9.0"
     }
 
     buildTypes {
