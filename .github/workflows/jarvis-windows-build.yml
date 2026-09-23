@@ -1,9 +1,6 @@
 name: JARVIS Windows Build
 
 on:
-  push:
-    branches:
-      - jarvis-apk-build-v06
   workflow_dispatch:
 
 permissions:
