@@ -10,6 +10,14 @@ class MeshConfig(context: Context) {
         get() = prefs.getString("relay_url", "")!!
         set(value) { prefs.edit().putString("relay_url", value.trim()).apply() }
 
+    var assistantId: String?
+        get() = prefs.getString("assistant_id", null)
+        set(value) { prefs.edit().putString("assistant_id", value).apply() }
+
+    var assistantName: String
+        get() = prefs.getString("assistant_name", "JARVIS")!!
+        set(value) { prefs.edit().putString("assistant_name", value).apply() }
+
     fun peer(): TrustedPeer? {
         val raw = prefs.getString("peer", null) ?: return null
         val o = JSONObject(raw)
