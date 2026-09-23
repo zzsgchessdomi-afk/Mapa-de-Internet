@@ -1,9 +1,6 @@
 name: JARVIS APK Build
 
 on:
-  push:
-    branches:
-      - jarvis-apk-build-v06
   workflow_dispatch:
 
 permissions:
@@ -37,23 +34,18 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Restore JARVIS Android sources
-        run: |
-          base64 -d jarvis-build/android-src.tar.gz.b64 > /tmp/jarvis-android.tar.gz
-          tar -xzf /tmp/jarvis-android.tar.gz
-
       - name: Build debug APK
-        run: gradle -p android --no-daemon :app:assembleDebug
+        run: gradle -p jarvis-build/android --no-daemon :app:assembleDebug
 
       - name: Verify APK exists
         run: |
-          test -f android/app/build/outputs/apk/debug/app-debug.apk
-          sha256sum android/app/build/outputs/apk/debug/app-debug.apk
+          test -f jarvis-build/android/app/build/outputs/apk/debug/app-debug.apk
+          sha256sum jarvis-build/android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Mesh-v0.5-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: JARVIS-Mesh-v0.6-debug-apk
+          path: jarvis-build/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
