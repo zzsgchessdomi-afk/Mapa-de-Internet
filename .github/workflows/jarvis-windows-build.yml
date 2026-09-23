@@ -43,7 +43,7 @@ jobs:
 
           $newHash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
           Write-Host "v08_source_sha256=$newHash"
-          if ($newHash -ne "1c3aed2bb312bf6dcf592fa5027887254e6f8cef67a56dba525db0ac82a7e5df") {
+          if ($newHash -ne "407efd21fd1e11564caca386aad6ed8cdd167b18e4cf26d824dbf24e3d2507c6") {
             throw "v0.8 source integrity check failed"
           }
 
