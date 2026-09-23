@@ -25,8 +25,6 @@ hiddenimports = [
     "pydantic",
     "lxml",
     "lxml.etree",
-    "lxml",
-    "lxml.etree",
 ]
 
 datas = [("gptr_config.json", ".")]
@@ -34,6 +32,11 @@ datas = [("gptr_config.json", ".")]
 # Include that package data explicitly so the frozen runtime works after it is moved
 # into Electron extraResources, not only beside the build environment.
 datas += collect_data_files("crewai")
+# GPT Researcher enumerates retriever directories from disk at runtime, so its
+# package files must exist physically in the frozen bundle (not only in PYZ).
+datas += collect_data_files("gpt_researcher", include_py_files=True)
+# tiktoken resolves encoding definitions through dynamically discovered plugins.
+hiddenimports += collect_submodules("tiktoken_ext")
 # Force the exact default CrewAI prompt asset into the frozen path expected by
 # crewai.utilities.i18n.I18N, even if PyInstaller package-data discovery changes.
 try:
@@ -43,6 +46,9 @@ try:
         datas.append((str(_prompt), "crewai/translations"))
 except Exception:
     pass
+# GPT Researcher discovers retrievers dynamically at runtime; freeze the complete
+# retriever tree instead of relying on static import analysis.
+hiddenimports += collect_submodules("gpt_researcher.retrievers")
 # GPT Researcher imports these through langchain_classic at runtime; PyInstaller
 # cannot always see the dynamic package imports from __init__.py.
 hiddenimports += collect_submodules("langchain_classic.retrievers.document_compressors")
