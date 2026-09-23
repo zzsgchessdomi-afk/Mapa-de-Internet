@@ -213,6 +213,8 @@ def runtime_self_test(deep=False):
             if deep:
                 async def go():
                     await r.conduct_research();return await r.write_report()
+                # GPT Researcher writes progress messages to stderr. They are not test
+                # failures; acceptance consumes the structured JSON result below.
                 report=str(asyncio.run(go()))
                 if len(report.strip())<20:raise RuntimeError("GPT Researcher deep report was empty")
                 out["gpt_researcher_deep"]=True;out["report_chars"]=len(report)
