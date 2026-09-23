@@ -17,18 +17,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Reconstruct verified Windows source
+      - name: Reconstruct verified Windows v0.8 source
         shell: pwsh
         run: |
           $parts = Get-ChildItem "jarvis-build/windows-single/c_*.b64" | Sort-Object Name
           $b64 = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ""
           [IO.File]::WriteAllBytes("jarvis_windows_single.py", [Convert]::FromBase64String($b64))
-          $hash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
-          Write-Host "source_sha256=$hash"
-          if ($hash -ne "e5468cb09c85cce6b819d5c2100c4c46bae18e064df44bf5ef740db771b1e418") {
+
+          $baseHash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
+          Write-Host "base_source_sha256=$baseHash"
+          if ($baseHash -ne "e5468cb09c85cce6b819d5c2100c4c46bae18e064df44bf5ef740db771b1e418") {
             throw "Base source integrity check failed"
           }
-          git apply --whitespace=nowarn "jarvis-build/windows-single/windows_v08.patch"
+
+          $patchB64 = (Get-Content "jarvis-build/windows-single/p08_00.b64" -Raw).Trim()
+          [IO.File]::WriteAllBytes("windows_v08.patch", [Convert]::FromBase64String($patchB64))
+          $patchHash = (Get-FileHash "windows_v08.patch" -Algorithm SHA256).Hash.ToLower()
+          Write-Host "patch_sha256=$patchHash"
+          if ($patchHash -ne "7cc61eb85f8f0d9d949daa5e1da0036d2af9efb1f5c68295e95e954a0c87d651") {
+            throw "v0.8 patch integrity check failed"
+          }
+
+          git apply --whitespace=nowarn "windows_v08.patch"
+          if ($LASTEXITCODE -ne 0) { throw "v0.8 patch apply failed" }
+
           $newHash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
           Write-Host "v08_source_sha256=$newHash"
           if ($newHash -ne "1c3aed2bb312bf6dcf592fa5027887254e6f8cef67a56dba525db0ac82a7e5df") {
