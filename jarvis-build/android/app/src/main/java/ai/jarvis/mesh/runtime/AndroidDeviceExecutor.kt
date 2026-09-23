@@ -3,6 +3,8 @@ package ai.jarvis.mesh.runtime
 import android.Manifest
 import android.content.ComponentName
 import android.content.Context
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
@@ -41,6 +43,8 @@ class AndroidDeviceExecutor(
         "media.previous" -> mediaCommand { it.transportControls.skipToPrevious() }
         "media.volume.set" -> setMediaVolume(params)
         "app.open" -> openApp(params)
+        "notification.list" -> listNotifications(params)
+        "clipboard.push" -> pushClipboard(params)
         else -> ExecutionResult(ok = false, error = "No Android executor for capability: $capability")
     }
 
@@ -182,6 +186,21 @@ class AndroidDeviceExecutor(
         val volume = ((requested / 100.0) * max).toInt().coerceIn(0, max)
         audio.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
         return ExecutionResult(ok = true, data = mapOf("percent" to requested, "stream_volume" to volume, "stream_max" to max))
+    }
+
+    private fun listNotifications(params: Map<String, Any?>): ExecutionResult {
+        val limit = ((params["limit"] as? Number)?.toInt() ?: 20).coerceIn(1, 50)
+        val items = JarvisNotificationListener.snapshot(context, limit)
+        return ExecutionResult(ok = true, data = mapOf("notifications" to items, "count" to items.size))
+    }
+
+    private fun pushClipboard(params: Map<String, Any?>): ExecutionResult {
+        val text = (params["text"] as? String) ?: return ExecutionResult(ok = false, error = "clipboard.push requires text")
+        if (text.length > 10_000) return ExecutionResult(ok = false, error = "Clipboard text too long")
+        val clipboard = context.getSystemService(ClipboardManager::class.java)
+            ?: return ExecutionResult(ok = false, error = "Clipboard service unavailable")
+        clipboard.setPrimaryClip(ClipData.newPlainText("JARVIS", text))
+        return ExecutionResult(ok = true, data = mapOf("copied" to true, "characters" to text.length))
     }
 
     private fun openApp(params: Map<String, Any?>): ExecutionResult {
