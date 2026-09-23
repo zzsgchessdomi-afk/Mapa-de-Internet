@@ -2,7 +2,8 @@
 # ATLANEX Windows sidecar. The agent frameworks expose many optional plugins;
 # exclude stacks the sidecar does not exercise so PyInstaller does not walk
 # unrelated native DLL graphs.
-from PyInstaller.utils.hooks import copy_metadata, collect_data_files
+from PyInstaller.utils.hooks import copy_metadata, collect_data_files, collect_submodules
+from pathlib import Path
 
 hiddenimports = [
     "crewai",
@@ -10,6 +11,9 @@ hiddenimports = [
     "litellm",
     "gpt_researcher",
     "langchain_classic",
+    "langchain_classic.retrievers",
+    "langchain_classic.retrievers.contextual_compression",
+    "langchain_classic.retrievers.document_compressors",
     "fastapi",
     "uvicorn",
     "uvicorn.logging",
@@ -25,8 +29,23 @@ datas = [("gptr_config.json", ".")]
 # CrewAI loads its default prompts from crewai/translations/en.json at import time.
 # Include that package data explicitly so the frozen runtime works after it is moved
 # into Electron extraResources, not only beside the build environment.
-datas += collect_data_files("crewai", includes=["translations/*.json"])
-for package in ("crewai", "gpt-researcher", "litellm"):
+datas += collect_data_files("crewai")
+# Force the exact default CrewAI prompt asset into the frozen path expected by
+# crewai.utilities.i18n.I18N, even if PyInstaller package-data discovery changes.
+try:
+    import crewai as _crewai
+    _prompt = Path(_crewai.__file__).resolve().parent / "translations" / "en.json"
+    if _prompt.exists():
+        datas.append((str(_prompt), "crewai/translations"))
+except Exception:
+    pass
+# GPT Researcher imports these through langchain_classic at runtime; PyInstaller
+# cannot always see the dynamic package imports from __init__.py.
+hiddenimports += collect_submodules("langchain_classic.retrievers.document_compressors")
+hiddenimports += collect_submodules("langchain_classic.retrievers", filter=lambda n: n in {
+    "langchain_classic.retrievers.contextual_compression",
+})
+for package in ("crewai", "gpt-researcher", "litellm", "fastapi", "langchain-classic", "langchain-core", "langchain-community"):
     try:
         datas += copy_metadata(package)
     except Exception:
