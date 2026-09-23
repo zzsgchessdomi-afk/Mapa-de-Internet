@@ -205,11 +205,12 @@ def runtime_self_test(deep=False):
         if not crew_result.strip():raise RuntimeError("CrewAI returned empty output")
         out["crewai_runtime"]=True
         from gpt_researcher import GPTResearcher
-        with tempfile.TemporaryDirectory(prefix="atlas-self-test-") as td:
-            doc=Path(td)/"atlas-self-test.txt";doc.write_text("Atlas test API documentation. Free tier available. Commercial use is permitted. No API key required.",encoding="utf-8")
-            os.environ["DOC_PATH"]=td;os.environ["REPORT_SOURCE"]="local"
-            r=GPTResearcher(query="Summarize the local Atlas test API document.",report_type="research_report",report_source="local",config_path=str(CONFIG_PATH))
-            out["gpt_researcher_runtime"]=True
+        # Exercise GPT Researcher's real research conductor without depending on its
+        # optional local-document parser stack (unstructured/python-magic), which is
+        # intentionally excluded from the commercial Windows runtime.
+        os.environ.pop("DOC_PATH",None);os.environ["REPORT_SOURCE"]="web"
+        r=GPTResearcher(query="Summarize the Atlas self-test source.",report_type="research_report",report_source="web",config_path=str(CONFIG_PATH))
+        out["gpt_researcher_runtime"]=True
             if deep:
                 async def go():
                     await r.conduct_research();return await r.write_report()
