@@ -1,6 +1,9 @@
 name: JARVIS Windows Build
 
 on:
+  push:
+    branches:
+      - jarvis-apk-build-v06
   workflow_dispatch:
 
 permissions:
@@ -23,7 +26,13 @@ jobs:
           $hash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
           Write-Host "source_sha256=$hash"
           if ($hash -ne "e5468cb09c85cce6b819d5c2100c4c46bae18e064df44bf5ef740db771b1e418") {
-            throw "Source integrity check failed"
+            throw "Base source integrity check failed"
+          }
+          git apply --whitespace=nowarn "jarvis-build/windows-single/windows_v08.patch"
+          $newHash = (Get-FileHash "jarvis_windows_single.py" -Algorithm SHA256).Hash.ToLower()
+          Write-Host "v08_source_sha256=$newHash"
+          if ($newHash -ne "1c3aed2bb312bf6dcf592fa5027887254e6f8cef67a56dba525db0ac82a7e5df") {
+            throw "v0.8 source integrity check failed"
           }
 
       - name: Set up Python
@@ -51,7 +60,7 @@ jobs:
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Mesh-Windows-v0.7
+          name: JARVIS-Mesh-Windows-v0.8
           path: dist/JARVIS Mesh.exe
           if-no-files-found: error
           retention-days: 7
