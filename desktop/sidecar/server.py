@@ -220,6 +220,11 @@ def runtime_self_test(deep=False):
     return out
 
 if __name__=="__main__":
+    # Frozen Windows builds may inherit a legacy console code page. Force UTF-8
+    # so dependency log output cannot crash the acceptance/self-test process.
+    for _stream in (sys.stdout, sys.stderr):
+        try:_stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+        except Exception:pass
     import argparse,uvicorn
     p=argparse.ArgumentParser();p.add_argument("--port",type=int,default=int(os.getenv("PORT","8765")));p.add_argument("--self-test",action="store_true");p.add_argument("--self-test-deep",action="store_true");a=p.parse_args()
     if a.self_test or a.self_test_deep:
