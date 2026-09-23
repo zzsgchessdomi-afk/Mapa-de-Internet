@@ -37,6 +37,9 @@ excludes = [
     "chromadb", "lancedb", "onnxruntime",
     "boto3", "botocore", "sagemaker",
     "pymongo", "MySQLdb", "pysqlite2", "weasyprint", "fitz", "pymupdf",
+    # python-magic crashes PyInstaller isolated binary-dependency scanning on Windows;
+    # Atlas/GPT Researcher does not need libmagic for its supported packaged paths.
+    "magic",
 ]
 
 a = Analysis(
