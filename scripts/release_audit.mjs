@@ -31,8 +31,9 @@ const wf=text(".github/workflows/windows-build.yml");
 ok("portable acceptance workflow",wf.includes("--acceptance-test")&&wf.includes("Internet-Atlas-Portable"));
 ok("NSIS install acceptance",wf.includes("NSIS")&&wf.includes("Installed app acceptance"));
 ok("deep agent CI",wf.includes("--self-test-deep"));
-ok("Capsule CI gate",wf.includes("npm run test:capsule"));
-ok("Capsule benchmark CI gate",wf.includes("npm run benchmark:capsule"));
+const rootAudit=JSON.parse(text("package.json")).scripts?.["audit:all"]||"";
+ok("Capsule CI gate",wf.includes("npm run test:capsule")||(wf.includes("npm run audit:all")&&rootAudit.includes("npm run test:capsule")));
+ok("Capsule benchmark CI gate",wf.includes("npm run benchmark:capsule")||(wf.includes("npm run audit:all")&&rootAudit.includes("npm run benchmark:capsule")));
 const preload=text("desktop/preload.cjs");
 for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-evidence","atlas:agent-health","atlas:agent-doctor","atlas:agent-smoke","atlas:agent-start","atlas:agent-run","atlas:agent-cancel","atlas:monitor-list","atlas:monitor-sync","atlas:monitor-run-now","atlas:monitor-config"]){
   ok("IPC "+channel,preload.includes(channel)&&main.includes(channel),channel);
