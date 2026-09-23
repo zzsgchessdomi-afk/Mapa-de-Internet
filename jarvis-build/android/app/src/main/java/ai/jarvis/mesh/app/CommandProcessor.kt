@@ -8,6 +8,12 @@ import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import java.util.Collections
 
+data class VerifiedPeerCommand(
+    val commandId: String,
+    val capability: String,
+    val params: Map<String, Any?>,
+)
+
 class CommandProcessor(
     private val context: android.content.Context,
     private val identity: LocalIdentity,
@@ -17,11 +23,14 @@ class CommandProcessor(
     private val audit = AndroidAuditLog(context)
     private val seenNonces = Collections.synchronizedSet(mutableSetOf<String>())
 
-    /** Returns an encrypted response packet for the peer, or null if the packet is unroutable. */
-    fun process(packetRaw: String): String? {
+    /**
+     * Decrypts and verifies one peer packet exactly once.
+     * The nonce is committed only after signature verification succeeds.
+     */
+    fun decode(packetRaw: String): VerifiedPeerCommand? {
         val packet = JSONObject(packetRaw)
-        val sender = packet.getString("sender")
-        val target = packet.getString("target")
+        val sender = packet.optString("sender")
+        val target = packet.optString("target")
         if (sender != peer.deviceId || target != identity.deviceId) return null
 
         val plain = CryptoCore.decryptPacket(
@@ -35,38 +44,44 @@ class CommandProcessor(
         val command = JSONObject(String(plain, StandardCharsets.UTF_8))
         val commandId = command.getString("command_id")
         val capability = command.getString("capability")
-
         val validationError = validate(command, sender, target)
-        val resultData: Map<String, Any?>
-        val ok: Boolean
-        val error: String?
         if (validationError != null) {
             audit.append(commandId, capability, "denied", validationError)
-            ok = false
-            error = validationError
-            resultData = emptyMap()
-        } else {
-            val params = JsonCodec.jsonToValue(command.getJSONObject("params")) as Map<String, Any?>
-            val result = router.dispatch(capability, params)
-            ok = result.ok
-            error = result.error
-            resultData = result.data
-            audit.append(commandId, capability, if (ok) "executed" else "denied", error)
+            return null
         }
+        @Suppress("UNCHECKED_CAST")
+        val params = JsonCodec.jsonToValue(command.getJSONObject("params")) as Map<String, Any?>
+        return VerifiedPeerCommand(commandId, capability, params)
+    }
 
+    fun executeAndRespond(command: VerifiedPeerCommand): String {
+        val result = router.dispatch(command.capability, command.params)
+        audit.append(
+            command.commandId,
+            command.capability,
+            if (result.ok) "executed" else "denied",
+            result.error,
+        )
         val response = JsonCodec.signedCommandJson(
             identity,
             peer.deviceId,
             "mesh.result",
             mapOf(
-                "request_command_id" to commandId,
-                "request_capability" to capability,
-                "ok" to ok,
-                "data" to resultData,
-                "error" to error,
+                "request_command_id" to command.commandId,
+                "request_capability" to command.capability,
+                "ok" to result.ok,
+                "data" to result.data,
+                "error" to result.error,
             ),
         )
         return JsonCodec.sealCommand(identity, peer, response)
+    }
+
+    /** Compatibility entry point for ordinary PC -> Android commands. */
+    fun process(packetRaw: String): String? {
+        val command = decode(packetRaw) ?: return null
+        if (command.capability == "mesh.result") return null
+        return executeAndRespond(command)
     }
 
     private fun validate(command: JSONObject, sender: String, target: String): String? {
@@ -79,8 +94,7 @@ class CommandProcessor(
             if (expires < now) return "Command expired"
             if (issued > now + 60) return "Command timestamp too far in the future"
             val nonce = command.getString("nonce")
-            if (!seenNonces.add(nonce)) return "Replay detected"
-            if (seenNonces.size > 4096) seenNonces.clear()
+            if (seenNonces.contains(nonce)) return "Replay detected"
 
             val params = JsonCodec.jsonToValue(command.getJSONObject("params"))
             val unsigned = linkedMapOf<String, Any?>(
@@ -98,7 +112,10 @@ class CommandProcessor(
                 JsonCodec.canonical(unsigned).toByteArray(StandardCharsets.UTF_8),
                 CryptoCore.decodeB64(command.getString("signature")),
             )
-            if (!verified) "Signature invalid" else null
+            if (!verified) return "Signature invalid"
+            if (!seenNonces.add(nonce)) return "Replay detected"
+            if (seenNonces.size > 4096) seenNonces.clear()
+            null
         } catch (e: Exception) {
             e.message ?: e::class.java.simpleName
         }
