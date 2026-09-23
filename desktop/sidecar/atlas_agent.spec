@@ -41,7 +41,9 @@ excludes = [
     "pdfplumber", "pypdfium2", "pypdfium2_raw", "lxml",
     "cv2", "PIL.ImageQt",
     "unstructured", "unstructured_client",
-    "chromadb", "lancedb", "onnxruntime",
+    # CrewAI imports its ChromaDB storage adapter at package import time even when
+    # ATLANEX does not enable RAG/memory, so ChromaDB must remain bundle-visible.
+    "lancedb", "onnxruntime",
     "boto3", "botocore", "sagemaker",
     "pymongo", "MySQLdb", "pysqlite2", "weasyprint", "fitz", "pymupdf",
     # python-magic crashes PyInstaller isolated binary-dependency scanning on Windows;
