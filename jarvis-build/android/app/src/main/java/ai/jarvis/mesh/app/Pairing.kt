@@ -29,8 +29,10 @@ object Pairing {
 
     fun verifyAndParse(raw: String): TrustedPeer {
         val o = JSONObject(raw)
-        val keys = listOf("device_id", "label", "signing_public_key_b64", "encryption_public_key_b64", "issued_at", "expires_at", "nonce", "signature")
-        require(keys.all { o.has(it) }) { "Malformed pairing offer" }
+        val required = setOf("device_id", "label", "signing_public_key_b64", "encryption_public_key_b64", "issued_at", "expires_at", "nonce", "signature")
+        val allowed = required + "relay_url"
+        val present = o.keys().asSequence().toSet()
+        require(required.all { o.has(it) } && present.all { it in allowed }) { "Malformed pairing offer" }
         val now = System.currentTimeMillis() / 1000
         require(o.getLong("expires_at") >= now) { "Pairing offer expired" }
         val unsigned = linkedMapOf<String, Any?>(
@@ -42,6 +44,11 @@ object Pairing {
             "expires_at" to o.getLong("expires_at"),
             "nonce" to o.getString("nonce"),
         )
+        if (o.has("relay_url")) {
+            val relay = o.getString("relay_url")
+            require(relay.startsWith("ws://") || relay.startsWith("wss://")) { "Invalid relay URL" }
+            unsigned["relay_url"] = relay
+        }
         val signingPub = CryptoCore.decodeB64(o.getString("signing_public_key_b64"))
         val ok = CryptoCore.verifyEd25519Raw(
             signingPub,
@@ -54,6 +61,7 @@ object Pairing {
         return TrustedPeer(
             o.getString("device_id"), o.getString("label"),
             o.getString("signing_public_key_b64"), o.getString("encryption_public_key_b64"),
+            o.optString("relay_url").takeIf { it.startsWith("ws://") || it.startsWith("wss://") },
         )
     }
 
