@@ -36,7 +36,7 @@ excludes = [
     "unstructured", "unstructured_client",
     "chromadb", "lancedb", "onnxruntime",
     "boto3", "botocore", "sagemaker",
-    "pymongo", "MySQLdb", "pysqlite2",
+    "pymongo", "MySQLdb", "pysqlite2", "weasyprint", "fitz", "pymupdf",
 ]
 
 a = Analysis(
