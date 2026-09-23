@@ -31,7 +31,6 @@ object Capabilities {
         "app.open",
         "notification.list",
         "clipboard.push",
-        "file.offer",
     )
 
     val hardDeny = setOf(
