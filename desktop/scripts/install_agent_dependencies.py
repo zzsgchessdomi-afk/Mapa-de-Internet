@@ -10,7 +10,7 @@ BASE = [
     "crewai==1.15.22",
 ]
 GPTR = "gpt-researcher==0.15.1"
-IGNORED_GPTR = {"json5","aiofiles","unstructured","unstructured-client"}
+IGNORED_GPTR = {"json5","aiofiles","unstructured","unstructured-client","python-magic"}
 RUNTIME_OVERRIDES = ["json5>=0.12,<1","aiofiles~=24.1.0"]
 
 def pip(*args: str) -> None:
@@ -39,12 +39,16 @@ def main() -> int:
         p.write_text("\n".join(reqs)+"\n",encoding="utf-8")
         pip("install","-r",str(p))
     pip("install",*RUNTIME_OVERRIDES)
+    # python-magic 0.4.x can crash PyInstaller's isolated dependency scanner on
+    # Windows when importing `magic`; file-type detection is not required by
+    # the packaged ATLANEX agent paths, so keep it out of the frozen runtime.
+    pip("uninstall","-y","python-magic")
     installed={normalized(d.metadata["Name"]) for d in md.distributions() if d.metadata.get("Name")}
     required=("fastapi","uvicorn","httpx","crewai","gpt-researcher","litellm","pywin32")
     missing=[p for p in required if normalized(p) not in installed]
     if missing:
         raise RuntimeError("Required ATLANEX runtime packages are missing: "+repr(missing))
-    leaked=[p for p in ("unstructured","unstructured-client","spacy","numba","llvmlite") if normalized(p) in installed]
+    leaked=[p for p in ("unstructured","unstructured-client","spacy","numba","llvmlite","python-magic") if normalized(p) in installed]
     if leaked:
         raise RuntimeError("Heavy optional document stack leaked into Atlas runtime: "+repr(leaked))
     probe=(
