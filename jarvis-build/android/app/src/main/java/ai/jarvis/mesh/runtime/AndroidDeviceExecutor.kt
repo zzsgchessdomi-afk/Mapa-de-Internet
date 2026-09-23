@@ -32,6 +32,7 @@ class AndroidDeviceExecutor(
 
     override fun execute(capability: String, params: Map<String, Any?>): ExecutionResult = when (capability) {
         "device.status" -> deviceStatus()
+        "jarvis.profile.sync" -> syncJarvisProfile(params)
         "device.ring" -> ring(params)
         "device.location.request" -> currentLocation()
         "media.play" -> mediaCommand { it.transportControls.play() }
@@ -41,6 +42,27 @@ class AndroidDeviceExecutor(
         "media.volume.set" -> setMediaVolume(params)
         "app.open" -> openApp(params)
         else -> ExecutionResult(ok = false, error = "No Android executor for capability: $capability")
+    }
+
+    private fun syncJarvisProfile(params: Map<String, Any?>): ExecutionResult {
+        val assistantId = (params["assistant_id"] as? String)?.trim().orEmpty()
+        val name = (params["name"] as? String)?.trim().orEmpty().ifBlank { "JARVIS" }
+        if (!assistantId.matches(Regex("jarvis-[A-Za-z0-9-]{10,100}"))) {
+            return ExecutionResult(ok = false, error = "Invalid JARVIS assistant identity")
+        }
+        if (name.length > 64) return ExecutionResult(ok = false, error = "Assistant name too long")
+        val config = ai.jarvis.mesh.app.MeshConfig(context)
+        val existing = config.assistantId
+        if (existing != null && existing != assistantId) {
+            return ExecutionResult(ok = false, error = "Phone already belongs to another JARVIS identity; clear pairing locally first")
+        }
+        config.assistantId = assistantId
+        config.assistantName = name
+        return ExecutionResult(ok = true, data = mapOf(
+            "assistant_id" to assistantId,
+            "assistant_name" to name,
+            "bound" to true,
+        ))
     }
 
     private fun deviceStatus(): ExecutionResult {
@@ -60,6 +82,8 @@ class AndroidDeviceExecutor(
                 "sdk" to Build.VERSION.SDK_INT,
                 "battery_percent" to percent,
                 "location_permission" to locationPermission,
+                "assistant_id" to ai.jarvis.mesh.app.MeshConfig(context).assistantId,
+                "assistant_name" to ai.jarvis.mesh.app.MeshConfig(context).assistantName,
             ),
         )
     }
