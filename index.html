@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#02050a"><title>Internet Atlas — Autonomous Evidence Research</title>
+<meta name="theme-color" content="#02050a"><title>Atlanex — Autonomous Evidence Research</title>
 <style>
 :root{--bg:#02050a;--panel:rgba(7,12,22,.87);--p2:rgba(9,15,27,.97);--line:rgba(255,255,255,.085);--text:#eef7ff;--muted:#7e8ca6;
 --cyan:#79e7ff;--violet:#aa8cff;--gold:#ffd678;--green:#72efb6;--red:#ff718d;--pink:#ff91c8;--shadow:0 28px 100px rgba(0,0,0,.56)}
@@ -405,7 +405,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 <body>
 <section class="mcRoot" id="mcRoot">
   <header class="mcTop">
-    <div class="mcBrand"><div class="mcLogo"></div><div><b>Internet Atlas</b><small>AUTONOMOUS EVIDENCE RESEARCH</small></div></div>
+    <div class="mcBrand"><div class="mcLogo"></div><div><b>Atlanex</b><small>AUTONOMOUS EVIDENCE RESEARCH</small></div></div>
     <form class="mcSearch" id="mcSearchForm"><input id="mcQuery" autocomplete="off" spellcheck="false" placeholder="Investiga una empresa, producto, tecnología u oportunidad…"><button class="btn primary">Investigar</button></form>
     <div class="mcTopActions">
       <div class="mcStatus"><i></i><span id="mcSystemText">Sistema listo</span></div>
@@ -543,7 +543,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </section>
 
 <div class="nativeTitlebar" id="nativeTitlebar">
- <div class="ntBrand">INTERNET ATLAS</div><div class="ntProject" id="ntProject">Workspace</div><div class="ntGrow"></div>
+ <div class="ntBrand">ATLANEX</div><div class="ntProject" id="ntProject">Workspace</div><div class="ntGrow"></div>
  <div class="winControls"><button class="winBtn" data-win="minimize">—</button><button class="winBtn" data-win="maximize">□</button><button class="winBtn close" data-win="close">×</button></div>
 </div>
 <div class="activityRail" id="activityRail">
@@ -566,12 +566,12 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </section>
 
 
-<div id="atlasFatal" style="display:none;position:fixed;z-index:9999;inset:0;background:#050912;color:#e8f2ff;padding:28px;font:14px system-ui;overflow:auto"><h2 style="margin:0 0 10px">Internet Atlas no pudo iniciar</h2><p id="atlasFatalText" style="color:#9fb0c4;line-height:1.5"></p><button onclick="location.reload()" style="padding:9px 13px;border-radius:9px;border:1px solid #29425f;background:#0b1625;color:white">Reintentar</button></div><script>window.addEventListener('error',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent=(e.message||'Error de inicio')+' · '+(e.filename||'')+':'+(e.lineno||'');b.style.display='block'}});window.addEventListener('unhandledrejection',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent='Error asíncrono: '+String(e.reason?.message||e.reason||'desconocido');b.style.display='block'}});</script><div class="appFrame"></div>
+<div id="atlasFatal" style="display:none;position:fixed;z-index:9999;inset:0;background:#050912;color:#e8f2ff;padding:28px;font:14px system-ui;overflow:auto"><h2 style="margin:0 0 10px">Atlanex no pudo iniciar</h2><p id="atlasFatalText" style="color:#9fb0c4;line-height:1.5"></p><button onclick="location.reload()" style="padding:9px 13px;border-radius:9px;border:1px solid #29425f;background:#0b1625;color:white">Reintentar</button></div><script>window.addEventListener('error',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent=(e.message||'Error de inicio')+' · '+(e.filename||'')+':'+(e.lineno||'');b.style.display='block'}});window.addEventListener('unhandledrejection',e=>{const b=document.getElementById('atlasFatal'),t=document.getElementById('atlasFatalText');if(b&&t){t.textContent='Error asíncrono: '+String(e.reason?.message||e.reason||'desconocido');b.style.display='block'}});</script><div class="appFrame"></div>
 <section class="splash" id="splash">
   <div class="splashCard">
     <div class="x19Launch">
       <div class="x19Mark"></div>
-      <div class="x19Name">Internet Atlas</div>
+      <div class="x19Name">Atlanex</div>
       <h1 class="x19Title">Investiga. Conecta. Decide.</h1>
       <div class="x19Sub">Escribe una misión. Atlas puede investigar por ciclos, perseguir gaps de evidencia, verificar fuentes por snapshot SHA-256 y detenerse cuando cumple un objetivo medible.</div>
       <form class="x19Command" id="launchForm">
@@ -607,7 +607,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </div>
 
 <canvas id="stage"></canvas><div class="vig"></div>
-<div class="brand glass" id="brandHome" style="cursor:pointer"><div class="logo"></div><div><b>INTERNET ATLAS</b><small>EVIDENCE RESEARCH SYSTEM</small></div></div>
+<div class="brand glass" id="brandHome" style="cursor:pointer"><div class="logo"></div><div><b>ATLANEX</b><small>EVIDENCE RESEARCH SYSTEM</small></div></div>
 <form class="command glass" id="form"><input id="q" autocomplete="off" spellcheck="false" placeholder="Objetivo: encuentra X que cumpla A, B y C; compáralo y explícame por qué."><button class="btn primary">Investigar</button></form>
 <div class="topright glass"><button class="btn" id="agentsBtn">Agentes</button><button class="btn" id="replayBtn">Replay</button><button class="btn" id="forkBtn">Fork</button><button class="btn" id="runsBtn">Runs</button><button class="btn" id="toolsBtn">Herramientas ▾</button></div>
 <div class="toolsMenu glass" id="toolsMenu"><button class="btn" id="healthBtn">Salud</button><button class="btn" id="presentBtn">Presentar</button><button class="btn" id="aiBtn">IA</button><button class="btn" id="deep">Profundizar</button><button class="btn" id="monitor">Monitor</button><button class="btn" id="exportData">Datos</button><button class="btn" id="decisionPack">Decision Pack</button><button class="btn gold" id="export">Informe</button></div>
@@ -725,7 +725,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 </div>
 <aside class="aiPanel glass" id="aiPanel">
  <div class="aiHeader"><div><div class="ey">CLOUD AI CORE</div><h2>Atlas Intelligence</h2><div class="sub">IA desde el propio HTML. Sin descargar modelos locales.</div></div><button class="btn icon" id="aiClose">×</button></div>
- <div class="aiStatus"><i class="aiLed" id="aiLed"></i><div><b id="aiStatusTitle">Detectando Puter AI…</b><span id="aiStatusText">Puter AI → Auto → fallback analítico</span></div></div>
+ <div class="aiStatus"><i class="aiLed" id="aiLed"></i><div><b id="aiStatusTitle">Detectando IA cloud…</b><span id="aiStatusText">Cloud AI → Auto → fallback analítico</span></div></div>
  <div class="aiProgress"><div class="aiProgressFill" id="aiProgressFill"></div></div>
  <div class="row"><select class="field" id="aiEngineSelect"><option value="auto">Puter Auto</option></select><button class="btn primary" id="aiActivate">Activar IA</button></div>
  <div class="modehint">El modelo corre en la nube. Atlas no descarga pesos de IA al dispositivo.</div>
@@ -1732,7 +1732,7 @@ function decisionPackHtml(){
  const rows=top.map(e=>`<tr><td><b>${esc(e.title)}</b><br><small>${esc(e.domain||'')}</small></td><td>${e.score}</td>${criteria.map(c=>`<td>${esc(plain(e.criteria?.[c.id]))}</td>`).join('')}</tr>`).join('');
  const evidence=top.map(e=>`<section><h3>${esc(e.title)}</h3>${criteria.map(c=>{const r=e.criteria?.[c.id],p=r?.proof,snap=p?snapshotByHash(e,p.contentHash):null,verified=!!(r?.verified&&p&&snap&&exactQuoteInSnapshot(snap,p.quote));const status=verified?'VERIFICADO':r?.value==='likely'?'PROVISIONAL':'NO VERIFICADO';const quote=verified?p.quote:'No existe una cita exacta validada para este criterio.';const trace=verified?`<br><small>Fuente: ${esc(p.url||snap.url)} · SHA-256: ${esc(p.contentHash)} · Captura: ${esc(p.fetchedAt||snap.fetchedAt||'')}</small>`:'';return `<p><b>${esc(c.label)}:</b> ${esc(plain(r))} · <strong>${status}</strong><br><small>${esc(quote)}</small>${trace}</p>`}).join('')}</section>`).join('');
  const block=blockers.length?`<ul>${blockers.map(b=>`<li>${esc(b.entity)} — ${esc(b.criterion)} (${esc(b.status)})</li>`).join('')}</ul>`:'<p>Sin bloqueadores obligatorios detectados.</p>';
- const aiSection=current.aiBrief?`<h2>AI Brief</h2><p>${esc(current.aiBrief)}</p>`:'';return `<!doctype html><meta charset="utf-8"><title>Internet Atlas Decision Pack</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5;color:#111}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}small{color:#666}section{border-top:1px solid #ddd;padding:12px 0}
+ const aiSection=current.aiBrief?`<h2>AI Brief</h2><p>${esc(current.aiBrief)}</p>`:'';return `<!doctype html><meta charset="utf-8"><title>Atlanex Decision Pack</title><style>body{font-family:Arial;max-width:1100px;margin:40px auto;padding:0 20px;line-height:1.5;color:#111}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}small{color:#666}section{border-top:1px solid #ddd;padding:12px 0}
 .aiPanel{position:fixed;z-index:75;right:14px;top:76px;width:360px;max-height:calc(100vh - 95px);overflow:auto;border-radius:18px;padding:14px;transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none;transition:.2s}
 .aiPanel.show{transform:none;opacity:1;pointer-events:auto}.aiHeader{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.aiHeader h2{font-size:16px;margin:5px 0 2px}
 .aiStatus{display:flex;gap:7px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);margin:10px 0}
