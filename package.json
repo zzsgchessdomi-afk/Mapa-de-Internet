@@ -1,12 +1,12 @@
 {
-  "name": "internet-atlas",
+  "name": "atlanex",
   "version": "29.1.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=20"
   },
-  "description": "Internet Atlas autonomous evidence-first research workspace",
+  "description": "Atlanex autonomous evidence-first research workspace",
   "scripts": {
     "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs",
     "test:contract": "node tests/research-contract.mjs",
