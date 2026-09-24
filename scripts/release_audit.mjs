@@ -28,7 +28,7 @@ const server=text("desktop/sidecar/server.py");
 ok("CrewAI runtime test",server.includes("CrewAI runtime")||server.includes("crewai_runtime"));
 ok("GPT Researcher deep test",server.includes("gpt_researcher_deep")&&server.includes("conduct_research"));
 const wf=text(".github/workflows/windows-build.yml");
-ok("portable acceptance workflow",wf.includes("--acceptance-test")&&wf.includes("Internet-Atlas-Portable"));
+ok("portable acceptance workflow",wf.includes("--acceptance-test")&&wf.includes("ATLANEX-Portable"));
 ok("NSIS install acceptance",wf.includes("NSIS")&&wf.includes("Installed app acceptance"));
 ok("deep agent CI",wf.includes("--self-test-deep"));
 const rootAudit=JSON.parse(text("package.json")).scripts?.["audit:all"]||"";
