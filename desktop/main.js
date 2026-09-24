@@ -1,4 +1,4 @@
-import {app,BrowserWindow,ipcMain,dialog,Tray,Menu,nativeImage,Notification,shell} from 'electron';
+import {app,BrowserWindow,ipcMain,dialog,Tray,Menu,nativeImage,Notification,shell,safeStorage} from 'electron';
 import http from 'node:http';
 import net from 'node:net';
 import crypto from 'node:crypto';
@@ -16,6 +16,12 @@ let mainWindow=null,server=null,serverPort=0,tray=null,monitorTimer=null,sidecar
 const pendingLLM=new Map();
 const INTERNAL_HOST='127.0.0.1';
 const INTERNAL_MODEL='atlas-auto';
+const SECRET_FILE='atlanex-secrets.json';
+function secretPath(){return path.join(app.getPath('userData'),SECRET_FILE)}
+function readSecrets(){try{return JSON.parse(fs.readFileSync(secretPath(),'utf8'))}catch{return{}}}
+function writeSecrets(x){fs.mkdirSync(path.dirname(secretPath()),{recursive:true});fs.writeFileSync(secretPath(),JSON.stringify(x),'utf8')}
+function saveSecret(name,value){if(!safeStorage.isEncryptionAvailable())throw new Error('Windows secure storage is unavailable');const x=readSecrets();if(value)x[name]=safeStorage.encryptString(String(value)).toString('base64');else delete x[name];writeSecrets(x);return true}
+function loadSecret(name){const v=readSecrets()[name];if(!v)return'';try{return safeStorage.decryptString(Buffer.from(v,'base64'))}catch{return''}}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
 
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -78,6 +84,9 @@ async function runAcceptance(){let backup=null,had=false,win=null;try{await star
 
 const lock=app.requestSingleInstanceLock();if(!lock)app.quit();else{app.on('second-instance',()=>{mainWindow?.show();mainWindow?.focus()});app.whenReady().then(async()=>{if(process.argv.includes('--acceptance-test')){isQuitting=true;return app.exit(await runAcceptance())}if(process.argv.includes('--smoke-test')){isQuitting=true;return app.exit(await runSmoke())}await startServer();createWindow(true);createTray();startMonitor();const m=loadMonitor();if(m.startWithWindows)setLogin(true);if(process.argv.includes('--background'))mainWindow?.hide();if(fs.existsSync(agentExe())||fs.existsSync(devPython()))startSidecar().catch(()=>{})});app.on('activate',()=>{if(!mainWindow)createWindow();else{mainWindow.show();mainWindow.focus()}});app.on('window-all-closed',()=>{});app.on('before-quit',()=>{isQuitting=true;clearInterval(monitorTimer);try{server?.close()}catch{};try{sidecarProc?.kill()}catch{}})}
 
+ipcMain.handle('atlas:ai-secret-status',()=>({gemini:!!loadSecret('geminiApiKey'),encrypted:safeStorage.isEncryptionAvailable()}));
+ipcMain.handle('atlas:ai-secret-set',(_e,{provider,key})=>{if(provider!=='gemini')throw new Error('Unsupported provider');const v=String(key||'').trim();if(v&&v.length<20)throw new Error('Invalid Gemini credential');return saveSecret('geminiApiKey',v)});
+ipcMain.handle('atlas:ai-secret-clear',(_e,provider)=>{if(provider!=='gemini')throw new Error('Unsupported provider');return saveSecret('geminiApiKey','')});
 ipcMain.handle('atlas:window',(_e,a)=>{if(!mainWindow)return false;if(a==='minimize')mainWindow.minimize();else if(a==='maximize')mainWindow.isMaximized()?mainWindow.unmaximize():mainWindow.maximize();else if(a==='close')mainWindow.close();else if(a==='fullscreen')mainWindow.setFullScreen(!mainWindow.isFullScreen());return true});
 ipcMain.handle('atlas:save-project',async(_e,{text,defaultName})=>{const x=await dialog.showSaveDialog(mainWindow,{title:'Guardar proyecto Atlas',defaultPath:path.join(app.getPath('documents'),defaultName||'Atlas_Project.atlas.json'),filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePath)return false;fs.writeFileSync(x.filePath,text,'utf8');return true});
 ipcMain.handle('atlas:open-project',async()=>{const x=await dialog.showOpenDialog(mainWindow,{title:'Abrir proyecto Atlas',properties:['openFile'],filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePaths[0])return null;return{path:x.filePaths[0],text:fs.readFileSync(x.filePaths[0],'utf8')}});
