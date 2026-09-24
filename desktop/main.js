@@ -45,6 +45,19 @@ async function startSidecar(){
 async function sidecar(route,options={}){if(!sidecarProc&&!(await startSidecar()))throw new Error('Atlas Agent Engine no disponible');const r=await fetch('http://'+INTERNAL_HOST+':'+sidecarPort+route,options);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('sidecar HTTP '+r.status));return j}
 
 function rendererLLM(payload){return new Promise((resolve,reject)=>{if(!mainWindow||mainWindow.isDestroyed())return reject(new Error('Renderer no disponible'));const id=crypto.randomUUID(),timer=setTimeout(()=>{pendingLLM.delete(id);reject(new Error('LLM bridge timeout'))},300000);pendingLLM.set(id,{resolve,reject,timer});mainWindow.webContents.send('atlas:llm-request',{id,...payload})})}
+function messageText(messages=[]){return messages.map(m=>{const v=m?.content;if(Array.isArray(v))return v.map(x=>typeof x==='string'?x:(x?.text||'')).join('\n');return String(v||'')}).filter(Boolean).join('\n\n')}
+function geminiOutput(j){for(const step of (j?.steps||[])){if(step?.type!=='model_output')continue;const t=(step.content||[]).filter(x=>x?.type==='text').map(x=>x.text||'').join('');if(t)return t}return''}
+async function geminiLLM(payload){
+ const key=loadSecret('geminiApiKey');if(!key)throw new Error('Gemini credential is not configured');
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),180000);
+ try{
+  const body={model:process.env.ATLANEX_GEMINI_MODEL||'gemini-3.8-flash',input:messageText(payload.messages),store:false};
+  const r=await fetch('https://generativelanguage.googleapis.com/v1/interactions',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body),signal:ctl.signal});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j?.error?.message||('Gemini HTTP '+r.status));
+  const text=geminiOutput(j);if(!text)throw new Error('Gemini returned no model output');return{text,provider:'gemini',model:j.model||body.model}
+ }finally{clearTimeout(timer)}
+}
+async function cloudLLM(payload){if(loadSecret('geminiApiKey'))return geminiLLM(payload);return rendererLLM(payload)}
 function hashEmbedding(text,dim=384){const v=new Array(dim).fill(0),t=String(text||'').toLowerCase().match(/[\p{L}\p{N}_-]+/gu)||[];for(const token of t){let h=2166136261;for(let i=0;i<token.length;i++){h^=token.charCodeAt(i);h=Math.imul(h,16777619)}v[(h>>>0)%dim]+=((h>>>8)&1)?1:-1}const n=Math.sqrt(v.reduce((s,x)=>s+x*x,0))||1;return v.map(x=>x/n)}
 function adapter(handler,u,req,res){req.query=Object.fromEntries(u.searchParams.entries());let status=200;const o={status(n){status=n;return o},setHeader(k,v){res.setHeader(k,v);return o},json(x){res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(x));return o},end(x=''){res.statusCode=status;res.end(x);return o}};return handler(req,o)}
 function serveStatic(res,u){let pn=decodeURIComponent(u.pathname);if(pn==='/')pn='/index.html';const file=path.normalize(path.join(appDir,pn));if(!file.startsWith(appDir)){res.statusCode=403;return res.end('Forbidden')}fs.stat(file,(e,st)=>{if(e||!st.isFile()){res.statusCode=404;return res.end('Not found')}res.setHeader('Content-Type',MIME[path.extname(file).toLowerCase()]||'application/octet-stream');fs.createReadStream(file).pipe(res)})}
@@ -53,7 +66,7 @@ async function startServer(){if(server)return serverPort;return await new Promis
  if(u.pathname==='/api/inspect')return await adapter(inspectHandler,u,req,res);
  if(u.pathname==='/v1/models'){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({object:'list',data:[{id:INTERNAL_MODEL,object:'model'}]}))}
  if(u.pathname==='/v1/embeddings'&&req.method==='POST'){let raw='';for await(const c of req)raw+=c;const b=JSON.parse(raw||'{}'),arr=Array.isArray(b.input)?b.input:[b.input||''];res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({object:'list',data:arr.map((x,i)=>({object:'embedding',index:i,embedding:hashEmbedding(x)})),model:b.model||'atlas-feature-hash-384'}))}
- if(u.pathname==='/v1/chat/completions'&&req.method==='POST'){let raw='';for await(const c of req)raw+=c;const b=JSON.parse(raw||'{}'),model=String(b.model||INTERNAL_MODEL).replace(/^openai[/:]/,'');const reply=await rendererLLM({messages:b.messages||[],model});res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({id:'atlas-'+Date.now(),object:'chat.completion',created:Math.floor(Date.now()/1000),model,choices:[{index:0,message:{role:'assistant',content:reply.text},finish_reason:'stop'}]}))}
+ if(u.pathname==='/v1/chat/completions'&&req.method==='POST'){let raw='';for await(const c of req)raw+=c;const b=JSON.parse(raw||'{}'),model=String(b.model||INTERNAL_MODEL).replace(/^openai[/:]/,'');const reply=await cloudLLM({messages:b.messages||[],model});res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({id:'atlas-'+Date.now(),object:'chat.completion',created:Math.floor(Date.now()/1000),model,choices:[{index:0,message:{role:'assistant',content:reply.text},finish_reason:'stop'}]}))}
  return serveStatic(res,u)
  }catch(e){res.statusCode=500;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({error:String(e?.message||e)}))}});server.listen(0,INTERNAL_HOST,()=>{serverPort=server.address().port;resolve(serverPort)});server.on('error',reject)})}
 
