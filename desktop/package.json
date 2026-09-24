@@ -1,7 +1,7 @@
 {
-  "name": "internet-atlas-desktop",
-  "version": "29.1.0",
-  "description": "Internet Atlas — Autonomous Evidence Research",
+  "name": "atlanex-desktop",
+  "version": "30.0.0",
+  "description": "ATLANEX Autonomous Research OS for Windows",
   "type": "module",
   "main": "main.js",
   "scripts": {
@@ -16,8 +16,8 @@
     "electron-builder": "26.15.3"
   },
   "build": {
-    "appId": "com.internetatlas.desktop",
-    "productName": "Internet Atlas",
+    "appId": "com.atlanex.researchos",
+    "productName": "ATLANEX",
     "files": [
       "main.js",
       "preload.cjs",
@@ -51,9 +51,9 @@
       "createStartMenuShortcut": true,
       "perMachine": false,
       "allowElevation": true,
-      "shortcutName": "Internet Atlas",
+      "shortcutName": "ATLANEX",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "Internet-Atlas-Setup-${version}-${arch}.${ext}"
+      "artifactName": "ATLANEX-Setup-${version}-${arch}.${ext}"
     },
     "extraResources": [
       {
@@ -65,8 +65,9 @@
       }
     ],
     "portable": {
-      "artifactName": "Internet-Atlas-Portable-${version}-${arch}.${ext}"
-    }
+      "artifactName": "ATLANEX-Portable-${version}-${arch}.${ext}"
+    },
+    "artifactName": "ATLANEX-${version}-${arch}.${ext}"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"
