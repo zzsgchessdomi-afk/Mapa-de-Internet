@@ -1,6 +1,14 @@
 const API_CATALOG="https://public-api-lists.github.io/public-api-lists/api/all.json";
 const UA="Mozilla/5.0 (compatible; InternetAtlas/1.0; research client)";
 function clean(s=""){return String(s).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim()}
+function safeHttpUrl(value){
+ try{const u=new URL(String(value||""));return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}
+}
+function normalizeResult(r){
+ const url=safeHttpUrl(r?.url);if(!url)return null;
+ const title=clean(r?.title||"").slice(0,300);if(!title)return null;
+ return {...r,url,title,description:clean(r?.description).slice(0,520),meta:Array.isArray(r?.meta)?r.meta.map(x=>clean(x).slice(0,160)).filter(Boolean).slice(0,8):[]}
+}
 function decodeHtml(s=""){return String(s).replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&#x27;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n)))}
 async function getJson(url,headers={}){
  const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);
@@ -65,7 +73,8 @@ export default async function handler(req,res){
   ["publicapis",async()=>{const d=await getJson(API_CATALOG);const entries=(d.entries||[]).map(x=>({name:x.name||x.API,url:x.url||x.Link,description:x.description||x.Description||"",auth:x.auth||x.Auth||"Unknown",https:x.https!==undefined?!!x.https:/yes/i.test(x.HTTPS||""),cors:x.cors||x.Cors||x.CORS||"Unknown",category:x.category||x.Category||"Other"})).filter(x=>x.name&&x.url);return apiMatch(entries,q)}]
  ];
  await Promise.all(providers.map(async([name,fn])=>{const started=Date.now();try{const rows=await fn();out.push(...rows);diagnostics.push({provider:name,ok:true,count:rows.length,ms:Date.now()-started})}catch(e){diagnostics.push({provider:name,ok:false,count:0,ms:Date.now()-started,error:String(e?.message||e).slice(0,120)})}}));
- const seen=new Set(),results=[];for(const r of out){const k=((r.url||"")+"|"+r.title).toLowerCase().replace(/\/$/,"");if(!k||seen.has(k))continue;seen.add(k);results.push({...r,description:clean(r.description).slice(0,520)})}
+ const seen=new Set(),results=[];for(const rawResult of out){const r=normalizeResult(rawResult);if(!r)continue;const k=(r.url+"|"+r.title).toLowerCase().replace(/\/$/,"");if(seen.has(k))continue;seen.add(k);results.push(r)}
  results.sort((a,b)=>(b.rawScore||0)-(a.rawScore||0));
- res.setHeader("Cache-Control","s-maxage=60, stale-while-revalidate=180");res.status(200).json({query:q,providerCount:diagnostics.filter(x=>x.ok).length,diagnostics,results:results.slice(0,90)});
+ res.setHeader("Cache-Control","s-maxage=60, stale-while-revalidate=180");const successfulProviders=diagnostics.filter(x=>x.ok),providersWithResults=successfulProviders.filter(x=>x.count>0);
+ res.status(200).json({query:q,providerCount:successfulProviders.length,providersWithResults:providersWithResults.length,diagnostics,results:results.slice(0,90),evidence:{discovered:results.length,verifiedSnapshots:0,note:"Discovery results are not verified evidence until inspected and content-hashed."}});
 }
