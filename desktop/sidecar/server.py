@@ -10,7 +10,7 @@ APP=FastAPI(title="Atlas Agent Sidecar",version="29.1")
 RUNS:Dict[str,Dict[str,Any]]={}
 CANCELLED=set()
 BRIDGE=os.getenv("ATLAS_LLM_BASE_URL","http://127.0.0.1:8788/v1").rstrip("/")
-MODEL=os.getenv("ATLAS_MODEL","gpt-5.6-luna")
+MODEL=os.getenv("ATLAS_MODEL","atlas-auto")
 CONFIG_PATH=Path(__file__).with_name("gptr_config.json")
 
 def pkg_version(name):
