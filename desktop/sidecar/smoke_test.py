@@ -18,9 +18,16 @@ except Exception as e:
 
 try:
     from crewai import LLM
-    base=os.environ.get("ATLAS_LLM_BASE_URL","http://127.0.0.1:8788/v1")
-    model=os.environ.get("ATLAS_MODEL","atlas-auto")
-    llm=LLM(model=f"openai/{model}",custom_openai=True,base_url=base,api_key="atlas-user-pays")
-    out("crewai_llm", True, f"{model} -> {base}")
+    base=os.environ.get("ATLAS_LLM_BASE_URL","").strip()
+    model=os.environ.get("ATLAS_MODEL","atlas-auto").strip() or "atlas-auto"
+    if not base:
+        out("crewai_llm", True, f"{model} -> cloud provider selected at runtime")
+    else:
+        lowered=base.lower()
+        forbidden=("localhost","127.0.0.1","0.0.0.0","::1")
+        if any(host in lowered for host in forbidden):
+            raise RuntimeError("Local/loopback LLM endpoints are forbidden in Atlanex")
+        llm=LLM(model=f"openai/{model}",custom_openai=True,base_url=base,api_key=os.environ.get("ATLAS_LLM_API_KEY","atlas-user-pays"))
+        out("crewai_llm", True, f"{model} -> cloud endpoint configured")
 except Exception as e:
     out("crewai_llm", False, str(e))
