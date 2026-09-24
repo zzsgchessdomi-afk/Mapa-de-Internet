@@ -417,7 +417,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
   </header>
   <div class="mcBody">
     <aside class="mcLeft">
-      <div class="mcProject"><div class="ey">PROYECTO ACTUAL</div><h3 id="mcProjectName">Mi Atlas</h3><p id="mcProjectObjective">Empieza una investigación.</p></div>
+      <div class="mcProject"><div class="ey">PROYECTO ACTUAL</div><h3 id="mcProjectName">Mi Atlanex</h3><p id="mcProjectObjective">Empieza una investigación.</p></div>
       <nav class="mcNav">
         <button class="on" data-mc-nav="mission">⌂ Autonomous Evidence System <span id="mcNavEvidence">0</span></button>
         <button data-mc-nav="branches">⌘ Ramas <span id="mcNavBranches">0</span></button>
@@ -669,7 +669,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 
 
 <aside class="agentPanel glass" id="agentPanel">
- <div class="agentHead"><div class="ey">ATLAS AGENT ENGINE</div><h2 style="font-size:16px;margin:5px 0 2px">CrewAI × GPT Researcher</h2><div class="sub">Orquestación multiagente + investigación profunda detrás de Atlas.</div></div>
+ <div class="agentHead"><div class="ey">ATLANEX AGENT ENGINE</div><h2 style="font-size:16px;margin:5px 0 2px">CrewAI × GPT Researcher</h2><div class="sub">Orquestación multiagente + investigación profunda detrás de Atlas.</div></div>
  <div class="agentScroll">
    <div class="engineCard">
      <div class="engineCardTop"><b>Research Engine</b><span class="engineBadge" id="agentEngineBadge">comprobando</span></div>
@@ -801,8 +801,8 @@ const API_SNAPSHOT=[{"name":"Open-Meteo","url":"https://open-meteo.com/","descri
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),canvas=$('stage'),ctx=canvas.getContext('2d',{alpha:false});
-const STORE='internet-atlas-state-v1';
-const LEGACY_STORES=['atlas-x12-state-v1'];
+const STORE='atlanex-state-v1';
+const LEGACY_STORES=['internet-atlas-state-v1','atlas-x12-state-v1'];
 
 const _memoryStore=new Map();
 const safeStore={
@@ -821,7 +821,7 @@ const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h
 const rnd=(s,a=0,b=1)=>a+(hash(s)%100000)/100000*(b-a);
 const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
 const domainOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'').toLowerCase()}catch{return''}};
-function defaultState(){return{schemaVersion:29,projects:[{id:'default',name:'Mi Atlas',runs:[],saved:[],watch:[]}],active:'default'}}
+function defaultState(){return{schemaVersion:29,projects:[{id:'default',name:'Mi Atlanex',runs:[],saved:[],watch:[]}],active:'default'}}
 function normalizeStateShape(x){
  if(!x||!Array.isArray(x.projects)||!x.projects.length)return defaultState();
  x.schemaVersion=29;for(const p of x.projects){p.runs=Array.isArray(p.runs)?p.runs:[];p.saved=Array.isArray(p.saved)?p.saved:[];p.watch=Array.isArray(p.watch)?p.watch:[]}
@@ -849,8 +849,8 @@ function downloadBlob(name,content,type='application/json'){
 }
 function exportActiveProject(){
  if(!project)return toast('No hay proyecto activo');
- const payload={format:'internet-atlas-project',version:29,exportedAt:new Date().toISOString(),project};
- downloadBlob((project.name||'Atlas_Project').replace(/[^\w-]+/g,'_')+'.atlas.json',JSON.stringify(payload,null,2))
+ const payload={format:'atlanex-project',version:29,exportedAt:new Date().toISOString(),project};
+ downloadBlob((project.name||'Atlanex_Project').replace(/[^\w-]+/g,'_')+'.atlanex.json',JSON.stringify(payload,null,2))
 }
 async function importProjectFile(file){
  try{
@@ -883,7 +883,7 @@ async function runHealthCheck(){
     {name:'Motor local',status:'ok',detail:`${API_SNAPSHOT.length} APIs embebidas disponibles`,ms:0},
     {name:'Persistencia',status:safeStore.persistent()?'ok':'warn',detail:safeStore.persistent()?'almacenamiento persistente':'memoria temporal mientras esta pestaña siga abierta',ms:0},
     {name:'Puter AI',status:globalThis.puter?.ai?.chat?'ok':'warn',detail:globalThis.puter?.ai?.chat?'cargado':'se carga solo al pulsar Activar IA',ms:0},
-    {name:'CrewAI / GPT Researcher',status:'warn',detail:'requiere Atlas Desktop',ms:0}
+    {name:'CrewAI / GPT Researcher',status:'warn',detail:'requiere Atlanex Desktop',ms:0}
    ]
  }else{
    probes=await Promise.all([
@@ -930,7 +930,7 @@ const TOUR=[
 ];
 function renderTour(){const s=TOUR[tourIndex];$('tourTitle').textContent=s.t;$('tourText').textContent=s.d;$('tourDots').innerHTML=TOUR.map((_,i)=>`<i class="${i===tourIndex?'on':''}"></i>`).join('');$('tourNext').textContent=tourIndex===TOUR.length-1?'Terminar':'Siguiente'}
 function startTour(){tourIndex=0;renderTour();$('tour').classList.add('show')}
-function nextTour(){if(tourIndex<TOUR.length-1){tourIndex++;renderTour()}else{$('tour').classList.remove('show');safeStore.setItem('internet-atlas-tour-v1','done')}}
+function nextTour(){if(tourIndex<TOUR.length-1){tourIndex++;renderTour()}else{$('tour').classList.remove('show');safeStore.setItem('atlanex-tour-v1','done')}}
 
 
 function normalizePuterModel(model){const m=String(model||'gpt-5.6-luna').replace(/^openai[:/]/i,'').replace(/^puter[:/]/i,'');return (!m||m==='atlas-auto'||m==='auto')?'gpt-5.6-luna':m}
@@ -1068,7 +1068,7 @@ function initSoftwareMode(){
    document.body.classList.add('desktop-mode');
    globalThis.atlasDesktop.getVersion?.().then(v=>consoleWrite(`Desktop runtime ${v||''}`)).catch(()=>{});
  }
- let saved={};try{saved=JSON.parse(safeStore.getItem('internet-atlas-layout-v1')||safeStore.getItem('atlas-x20-layout')||'{}')}catch{}
+ let saved={};try{saved=JSON.parse(safeStore.getItem('atlanex-layout-v1')||safeStore.getItem('internet-atlas-layout-v1')||safeStore.getItem('atlas-x20-layout')||'{}')}catch{}
  if(saved.left)document.documentElement.style.setProperty('--leftW',saved.left+'px');
  if(saved.right)document.documentElement.style.setProperty('--rightW',saved.right+'px');
  renderRunTabs()
@@ -1134,12 +1134,12 @@ function setupResize(handle,side){
  let active=false,startX=0,startW=0;
  handle.addEventListener('pointerdown',e=>{active=true;startX=e.clientX;startW=parseFloat(getComputedStyle(document.documentElement).getPropertyValue(side==='left'?'--leftW':'--rightW'))|| (side==='left'?360:430);handle.setPointerCapture(e.pointerId)});
  handle.addEventListener('pointermove',e=>{if(!active)return;const delta=e.clientX-startX;let w=side==='left'?startW+delta:startW-delta;w=Math.max(260,Math.min(620,w));document.documentElement.style.setProperty(side==='left'?'--leftW':'--rightW',w+'px')});
- handle.addEventListener('pointerup',()=>{if(!active)return;active=false;const s={left:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--leftW')),right:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rightW'))};safeStore.setItem('internet-atlas-layout-v1',JSON.stringify(s))})
+ handle.addEventListener('pointerup',()=>{if(!active)return;active=false;const s={left:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--leftW')),right:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rightW'))};safeStore.setItem('atlanex-layout-v1',JSON.stringify(s))})
 }
 async function nativeExportProject(){
  if(!IS_DESKTOP)return exportActiveProject();
  const payload={format:'internet-atlas-project',version:29,exportedAt:new Date().toISOString(),project};
- const ok=await globalThis.atlasDesktop.saveProject(JSON.stringify(payload,null,2),(project.name||'Atlas_Project')+'.atlas.json');
+ const ok=await globalThis.atlasDesktop.saveProject(JSON.stringify(payload,null,2),(project.name||'Atlanex_Project')+'.atlanex.json');
  if(ok)toast('Proyecto guardado')
 }
 async function nativeImportProject(){
@@ -1149,7 +1149,7 @@ async function nativeImportProject(){
    const parsed=JSON.parse(data.text);const p=parsed.project||parsed;if(!p||!Array.isArray(p.runs))throw 0;
    const copy=JSON.parse(JSON.stringify(p));copy.id='p-'+Date.now();copy.name=(copy.name||'Proyecto')+' · importado';copy.saved=copy.saved||[];copy.watch=copy.watch||[];
    state.projects.push(copy);state.active=copy.id;saveState();syncProject();project=activeProject();if(project.runs[0])loadRun(project.runs[0].id);toast('Proyecto abierto')
- }catch{toast('Archivo Atlas no válido')}
+ }catch{toast('Archivo Atlanex no válido')}
 }
 function syncProject(){project=activeProject();if($('ntProject'))$('ntProject').textContent=project?.name||'Workspace';$('projectSelect').innerHTML=state.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===state.active?'selected':''}>${esc(p.name)}</option>`).join('');renderRecent()}
 $('projectSelect').onchange=e=>{state.active=e.target.value;saveState();project=activeProject();current=project.runs[0]||null;if(current)loadRun(current.id);else{criteria=[];rawResults=[];entities=[];renderCriteria();renderAll()}};
@@ -1348,7 +1348,7 @@ async function addSnapshot(e,data,url){
  return snapshot
 }
 async function fetchInspectable(url){
- if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlas Desktop o una versión servida');
+ if(IS_RESTRICTED_ORIGIN)throw new Error('La verificación de URLs requiere Atlanex Desktop o una versión servida');
  const r=await fetch('/api/inspect?url='+encodeURIComponent(url));
  const d=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
@@ -2320,7 +2320,7 @@ function attachSnapshotExtraction(e,snapshot){
  e.signals.prices=[...new Set([...(e.signals.prices||[]),...(ex.signals.prices||[])])].slice(0,12);e.evidence.price=e.signals.prices;e.excerpt=clean(snapshot.text).slice(0,1600);e.inspected=true;e.inspectedAt=Date.now();e.inspectError=null
 }
 async function ingestLocalFiles(){
- if(!globalThis.atlasDesktop?.pickResearchFiles)return toast('La importación de archivos requiere Atlas Desktop');
+ if(!globalThis.atlasDesktop?.pickResearchFiles)return toast('La importación de archivos requiere Atlanex Desktop');
  const files=await atlasDesktop.pickResearchFiles();if(!files?.length)return;const good=files.filter(f=>f.text&&!f.error),bad=files.filter(f=>f.error);if(!good.length)return toast(bad[0]?.error||'No se importaron documentos');
  const oldEntities=entities||[];for(const f of good)rawResults.unshift({id:'local-'+f.contentHash.slice(0,16),source:'localfile',type:'document',title:f.name,url:'',description:`${f.kind==='pdf'?'PDF':'Documento'} local · ${(f.size/1024).toFixed(0)} KB`,meta:[f.kind,'local'],localDocument:true,contentHash:f.contentHash});
  entities=preserveEntityState(oldEntities,groupEntities(rawResults));
@@ -2661,7 +2661,7 @@ function monitorJobsPayload(){
  const jobs=[];for(const p of (state.projects||[]))for(const w of (p.watch||[]))if(w.url)jobs.push({id:`${p.id}::${w.id}`,title:`${p.name} · ${w.title}`,url:w.url,intervalMinutes:Number(w.intervalMinutes)||360,enabled:w.monitorEnabled!==false,lastHash:w.snapshots?.at?.(-1)?.contentHash||''});
  return jobs
 }
-async function syncDesktopMonitors(silent=false){if(!globalThis.atlasDesktop?.monitorSync){if(!silent)toast('Persistent Monitor requiere Atlas Desktop');return null}try{const s=await atlasDesktop.monitorSync(monitorJobsPayload());renderDesktopMonitor(s);return s}catch(e){if(!silent)toast('Monitor: '+String(e?.message||e).slice(0,90));return null}}
+async function syncDesktopMonitors(silent=false){if(!globalThis.atlasDesktop?.monitorSync){if(!silent)toast('Persistent Monitor requiere Atlanex Desktop');return null}try{const s=await atlasDesktop.monitorSync(monitorJobsPayload());renderDesktopMonitor(s);return s}catch(e){if(!silent)toast('Monitor: '+String(e?.message||e).slice(0,90));return null}}
 function renderDesktopMonitor(s=null){
  const box=$('monitorJobs');if(!box)return;if(!globalThis.atlasDesktop?.monitorList){box.innerHTML='<div class="sub">Disponible en Atlas Desktop.</div>';return}
  const jobs=s?.jobs||[];box.innerHTML=jobs.length?jobs.map(j=>`<div class="monitorJob"><b>${esc(j.title)}${j.changed?' · CAMBIO':''}</b><span>${j.lastChecked?new Date(j.lastChecked).toLocaleString():'sin revisar'}${j.lastError?' · '+esc(j.lastError):''}</span><select data-monitor-frequency="${esc(j.id)}" style="margin-top:5px;background:#08131f;color:#aebfd2;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px;font-size:6px"><option value="15" ${j.intervalMinutes===15?'selected':''}>cada 15 min</option><option value="60" ${j.intervalMinutes===60?'selected':''}>cada 1 h</option><option value="360" ${j.intervalMinutes===360?'selected':''}>cada 6 h</option><option value="1440" ${j.intervalMinutes===1440?'selected':''}>cada 24 h</option></select></div>`).join(''):'<div class="sub">No hay URLs sincronizadas.</div>';
@@ -2673,7 +2673,7 @@ function renderSnapshotText(){const s=snapshotView.snapshot;if(!s)return;const q
 function snapshotMove(dir){if(!snapshotView.hits.length)return;snapshotView.hitIndex=(snapshotView.hitIndex+dir+snapshotView.hits.length)%snapshotView.hits.length;renderSnapshotText()}
 function renderMissionControl(){
  if(!mcVisible)return;
- $('mcProjectName').textContent=project?.name||'Mi Atlas';$('mcProjectObjective').textContent=current?.objective||'Empieza una investigación.';
+ $('mcProjectName').textContent=project?.name||'Mi Atlanex';$('mcProjectObjective').textContent=current?.objective||'Empieza una investigación.';
  $('mcNavEntities').textContent=entities.length;$('mcNavEvidence').textContent=rawResults.length;$('mcStatEvidence').textContent=entities.length;
  $('mcSystemText').textContent=agentState?.running?'Agentes trabajando':current?`Run activo · ${current.coverage??coverage()}%`:'Sistema listo';
  $('mcPulseSources').textContent=mcSourceCount();$('mcPulseVerified').textContent=verifiedClaimCount();$('mcPulseGaps').textContent=evidenceGapCount();
@@ -3148,7 +3148,7 @@ $('projectFile').onchange=e=>{const f=e.target.files?.[0];if(f)importProjectFile
 $('resumeSession').onclick=()=>{$('recovery').classList.remove('show');closeSplash();if(project?.runs?.[0])loadRun(project.runs[0].id)};
 $('dismissRecovery').onclick=()=>$('recovery').classList.remove('show');
 $('tourNext').onclick=nextTour;
-$('tourSkip').onclick=()=>{$('tour').classList.remove('show');safeStore.setItem('internet-atlas-tour-v1','done')};
+$('tourSkip').onclick=()=>{$('tour').classList.remove('show');safeStore.setItem('atlanex-tour-v1','done')};
 addEventListener('resize',()=>{if($('presentation').classList.contains('show'))drawPresentation()});
 
 
