@@ -1,4 +1,5 @@
 import handler from '../api/research.js';
+import assert from 'node:assert/strict';
 const originalFetch=globalThis.fetch;
 function J(obj,status=200){return new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json'}})}
 function T(text,status=200,ct='text/html'){return new Response(text,{status,headers:{'Content-Type':ct}})}
@@ -28,4 +29,36 @@ for(const source of ['websearch','wikipedia','wikidata','github','stackoverflow'
  if(!body.results.some(x=>x.source===source))throw new Error('missing source '+source)
 }
 if((body.providerCount||0)<9)throw new Error('providerCount '+body.providerCount);
-console.log(JSON.stringify({ok:true,providerCount:body.providerCount,results:body.results.length,sources:[...new Set(body.results.map(x=>x.source))]},null,2));
+assert.equal(body.status,'ok');
+assert.equal(body.usable,true);
+assert.equal(body.degraded,false);
+assert.equal(body.failedProviders,0);
+assert.equal(body.timedOutProviders,0);
+assert.equal(body.evidence?.verifiedSnapshots,0);
+assert.match(body.evidence?.note||'',/not verified evidence/i);
+for(const row of body.results){assert.match(row.url,/^https?:\/\//);assert.ok(row.title)}
+const healthySummary={providerCount:body.providerCount,results:body.results.length,sources:[...new Set(body.results.map(x=>x.source))]};
+
+// Regression: partial provider failure must remain explicit and must never synthesize fallback evidence.
+globalThis.fetch=async (input)=>{
+ const u=String(input);
+ if(u.includes('html.duckduckgo.com'))return T('<a class="result__a" href="https://example.com/real">Real result</a><div class="result__snippet">Real discovery</div>');
+ if(u.includes('wikipedia.org/w/api.php'))return J(['q',['Real'],['Real article'],['https://en.wikipedia.org/wiki/Real']]);
+ throw new Error('provider offline')
+};
+body=null;code=200;await handler({query:{q:'partial test'}},res);
+assert.equal(code,200);assert.equal(body.status,'partial');assert.equal(body.usable,true);assert.equal(body.degraded,true);
+assert.ok(body.failedProviders>0);assert.ok(body.results.length>0);
+assert.equal(body.evidence.verifiedSnapshots,0);
+assert.match(body.recovery,/partial provider failure/i);
+assert.equal(body.results.some(x=>/synthetic|fallback/i.test(x.title||'')),false);
+
+// Regression: total outage returns no-results, not fabricated data.
+globalThis.fetch=async ()=>{throw new Error('network down')};
+body=null;code=200;await handler({query:{q:'outage test'}},res);
+assert.equal(code,200);assert.equal(body.status,'no-results');assert.equal(body.usable,false);assert.equal(body.results.length,0);
+assert.equal(body.evidence.discovered,0);assert.equal(body.evidence.verifiedSnapshots,0);
+assert.match(body.recovery,/do not synthesize or fabricate/i);
+globalThis.fetch=originalFetch;
+
+console.log(JSON.stringify({ok:true,healthy:healthySummary,partialFailure:true,totalOutageNoFabrication:true},null,2));
