@@ -14,7 +14,7 @@ const appDir=path.join(__dirname,'app');
 app.setAppUserModelId('com.internetatlas.desktop');
 let mainWindow=null,server=null,serverPort=0,tray=null,monitorTimer=null,sidecarProc=null,sidecarPort=0,isQuitting=false;
 const pendingLLM=new Map();
-const INTERNAL_HOST=INTERNAL_HOST;
+const INTERNAL_HOST='127.0.0.1';
 const INTERNAL_MODEL='atlas-auto';
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
 
