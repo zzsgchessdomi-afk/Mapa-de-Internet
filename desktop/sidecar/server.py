@@ -9,8 +9,16 @@ from pydantic import BaseModel
 APP=FastAPI(title="Atlas Agent Sidecar",version="29.1")
 RUNS:Dict[str,Dict[str,Any]]={}
 CANCELLED=set()
-BRIDGE=os.getenv("ATLAS_LLM_BASE_URL","http://127.0.0.1:8788/v1").rstrip("/")
-MODEL=os.getenv("ATLAS_MODEL","atlas-auto")
+BRIDGE=os.getenv("ATLAS_LLM_BASE_URL","").strip().rstrip("/")
+MODEL=os.getenv("ATLAS_MODEL","atlas-auto").strip() or "atlas-auto"
+
+def _require_cloud_endpoint(value):
+    value=(value or "").strip().rstrip("/")
+    if not value:raise RuntimeError("No cloud LLM endpoint configured")
+    lowered=value.lower()
+    if any(host in lowered for host in ("localhost","127.0.0.1","0.0.0.0","::1")):
+        raise RuntimeError("Local/loopback LLM endpoints are forbidden in Atlanex")
+    return value
 CONFIG_PATH=Path(__file__).with_name("gptr_config.json")
 
 def pkg_version(name):
@@ -40,8 +48,9 @@ def ensure_not_cancelled(rid):
 async def bridge_probe():
     import httpx
     try:
+        endpoint=_require_cloud_endpoint(BRIDGE)
         async with httpx.AsyncClient(timeout=15) as c:
-            r=await c.get(BRIDGE.replace("/v1","")+"/v1/models")
+            r=await c.get(endpoint.replace("/v1","")+"/v1/models")
             d=r.json() if r.status_code==200 else {}
             return {"ok":r.status_code==200,"detail":f"{len(d.get('data',[]))} modelos visibles" if r.status_code==200 else f"HTTP {r.status_code}"}
     except Exception as e:return {"ok":False,"detail":str(e)}
@@ -71,7 +80,10 @@ async def doctor():
 
 def atlas_llm():
     from crewai import LLM
-    return LLM(model=f"openai/{MODEL}",custom_openai=True,base_url=BRIDGE,api_key="atlas-user-pays",temperature=0.1)
+    endpoint=_require_cloud_endpoint(BRIDGE)
+    api_key=os.environ.get("ATLAS_LLM_API_KEY","").strip()
+    if not api_key:raise RuntimeError("No cloud LLM API key configured")
+    return LLM(model=f"openai/{MODEL}",custom_openai=True,base_url=endpoint,api_key=api_key,temperature=0.1)
 
 @APP.post("/smoke")
 async def smoke():
@@ -80,7 +92,7 @@ async def smoke():
     try:
         from crewai import LLM
         from gpt_researcher import GPTResearcher
-        llm=LLM(model=f"openai/{MODEL}",custom_openai=True,base_url=BRIDGE,api_key="atlas-user-pays",temperature=0.1)
+        llm=atlas_llm()
         return {"ok":True,"stage":"runtime","crewai_llm":llm is not None,"gpt_researcher_class":GPTResearcher is not None}
     except Exception as e:return JSONResponse(status_code=500,content={"ok":False,"stage":"runtime","error":str(e)})
 
@@ -118,7 +130,7 @@ def crew_plan(rid,objective,context):
 
 def gpt_research(rid,objective,plan):
     from gpt_researcher import GPTResearcher
-    os.environ["OPENAI_API_KEY"]="atlas-user-pays";os.environ["OPENAI_BASE_URL"]=BRIDGE
+    endpoint=_require_cloud_endpoint(BRIDGE)\n    os.environ["OPENAI_API_KEY"]=os.environ.get("ATLAS_LLM_API_KEY","");os.environ["OPENAI_BASE_URL"]=endpoint
     os.environ["FAST_LLM"]=f"openai:{MODEL}";os.environ["SMART_LLM"]=f"openai:{MODEL}";os.environ["STRATEGIC_LLM"]=f"openai:{MODEL}"
     query=f"{objective}\n\nResearch plan:\n{plan}\n\nPrioritize official/primary sources. Preserve URLs. Mark uncertainty and contradictions. Do not invent missing facts."
     async def go():
