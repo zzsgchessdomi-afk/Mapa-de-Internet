@@ -2344,19 +2344,32 @@ async function addManualSource(){
  }catch(err){toast('No pude inspeccionar: '+String(err?.message||err).slice(0,120))}
  finally{setStatus('LISTO','fuente procesada')}
 }
+function verifiedCaseItems(){
+ return (project.caseFile||[]).filter(x=>{
+   if(!x?.verified||!x?.proof?.contentHash||!x?.proof?.quote)return false;
+   const entity=(current?.entities||entities||[]).find(e=>e.id===x.entityId);
+   const snap=entity?snapshotByHash(entity,x.proof.contentHash):null;
+   return !!(snap&&snap.contentHash===x.proof.contentHash&&exactQuoteInSnapshot(snap,x.proof.quote));
+ });
+}
 function exportProofBundle(){
- const items=project.caseFile||[];if(!items.length)return toast('Case File está vacío');
+ const all=project.caseFile||[],items=verifiedCaseItems();
+ if(!all.length)return toast('Case File está vacío');
+ if(!items.length)return toast('No hay pruebas cuya cita y snapshot sigan verificando exactamente');
+ const rejected=all.length-items.length;
  const bundle={
-   format:'internet-atlas-proof-bundle',version:28,exportedAt:new Date().toISOString(),
+   format:'internet-atlas-proof-bundle',version:29,exportedAt:new Date().toISOString(),
+   integrity:{verifiedProofs:items.length,rejectedProofs:rejected,policy:'quote-must-exist-in-matching-sha256-snapshot'},
    project:{id:project.id,name:project.name},run:{id:current?.id||null,objective:current?.objective||null},
    proofs:items.map(x=>({
-     entity:x.entity,criterion:x.criterion,value:x.value,quote:x.evidence?.[0]||'',
-     sourceUrl:x.snapshot?.url||x.proof?.url||'',sha256:x.snapshot?.contentHash||x.proof?.contentHash||'',
-     fetchedAt:x.snapshot?.fetchedAt||x.proof?.fetchedAt||'',snapshotId:x.proof?.snapshotId||'',
+     entity:x.entity,criterion:x.criterion,value:x.value,quote:x.proof.quote,
+     sourceUrl:x.proof.url||x.snapshot?.url||'',sha256:x.proof.contentHash,
+     fetchedAt:x.proof.fetchedAt||x.snapshot?.fetchedAt||'',snapshotId:x.proof.snapshotId||'',
      verification:'exact-source-snapshot'
    }))
  };
- downloadBlob((project.name||'Atlas').replace(/[^\w-]+/g,'_')+'_Proof_Bundle.json',JSON.stringify(bundle,null,2),'application/json')
+ downloadBlob((project.name||'Atlas').replace(/[^\w-]+/g,'_')+'_Proof_Bundle.json',JSON.stringify(bundle,null,2),'application/json');
+ if(rejected)toast('Proof Bundle exportado; '+rejected+' prueba(s) obsoletas o no verificables fueron excluidas',5000)
 }
 
 function capsuleEvidence(){
