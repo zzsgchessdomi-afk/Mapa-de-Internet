@@ -89,8 +89,8 @@ jobs:
           $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -PassThru -Wait
           if ($install.ExitCode -ne 0) { throw "NSIS silent install failed: $($install.ExitCode)" }
           Start-Sleep -Seconds 2
-          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Internet Atlas.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $appExe) { throw 'Installed Internet Atlas.exe not found' }
+          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Atlanex.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $appExe) { throw 'Installed Atlanex.exe not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-installed.json'
           $test = Start-Process -FilePath $appExe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
           if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
