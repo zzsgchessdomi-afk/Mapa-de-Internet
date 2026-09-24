@@ -1,0 +1,9 @@
+import fs from 'node:fs';import path from 'node:path';import zlib from 'node:zlib';import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),outDir=path.join(root,'build');fs.mkdirSync(outDir,{recursive:true});
+const W=256,H=256,raw=Buffer.alloc((W*4+1)*H);
+for(let y=0;y<H;y++){raw[y*(W*4+1)]=0;for(let x=0;x<W;x++){const i=y*(W*4+1)+1+x*4,dx=x-128,dy=y-126,d=Math.sqrt(dx*dx+dy*dy)/181;let r=Math.round(3+7*(1-d)),g=Math.round(12+28*(1-d)),b=Math.round(28+62*(1-d));const left=Math.abs(x-(82+y*.36))<10&&y>48&&y<211,right=Math.abs(x-(174-y*.36))<10&&y>48&&y<211,bar=y>139&&y<157&&x>91&&x<165,mark=left||right||bar;if(mark){const glow=Math.max(0,1-Math.abs(y-128)/160);r=Math.round(30+35*glow);g=Math.round(154+78*glow);b=255}raw[i]=r;raw[i+1]=g;raw[i+2]=b;raw[i+3]=255}}
+const table=(()=>{let t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();const crc=b=>{let c=0xffffffff;for(const v of b)c=table[(c^v)&255]^(c>>>8);return(c^0xffffffff)>>>0};
+const chunk=(type,data)=>{const t=Buffer.from(type),n=Buffer.alloc(4);n.writeUInt32BE(data.length);const q=Buffer.concat([t,data]),c=Buffer.alloc(4);c.writeUInt32BE(crc(q));return Buffer.concat([n,q,c])};
+const ih=Buffer.alloc(13);ih.writeUInt32BE(W,0);ih.writeUInt32BE(H,4);ih[8]=8;ih[9]=6;const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',ih),chunk('IDAT',zlib.deflateSync(raw,{level:9})),chunk('IEND',Buffer.alloc(0))]);
+const hdr=Buffer.alloc(22);hdr.writeUInt16LE(0,0);hdr.writeUInt16LE(1,2);hdr.writeUInt16LE(1,4);hdr[6]=0;hdr[7]=0;hdr[8]=0;hdr[9]=0;hdr.writeUInt16LE(1,10);hdr.writeUInt16LE(32,12);hdr.writeUInt32LE(png.length,14);hdr.writeUInt32LE(22,18);
+fs.writeFileSync(path.join(outDir,'icon.ico'),Buffer.concat([hdr,png]));fs.writeFileSync(path.join(outDir,'icon.png'),png);console.log('Atlanex icon generated');
