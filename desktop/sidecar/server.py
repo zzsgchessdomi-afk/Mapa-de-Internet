@@ -164,31 +164,42 @@ def run_pipeline_sync(rid,objective,mode,context):
         else:r["status"]="error";r["error"]=str(e);r["traceback"]=traceback.format_exc()[-12000:];emit(rid,"publisher","ERROR: "+str(e),"error",r.get("progress",0))
 
 class _MockHandler(__import__("http.server").server.BaseHTTPRequestHandler):
+    protocol_version="HTTP/1.1"
     def log_message(self,*args):pass
-    def _send(self,obj):
-        raw=json.dumps(obj).encode();self.send_response(200);self.send_header("Content-Type","application/json");self.send_header("Content-Length",str(len(raw)));self.end_headers();self.wfile.write(raw)
+    def _json(self,obj,status=200):
+        raw=json.dumps(obj).encode("utf-8");self.send_response(status);self.send_header("Content-Type","application/json");self.send_header("Content-Length",str(len(raw)));self.end_headers();self.wfile.write(raw)
     def do_GET(self):
-        if self.path.endswith("/models"):self._send({"object":"list","data":[{"id":"atlas-self-test","object":"model"}]})
-        else:self._send({"ok":True})
+        if self.path.endswith("/models"):self._json({"object":"list","data":[{"id":"atlas-self-test","object":"model"}]})
+        else:self._json({"ok":True})
     def do_POST(self):
         n=int(self.headers.get("Content-Length","0"));raw=self.rfile.read(n)
         try:b=json.loads(raw or b"{}")
         except:b={}
         if "embeddings" in self.path:
-            arr=b.get("input",[]);arr=arr if isinstance(arr,list) else [arr];self._send({"object":"list","data":[{"object":"embedding","index":i,"embedding":[0.01]*384} for i,_ in enumerate(arr)],"model":"atlas-self-test"})
+            arr=b.get("input",[]);arr=arr if isinstance(arr,list) else [arr]
+            return self._json({"object":"list","data":[{"object":"embedding","index":i,"embedding":[0.01]*384} for i,_ in enumerate(arr)],"model":"atlas-self-test"})
+        messages=b.get("messages",[]);joined=" ".join(str(x).lower() for x in messages)
+        if "agent_role_prompt" in joined or ("choose" in joined and "agent" in joined):
+            answer=json.dumps({"server":"atlas-self-test","agent_role_prompt":"You are an evidence research agent.","agent_name":"Atlas Self Test"})
+        elif any(k in joined for k in ("sub quer","subquer","sub-quer","research questions","search queries","generate queries","queries for")):
+            answer=json.dumps(["Atlas self-test source"])
+        elif any(k in joined for k in ("curate","credib","relevance","source verification","best sources")):
+            answer=json.dumps([0])
+        elif "report" in joined or ("write" in joined and "research" in joined):
+            answer="Atlas self-test research report. The packaged GPT Researcher runtime completed planning, retrieval, source handling and report generation successfully."
         else:
-            messages=b.get("messages",[]);joined=" ".join(str(x).lower() for x in messages)
-            if "agent_role_prompt" in joined or ("choose" in joined and "agent" in joined):
-                text=json.dumps({"server":"atlas-self-test","agent_role_prompt":"You are a local evidence research agent.","agent_name":"Atlas Self Test"})
-            elif any(k in joined for k in ("sub quer","subquer","sub-quer","research questions","search queries","generate queries","queries for")):
-                # GPT Researcher parses this response as JSON and mutates the resulting
-                # list, so return the exact collection shape its planner contract needs.
-                text=json.dumps(["Atlas self-test source"])
-            elif "report" in joined or "write" in joined and "research" in joined:
-                text="Atlas self-test research report. The packaged GPT Researcher runtime completed planning, retrieval and report generation successfully."
-            else:
-                text="Atlas self-test response. Evidence is provisional unless backed by source snapshot."
-            self._send({"id":"self-test","object":"chat.completion","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"message":{"role":"assistant","content":text},"finish_reason":"stop"}]})
+            answer="Atlas self-test response. Evidence is provisional unless backed by source snapshot."
+        if b.get("stream"):
+            self.send_response(200);self.send_header("Content-Type","text/event-stream");self.send_header("Cache-Control","no-cache");self.send_header("Connection","close");self.end_headers()
+            chunks=[
+                {"id":"self-test","object":"chat.completion.chunk","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":None}]},
+                {"id":"self-test","object":"chat.completion.chunk","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"delta":{"content":answer},"finish_reason":None}]},
+                {"id":"self-test","object":"chat.completion.chunk","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+            ]
+            for item in chunks:self.wfile.write(("data: "+json.dumps(item)+"\n\n").encode("utf-8"));self.wfile.flush()
+            self.wfile.write(b"data: [DONE]\n\n");self.wfile.flush();self.close_connection=True
+            return
+        self._json({"id":"self-test","object":"chat.completion","created":int(time.time()),"model":"atlas-self-test","choices":[{"index":0,"message":{"role":"assistant","content":answer},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}})
 
 def _start_mock():
     from http.server import ThreadingHTTPServer
