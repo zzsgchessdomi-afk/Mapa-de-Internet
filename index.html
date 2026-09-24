@@ -1046,9 +1046,15 @@ async function pollAgentRun(){
    if(events.length>seen){for(const ev of events.slice(seen))agentLog(`${ev.stage||'engine'} · ${ev.message||''}`);$('agentLog').dataset.seen=String(events.length)}
    if(s.status==='done'){
      clearInterval(agentState.poll);agentState.poll=null;agentState.running=false;setAgentEngine('ready','completado','Pipeline multiagente terminado');$('agentProgress').style.width='100%';
-     $('agentResult').textContent=s.result||'Sin resultado';
-     if(current){current.agentReport=s.result||'';current.agentRun={mode:agentState.mode,at:Date.now(),runId:agentState.runId};saveState()}
-     toast('CrewAI + GPT Researcher terminaron')
+     const agentText=s.result||'Sin resultado';
+     $('agentResult').textContent=agentText+'\n\n[ANÁLISIS DE AGENTE · NO ES EVIDENCIA VERIFICADA]';
+     if(current){
+       current.agentReport=agentText;
+       current.agentRun={mode:agentState.mode,at:Date.now(),runId:agentState.runId,verification:'analysis-only',mayPromoteClaims:false};
+       current.agentAnalysis={text:agentText,verification:'unverified-agent-analysis',generatedAt:new Date().toISOString(),policy:'Agent output cannot become verified evidence without URL inspection, snapshot SHA-256 and exact-quote validation.'};
+       saveState()
+     }
+     toast('Agentes terminados · resultado guardado como análisis no verificado')
    }else if(s.status==='error'||s.status==='cancelled'){
      clearInterval(agentState.poll);agentState.poll=null;agentState.running=false;setAgentEngine('error',s.status,s.error||'Pipeline detenido');$('agentResult').textContent=s.error||s.status
    }
@@ -2622,7 +2628,7 @@ async function machineRunAgentEscalation(objective){
   machineLog('step','Escalando el corpus a CrewAI × GPT Researcher');
   const context={criteria:criteria.map(c=>({id:c.id,label:c.label,required:c.required})),evidence:compactEvidence(8),verifiedPercent:machineVerifiedPercent(),gaps:machineGapsList().slice(0,12).map(x=>({entity:x.e.title,criterion:x.c.label}))};
   const r=await atlasDesktop.startAgentRun({objective,mode:'hybrid',context});if(!r?.run_id)throw new Error('sin run_id');machineState.agentRunId=r.run_id;
-  for(let i=0;i<180&&!machineState.abort;i++){await new Promise(x=>setTimeout(x,1500));const st=await atlasDesktop.getAgentRun(r.run_id);if(st?.status==='done'){current.machineAgentReport=st.result||'';machineLog('done','CrewAI/GPT Researcher terminó el análisis');return st}if(st?.status==='error')throw new Error(st.error||'Agent Engine falló');if(st?.status==='cancelled')return null}
+  for(let i=0;i<180&&!machineState.abort;i++){await new Promise(x=>setTimeout(x,1500));const st=await atlasDesktop.getAgentRun(r.run_id);if(st?.status==='done'){current.machineAgentReport=st.result||'';current.machineAgentAnalysis={text:st.result||'',verification:'unverified-agent-analysis',generatedAt:new Date().toISOString(),policy:'Agent output cannot promote claims or satisfy evidence criteria without snapshot verification.'};machineLog('done','CrewAI/GPT Researcher terminó · análisis aislado de la evidencia verificada');return st}if(st?.status==='error')throw new Error(st.error||'Agent Engine falló');if(st?.status==='cancelled')return null}
  }catch(err){machineLog('warn','Agent Engine: '+String(err?.message||err).slice(0,120))}return null
 }
 async function runIAMachine(){
