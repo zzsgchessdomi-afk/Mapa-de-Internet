@@ -17,6 +17,7 @@ const pendingLLM=new Map();
 const INTERNAL_HOST='127.0.0.1';
 const INTERNAL_MODEL='atlas-auto';
 const SECRET_FILE='atlanex-secrets.json';
+const CLOUD_PROVIDERS=['gemini','groq','openrouter'];
 function secretPath(){return path.join(app.getPath('userData'),SECRET_FILE)}
 function readSecrets(){try{return JSON.parse(fs.readFileSync(secretPath(),'utf8'))}catch{return{}}}
 function writeSecrets(x){fs.mkdirSync(path.dirname(secretPath()),{recursive:true});fs.writeFileSync(secretPath(),JSON.stringify(x),'utf8')}
@@ -57,7 +58,18 @@ async function geminiLLM(payload){
   const text=geminiOutput(j);if(!text)throw new Error('Gemini returned no model output');return{text,provider:'gemini',model:j.model||body.model}
  }finally{clearTimeout(timer)}
 }
-async function cloudLLM(payload){if(loadSecret('geminiApiKey'))return geminiLLM(payload);return rendererLLM(payload)}
+async function openAICompatibleLLM(payload,{provider,url,key,model}){
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),180000);
+ try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:payload.messages||[],stream:false}),signal:ctl.signal});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j?.error?.message||provider+' HTTP '+r.status);const text=j?.choices?.[0]?.message?.content;if(!text)throw new Error(provider+' returned no model output');return{text:String(text),provider,model:j.model||model}}finally{clearTimeout(timer)}
+}
+async function groqLLM(payload){return openAICompatibleLLM(payload,{provider:'groq',url:'https://api.groq.com/openai/v1/chat/completions',key:loadSecret('groqApiKey'),model:process.env.ATLANEX_GROQ_MODEL||'openai/gpt-oss-120b'})}
+async function openRouterLLM(payload){return openAICompatibleLLM(payload,{provider:'openrouter',url:'https://openrouter.ai/api/v1/chat/completions',key:loadSecret('openrouterApiKey'),model:process.env.ATLANEX_OPENROUTER_MODEL||'openrouter/free'})}
+async function cloudLLM(payload){
+ const errors=[];
+ for(const [name,key,fn] of [['gemini',loadSecret('geminiApiKey'),geminiLLM],['groq',loadSecret('groqApiKey'),groqLLM],['openrouter',loadSecret('openrouterApiKey'),openRouterLLM]]){if(!key)continue;try{return await fn(payload)}catch(e){errors.push(name+': '+String(e?.message||e))}}
+ if(mainWindow&&!mainWindow.isDestroyed())return rendererLLM(payload);
+ throw new Error(errors.length?'All configured cloud providers failed: '+errors.join(' | '):'No cloud AI provider is configured')
+}
 function hashEmbedding(text,dim=384){const v=new Array(dim).fill(0),t=String(text||'').toLowerCase().match(/[\p{L}\p{N}_-]+/gu)||[];for(const token of t){let h=2166136261;for(let i=0;i<token.length;i++){h^=token.charCodeAt(i);h=Math.imul(h,16777619)}v[(h>>>0)%dim]+=((h>>>8)&1)?1:-1}const n=Math.sqrt(v.reduce((s,x)=>s+x*x,0))||1;return v.map(x=>x/n)}
 function adapter(handler,u,req,res){req.query=Object.fromEntries(u.searchParams.entries());let status=200;const o={status(n){status=n;return o},setHeader(k,v){res.setHeader(k,v);return o},json(x){res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(x));return o},end(x=''){res.statusCode=status;res.end(x);return o}};return handler(req,o)}
 function serveStatic(res,u){let pn=decodeURIComponent(u.pathname);if(pn==='/')pn='/index.html';const file=path.normalize(path.join(appDir,pn));if(!file.startsWith(appDir)){res.statusCode=403;return res.end('Forbidden')}fs.stat(file,(e,st)=>{if(e||!st.isFile()){res.statusCode=404;return res.end('Not found')}res.setHeader('Content-Type',MIME[path.extname(file).toLowerCase()]||'application/octet-stream');fs.createReadStream(file).pipe(res)})}
@@ -97,9 +109,9 @@ async function runAcceptance(){let backup=null,had=false,win=null;try{await star
 
 const lock=app.requestSingleInstanceLock();if(!lock)app.quit();else{app.on('second-instance',()=>{mainWindow?.show();mainWindow?.focus()});app.whenReady().then(async()=>{if(process.argv.includes('--acceptance-test')){isQuitting=true;return app.exit(await runAcceptance())}if(process.argv.includes('--smoke-test')){isQuitting=true;return app.exit(await runSmoke())}await startServer();createWindow(true);createTray();startMonitor();const m=loadMonitor();if(m.startWithWindows)setLogin(true);if(process.argv.includes('--background'))mainWindow?.hide();if(fs.existsSync(agentExe())||fs.existsSync(devPython()))startSidecar().catch(()=>{})});app.on('activate',()=>{if(!mainWindow)createWindow();else{mainWindow.show();mainWindow.focus()}});app.on('window-all-closed',()=>{});app.on('before-quit',()=>{isQuitting=true;clearInterval(monitorTimer);try{server?.close()}catch{};try{sidecarProc?.kill()}catch{}})}
 
-ipcMain.handle('atlas:ai-secret-status',()=>({gemini:!!loadSecret('geminiApiKey'),encrypted:safeStorage.isEncryptionAvailable()}));
-ipcMain.handle('atlas:ai-secret-set',(_e,{provider,key})=>{if(provider!=='gemini')throw new Error('Unsupported provider');const v=String(key||'').trim();if(v&&v.length<20)throw new Error('Invalid Gemini credential');return saveSecret('geminiApiKey',v)});
-ipcMain.handle('atlas:ai-secret-clear',(_e,provider)=>{if(provider!=='gemini')throw new Error('Unsupported provider');return saveSecret('geminiApiKey','')});
+ipcMain.handle('atlas:ai-secret-status',()=>({gemini:!!loadSecret('geminiApiKey'),groq:!!loadSecret('groqApiKey'),openrouter:!!loadSecret('openrouterApiKey'),encrypted:safeStorage.isEncryptionAvailable()}));
+ipcMain.handle('atlas:ai-secret-set',(_e,{provider,key})=>{if(!CLOUD_PROVIDERS.includes(provider))throw new Error('Unsupported provider');const v=String(key||'').trim();if(v&&v.length<20)throw new Error('Invalid cloud credential');return saveSecret(provider+'ApiKey',v)});
+ipcMain.handle('atlas:ai-secret-clear',(_e,provider)=>{if(!CLOUD_PROVIDERS.includes(provider))throw new Error('Unsupported provider');return saveSecret(provider+'ApiKey','')});
 ipcMain.handle('atlas:window',(_e,a)=>{if(!mainWindow)return false;if(a==='minimize')mainWindow.minimize();else if(a==='maximize')mainWindow.isMaximized()?mainWindow.unmaximize():mainWindow.maximize();else if(a==='close')mainWindow.close();else if(a==='fullscreen')mainWindow.setFullScreen(!mainWindow.isFullScreen());return true});
 ipcMain.handle('atlas:save-project',async(_e,{text,defaultName})=>{const x=await dialog.showSaveDialog(mainWindow,{title:'Guardar proyecto Atlanex',defaultPath:path.join(app.getPath('documents'),defaultName||'Atlanex_Project.atlanex.json'),filters:[{name:'Atlanex Project',extensions:['json']}]});if(x.canceled||!x.filePath)return false;fs.writeFileSync(x.filePath,text,'utf8');return true});
 ipcMain.handle('atlas:open-project',async()=>{const x=await dialog.showOpenDialog(mainWindow,{title:'Abrir proyecto Atlanex',properties:['openFile'],filters:[{name:'Atlanex Project',extensions:['json']}]});if(x.canceled||!x.filePaths[0])return null;return{path:x.filePaths[0],text:fs.readFileSync(x.filePaths[0],'utf8')}});
