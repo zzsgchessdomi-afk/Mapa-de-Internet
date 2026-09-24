@@ -1,8 +1,8 @@
 {
   "RETRIEVER": "duckduckgo",
-  "FAST_LLM": "openai:gpt-5.6-luna",
-  "SMART_LLM": "openai:gpt-5.6-luna",
-  "STRATEGIC_LLM": "openai:gpt-5.6-luna",
+  "FAST_LLM": "openai:atlas-auto",
+  "SMART_LLM": "openai:atlas-auto",
+  "STRATEGIC_LLM": "openai:atlas-auto",
   "EMBEDDING": "openai:atlas-feature-hash-384",
   "CURATE_SOURCES": true,
   "REPORT_FORMAT": "APA",
