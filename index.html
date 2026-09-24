@@ -724,10 +724,16 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
  </div>
 </div>
 <aside class="aiPanel glass" id="aiPanel">
- <div class="aiHeader"><div><div class="ey">CLOUD AI CORE</div><h2>Atlas Intelligence</h2><div class="sub">IA desde el propio HTML. Sin descargar modelos locales.</div></div><button class="btn icon" id="aiClose">×</button></div>
+ <div class="aiHeader"><div><div class="ey">CLOUD AI CORE</div><h2>Atlanex Intelligence</h2><div class="sub">IA cloud intercambiable. Sin descargar modelos locales.</div></div><button class="btn icon" id="aiClose">×</button></div>
  <div class="aiStatus"><i class="aiLed" id="aiLed"></i><div><b id="aiStatusTitle">Detectando IA cloud…</b><span id="aiStatusText">Cloud AI → Auto → fallback analítico</span></div></div>
  <div class="aiProgress"><div class="aiProgressFill" id="aiProgressFill"></div></div>
- <div class="row"><select class="field" id="aiEngineSelect"><option value="auto">Puter Auto</option></select><button class="btn primary" id="aiActivate">Activar IA</button></div>
+ <div class="row"><select class="field" id="aiEngineSelect"><option value="auto">Auto cloud</option></select><button class="btn primary" id="aiActivate">Activar IA</button></div>
+ <div class="section" id="cloudKeys" style="margin-top:10px"><div class="label">Proveedores Desktop</div>
+  <div class="sub" id="cloudKeyStatus">Comprobando credenciales cifradas…</div>
+  <div class="row"><input class="field" id="geminiKey" type="password" autocomplete="off" placeholder="Gemini API key"><button class="btn" data-save-key="gemini">Guardar</button><button class="btn" data-clear-key="gemini">Borrar</button></div>
+  <div class="row"><input class="field" id="groqKey" type="password" autocomplete="off" placeholder="Groq API key"><button class="btn" data-save-key="groq">Guardar</button><button class="btn" data-clear-key="groq">Borrar</button></div>
+  <div class="row"><input class="field" id="openrouterKey" type="password" autocomplete="off" placeholder="OpenRouter API key"><button class="btn" data-save-key="openrouter">Guardar</button><button class="btn" data-clear-key="openrouter">Borrar</button></div>
+ </div>
  <div class="modehint">El modelo corre en la nube. Atlas no descarga pesos de IA al dispositivo.</div>
  <div class="section" style="margin-top:12px"><div class="label">Capacidades</div>
    <div class="aiFeature"><b>Research Planner <span class="aiBadge">AI</span></b><span>Genera consultas adicionales según tu objetivo y modo de investigación.</span></div>
@@ -1502,6 +1508,10 @@ function ensurePuter(){
  }).catch(e=>{puterLoadPromise=null;throw e});return puterLoadPromise
 }
 
+
+async function refreshCloudKeyStatus(){if(!IS_DESKTOP||!globalThis.atlasDesktop?.aiSecretStatus){$('cloudKeys')?.classList.add('hide');return}try{const s=await globalThis.atlasDesktop.aiSecretStatus();$('cloudKeyStatus').textContent=['Gemini','Groq','OpenRouter'].map(n=>n+': '+(s[n.toLowerCase()]?'configurado':'sin configurar')).join(' · ')+(s.encrypted?' · cifrado por Windows':' · almacenamiento seguro no disponible')}catch(e){$('cloudKeyStatus').textContent='No se pudo leer el estado de proveedores'}}
+async function saveCloudKey(provider){const el=$(provider+'Key'),key=el?.value?.trim();if(!key)return toast('Pega primero la API key');try{await globalThis.atlasDesktop.setAISecret(provider,key);el.value='';await refreshCloudKeyStatus();toast(provider+' configurado')}catch(e){toast('No se pudo guardar: '+String(e?.message||e))}}
+async function clearCloudKey(provider){try{await globalThis.atlasDesktop.clearAISecret(provider);const el=$(provider+'Key');if(el)el.value='';await refreshCloudKeyStatus();toast(provider+' eliminado')}catch(e){toast('No se pudo borrar la credencial')}}
 function setAIStatus(kind,title,text,progress=null){
  const led=$('aiLed');led.className='aiLed'+(kind?' '+kind:'');$('aiStatusTitle').textContent=title;$('aiStatusText').textContent=text||'';
  if(progress!==null)$('aiProgressFill').style.width=Math.max(0,Math.min(100,Math.round(progress)))+'%'
@@ -1512,7 +1522,7 @@ async function detectAI(){
  return ok
 }
 function aiSystemPrompt(){
- return `Eres Atlas Intelligence, analista de investigación. Responde en español.
+ return `Eres Atlanex Intelligence, analista de investigación. Responde en español.
 REGLAS ESTRICTAS:
 1) Usa únicamente la evidencia incluida por Atlas.
 2) Separa VERIFICADO, PROVISIONAL y DESCONOCIDO.
@@ -3082,6 +3092,9 @@ function closeSplash(){
 }
 function openSplash(){
  closeMissionControl();document.body.classList.add('booting');
+refreshCloudKeyStatus();
+document.querySelectorAll('[data-save-key]').forEach(b=>b.onclick=()=>saveCloudKey(b.dataset.saveKey));
+document.querySelectorAll('[data-clear-key]').forEach(b=>b.onclick=()=>clearCloudKey(b.dataset.clearKey));
  const s=$('splash');if(s){s.style.display='grid';requestAnimationFrame(()=>s.classList.remove('hide'))}
 }
 async function launchIntoAtlas(q=''){
