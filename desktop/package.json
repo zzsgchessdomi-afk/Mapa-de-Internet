@@ -5,11 +5,12 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "prepare:app": "node scripts/prepare_app.mjs",
+    "prepare:app": "npm run prepare:icon && node scripts/prepare_app.mjs",
     "start": "npm run prepare:app && electron .",
     "check": "node --check main.js && node --check preload.cjs && node --check scripts/prepare_app.mjs",
     "dist:win": "npm run prepare:app && electron-builder --win nsis portable --x64",
-    "dist": "npm run prepare:app && electron-builder"
+    "dist": "npm run prepare:app && electron-builder",
+    "prepare:icon": "node scripts/generate_icon.mjs"
   },
   "devDependencies": {
     "electron": "38.2.2",
@@ -42,7 +43,8 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
