@@ -22,4 +22,13 @@ assert.ok(html.includes("globalThis.__atlanexOpenedCapsule=capsule;"),"Opened ca
 assert.equal(html.includes("\\nfunction renderSourceIntelligence(){"),false,"Literal \\n marker before renderSourceIntelligence");
 assert.equal(html.includes("click();\\n$('capsuleCompare')"),false,"Literal \\n marker in capsule bindings");
 
+assert.ok(html.includes("function verifiedCaseItems()"),"Verified proof export gate missing");
+assert.ok(html.includes("exactQuoteInSnapshot(snap,x.proof.quote)"),"Proof bundle must revalidate exact quote");
+assert.ok(html.includes("verification:'unverified-agent-analysis'"),"Agent analysis isolation marker missing");
+assert.ok(html.includes("mayPromoteClaims:false"),"Agent output claim-promotion barrier missing");
+assert.ok(html.includes("ANÁLISIS DE AGENTE · NO ES EVIDENCIA VERIFICADA"),"Agent UI warning missing");
+assert.ok(html.includes("VERIFICADO"),"Report verification status missing");
+assert.ok(html.includes("PROVISIONAL"),"Report provisional status missing");
+assert.ok(html.includes("Sin cita exacta validada"),"Report must expose unverified claims");
+
 console.log(JSON.stringify({ok:true,inlineScripts:scripts.length,capsuleUi:true}));
