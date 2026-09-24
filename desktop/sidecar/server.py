@@ -158,7 +158,12 @@ def run_pipeline_sync(rid,objective,mode,context):
             if mode=="gptr":result=report;emit(rid,"publisher","Direct research report complete","done",98)
             else:
                 emit(rid,"verifier","CrewAI evidence review","running",72);result=crew_review(rid,objective,report,context);emit(rid,"verifier","Evidence audit complete","done",84);emit(rid,"analyst","Analysis complete","done",93);emit(rid,"publisher","Memo complete","done",99)
-        ensure_not_cancelled(rid);r["result"]=result;r["status"]="done";r["progress"]=100
+        ensure_not_cancelled(rid)
+        if result is None or not str(result).strip():
+            raise RuntimeError("Research pipeline returned empty output")
+        if mode!="crew" and 'report' in locals() and (report is None or not str(report).strip()):
+            raise RuntimeError("GPT Researcher returned an empty report")
+        r["result"]=result;r["status"]="done";r["progress"]=100
     except Exception as e:
         if rid in CANCELLED:r["status"]="cancelled";r["error"]="cancelled"
         else:r["status"]="error";r["error"]=str(e);r["traceback"]=traceback.format_exc()[-12000:];emit(rid,"publisher","ERROR: "+str(e),"error",r.get("progress",0))
