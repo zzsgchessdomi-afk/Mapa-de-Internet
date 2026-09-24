@@ -59,6 +59,7 @@ async function arxivSearch(q){
 export default async function handler(req,res){
  const raw=Array.isArray(req.query?.q)?req.query.q[0]:req.query?.q;if(!raw||String(raw).trim().length<2)return res.status(400).json({error:"Falta q"});
  const q=alias(String(raw).trim().slice(0,220)),enc=encodeURIComponent(q),out=[],diagnostics=[];
+ const requestStarted=Date.now(),MIN_USEFUL_RESULTS=1;
  const providers=[
   ["web",async()=>duckSearch(q)],
   ["wikipedia",async()=>{const d=await getJson(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${enc}&limit=6&namespace=0&format=json&origin=*`);return(d[1]||[]).map((t,i)=>({id:"wp-"+i,source:"wikipedia",type:"knowledge",title:t,url:d[3][i],description:d[2][i]||"Artículo Wikipedia",meta:["encyclopedia"]}))}],
@@ -72,9 +73,13 @@ export default async function handler(req,res){
   ["arxiv",async()=>arxivSearch(q)],
   ["publicapis",async()=>{const d=await getJson(API_CATALOG);const entries=(d.entries||[]).map(x=>({name:x.name||x.API,url:x.url||x.Link,description:x.description||x.Description||"",auth:x.auth||x.Auth||"Unknown",https:x.https!==undefined?!!x.https:/yes/i.test(x.HTTPS||""),cors:x.cors||x.Cors||x.CORS||"Unknown",category:x.category||x.Category||"Other"})).filter(x=>x.name&&x.url);return apiMatch(entries,q)}]
  ];
- await Promise.all(providers.map(async([name,fn])=>{const started=Date.now();try{const rows=await fn();out.push(...rows);diagnostics.push({provider:name,ok:true,count:rows.length,ms:Date.now()-started})}catch(e){diagnostics.push({provider:name,ok:false,count:0,ms:Date.now()-started,error:String(e?.message||e).slice(0,120)})}}));
+ await Promise.all(providers.map(async([name,fn])=>{const started=Date.now();try{const rows=await fn();if(!Array.isArray(rows))throw new Error("Respuesta inválida: se esperaba una lista");out.push(...rows);diagnostics.push({provider:name,ok:true,count:rows.length,ms:Date.now()-started,state:rows.length?"results":"empty"})}catch(e){const aborted=e?.name==="AbortError";diagnostics.push({provider:name,ok:false,count:0,ms:Date.now()-started,state:aborted?"timeout":"error",error:(aborted?"Timeout de proveedor":String(e?.message||e)).slice(0,120)})}}));
  const seen=new Set(),results=[];for(const rawResult of out){const r=normalizeResult(rawResult);if(!r)continue;const k=(r.url+"|"+r.title).toLowerCase().replace(/\/$/,"");if(seen.has(k))continue;seen.add(k);results.push(r)}
  results.sort((a,b)=>(b.rawScore||0)-(a.rawScore||0));
  res.setHeader("Cache-Control","s-maxage=60, stale-while-revalidate=180");const successfulProviders=diagnostics.filter(x=>x.ok),providersWithResults=successfulProviders.filter(x=>x.count>0);
- res.status(200).json({query:q,providerCount:successfulProviders.length,providersWithResults:providersWithResults.length,diagnostics,results:results.slice(0,90),evidence:{discovered:results.length,verifiedSnapshots:0,note:"Discovery results are not verified evidence until inspected and content-hashed."}});
+ const failedProviders=diagnostics.filter(x=>!x.ok),timedOutProviders=diagnostics.filter(x=>x.state==="timeout");
+ const degraded=failedProviders.length>0||providersWithResults.length<3;
+ const usable=results.length>=MIN_USEFUL_RESULTS;
+ const status=usable?(degraded?"partial":"ok"):"no-results";
+ res.status(200).json({query:q,status,usable,degraded,durationMs:Date.now()-requestStarted,providerCount:successfulProviders.length,providersWithResults:providersWithResults.length,failedProviders:failedProviders.length,timedOutProviders:timedOutProviders.length,diagnostics,results:results.slice(0,90),evidence:{discovered:results.length,verifiedSnapshots:0,note:"Discovery results are not verified evidence until inspected and content-hashed."},recovery:usable?(degraded?"Partial provider failure: results remain usable as discovery only.":"All provider paths healthy."):"No provider returned usable discovery results; do not synthesize or fabricate fallback results."});
 }
