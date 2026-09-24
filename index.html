@@ -398,6 +398,21 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
   .mcAgents{grid-template-columns:repeat(3,minmax(0,1fr))!important}
   .mcAgent{min-width:0!important}
 }
+
+/* Atlanex visual system — product shell */
+:root{--bg:#020711;--panel:rgba(5,14,28,.91);--p2:rgba(7,18,35,.97);--line:rgba(76,174,255,.18);--cyan:#42c8ff;--violet:#667cff;--green:#48e5a2;--shadow:0 24px 80px rgba(0,0,0,.58),0 0 0 1px rgba(39,146,255,.035) inset}
+body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 58%,#01040a 100%)}
+.glass{background:linear-gradient(145deg,rgba(8,22,42,.94),rgba(3,10,21,.9));border-color:var(--line);box-shadow:var(--shadow)}
+.brand{border-color:rgba(55,180,255,.32);box-shadow:0 16px 50px rgba(0,0,0,.5),0 0 35px rgba(32,143,255,.08)}
+.logo,.mcLogo{background:linear-gradient(145deg,#54e9ff 0,#1588ff 48%,#2355ff 100%);box-shadow:0 0 24px rgba(36,151,255,.38);border-color:rgba(130,225,255,.5)}
+.btn.primary{background:linear-gradient(135deg,#0f8cff,#19c9ff);border-color:rgba(118,224,255,.5);color:white;box-shadow:0 8px 24px rgba(0,133,255,.22)}
+.btn:hover{border-color:rgba(83,190,255,.46);transform:translateY(-1px)}
+.command{border-color:rgba(55,180,255,.28);box-shadow:0 20px 70px rgba(0,0,0,.55),0 0 34px rgba(27,136,255,.07)}
+.aiPanel,.agentPanel{border-color:rgba(61,181,255,.26)}
+.engineCard,.aiFeature,.section{border-color:rgba(65,157,235,.14)}
+.mcTop{background:rgba(3,10,20,.94);border-bottom:1px solid rgba(62,166,255,.17)}
+.mcLeft{background:linear-gradient(180deg,rgba(5,18,35,.98),rgba(2,9,19,.98));border-right:1px solid rgba(57,160,245,.16)}
+.mcNav button.on{background:linear-gradient(90deg,rgba(15,124,255,.22),rgba(18,186,255,.08));border-color:rgba(67,178,255,.25)}
 </style>
 <link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
 <script src="./lib/capsule-core.js"></script>
@@ -612,14 +627,14 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 <div class="topright glass"><button class="btn" id="agentsBtn">Agentes</button><button class="btn" id="replayBtn">Replay</button><button class="btn" id="forkBtn">Fork</button><button class="btn" id="runsBtn">Runs</button><button class="btn" id="toolsBtn">Herramientas ▾</button></div>
 <div class="toolsMenu glass" id="toolsMenu"><button class="btn" id="healthBtn">Salud</button><button class="btn" id="presentBtn">Presentar</button><button class="btn" id="aiBtn">IA</button><button class="btn" id="deep">Profundizar</button><button class="btn" id="monitor">Monitor</button><button class="btn" id="exportData">Datos</button><button class="btn" id="decisionPack">Decision Pack</button><button class="btn gold" id="export">Informe</button></div>
 
-<div class="qa glass"><input id="askInput" autocomplete="off" placeholder="Pregúntale a Atlas sobre esta investigación: ¿cuál cumple API + gratis?"><button class="btn primary" id="askBtn">Preguntar</button></div>
-<section class="answer glass" id="answerBox"><div class="ey">ATLAS SOBRE TU EVIDENCIA</div><h3 id="answerTitle">—</h3><p id="answerText"></p><div id="answerCites"></div></section>
+<div class="qa glass"><input id="askInput" autocomplete="off" placeholder="Pregúntale a Atlanex sobre esta investigación: ¿cuál cumple API + gratis?"><button class="btn primary" id="askBtn">Preguntar</button></div>
+<section class="answer glass" id="answerBox"><div class="ey">ATLANEX SOBRE TU EVIDENCIA</div><h3 id="answerTitle">—</h3><p id="answerText"></p><div id="answerCites"></div></section>
 
 
 <aside class="left glass"><div class="head"><div class="ey">RESEARCH AGENT</div><h2>Objetivo → evidencia</h2><div class="sub">Cada requisito termina en una celda verificable, provisional o faltante. Las fuentes multi‑tenant se mantienen como entidades separadas.</div></div><div class="scroll">
  <div class="section"><div class="label">Proyecto</div><div class="row"><select class="field" id="projectSelect"></select><button class="btn" id="newProject">+</button></div>
  <div class="projectTools"><button class="btn" id="exportProject">Exportar proyecto</button><button class="btn" id="importProject">Importar proyecto</button></div>
- <input id="projectFile" type="file" accept=".json,.atlas.json,application/json" style="display:none"></div>
+ <input id="projectFile" type="file" accept=".json,.atlanex.json,.atlas.json,application/json" style="display:none"></div>
  <div class="section"><div class="label">Estrategia</div>
   <div class="row"><select class="field" id="modeSelect"><option value="general">General</option><option value="company">Empresa</option><option value="product">Producto</option><option value="technology">Tecnología</option><option value="opportunity">Oportunidad</option></select>
   <select class="field" id="depthSelect"><option value="fast">Rápida</option><option value="standard" selected>Estándar</option><option value="deep">Profunda</option></select></div>
@@ -669,7 +684,7 @@ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90de
 
 
 <aside class="agentPanel glass" id="agentPanel">
- <div class="agentHead"><div class="ey">ATLANEX AGENT ENGINE</div><h2 style="font-size:16px;margin:5px 0 2px">CrewAI × GPT Researcher</h2><div class="sub">Orquestación multiagente + investigación profunda detrás de Atlas.</div></div>
+ <div class="agentHead"><div class="ey">ATLANEX AGENT ENGINE</div><h2 style="font-size:16px;margin:5px 0 2px">CrewAI × GPT Researcher</h2><div class="sub">Orquestación multiagente + investigación profunda detrás de Atlanex.</div></div>
  <div class="agentScroll">
    <div class="engineCard">
      <div class="engineCardTop"><b>Research Engine</b><span class="engineBadge" id="agentEngineBadge">comprobando</span></div>
