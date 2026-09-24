@@ -2925,6 +2925,23 @@ function draw(){animate();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0205
 function drawNode(n){const p=toS(n.x,n.y),active=n===hovered,col=n.color||'#79e7ff',r=(n.kind==='query'?14:7)*Math.max(.72,cam.z);if(active){const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*4);g.addColorStop(0,col+'55');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,r*4,0,Math.PI*2);ctx.fill()}ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=active?18:6;if(n.kind==='entity'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/4);ctx.fillRect(-r*.7,-r*.7,r*1.4,r*1.4);ctx.restore()}else{ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill()}ctx.shadowBlur=0;if(n.kind==='query'||active||cam.z>.76){ctx.font=(active?'600 ':'500 ')+(n.kind==='query'?12:9)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillStyle=active?'#fff':'rgba(224,234,248,.78)';ctx.fillText((n.label||n.title||'').slice(0,30),p.x,p.y+r+6)}}
 function zoomAt(x,y,f){const a=toW(x,y);cam.z=Math.max(.14,Math.min(3,cam.z*f));const b=toW(x,y);cam.x+=a.x-b.x;cam.y+=a.y-b.y}
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*.0011))},{passive:false});canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});last={x:e.clientX,y:e.clientY};drag=true});canvas.addEventListener('pointermove',e=>{if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const ps=[...pointers.values()];if(ps.length===2){const d=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);if(pinch)zoomAt((ps[0].x+ps[1].x)/2,(ps[0].y+ps[1].y)/2,d/pinch);pinch=d;return}hovered=hit(e.clientX,e.clientY);if(!drag)return;const dx=e.clientX-last.x,dy=e.clientY-last.y;last={x:e.clientX,y:e.clientY};cam.x-=dx/cam.z;cam.y-=dy/cam.z});canvas.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(pointers.size<2)pinch=0;const n=hit(e.clientX,e.clientY);drag=false;if(n?.kind==='entity')openDetail(entities.find(x=>x.id===n.id)||n)});canvas.addEventListener('pointercancel',()=>{drag=false;pointers.clear();pinch=0});
+function assertInteractiveContract(){
+ const required=['form','q','deep','export','machineOpen','machineRun','agentsBtn','agentRun','healthBtn','exportProject','importProject','launchForm','launchMachine'];
+ const missing=required.filter(id=>!$(id));
+ const desktopMethods=['windowAction','saveProject','openProject','getVersion','pickResearchFiles','openEvidenceViewer','agentHealth','agentDoctor','agentSmoke','repairAgents','setupAgents','agentSetupStatus','startAgentRun','getAgentRun','cancelAgentRun','monitorList','monitorSync','monitorRunNow','monitorConfig'];
+ const missingDesktop=IS_DESKTOP?desktopMethods.filter(k=>typeof globalThis.atlasDesktop?.[k]!=='function'):[];
+ if(missing.length||missingDesktop.length){
+   const detail=[missing.length?'UI: '+missing.join(', '):'',missingDesktop.length?'Desktop bridge: '+missingDesktop.join(', '):''].filter(Boolean).join(' · ');
+   console.error('ATLANEX interactive contract failed:',detail);
+   const fatal=$('atlasFatal'),fatalText=$('atlasFatalText');
+   if(fatalText)fatalText.textContent='Contrato funcional incompleto: '+detail;
+   if(fatal)fatal.style.display='flex';
+   return false;
+ }
+ return true;
+}
+assertInteractiveContract();
+
 $('form').onsubmit=e=>{e.preventDefault();const q=$('q').value.trim();if(q)run(q)};$('deep').onclick=deepenTop;$('export').onclick=exportReport;
 
 $('modeSelect').onchange=()=>{$('modeHint').textContent=modeDescription()};
