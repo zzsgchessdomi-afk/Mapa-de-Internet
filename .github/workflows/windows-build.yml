@@ -74,7 +74,7 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $exe = Get-ChildItem dist/Internet-Atlas-Portable-*.exe | Select-Object -First 1
+          $exe = Get-ChildItem dist/ATLANEX-Portable-*.exe | Select-Object -First 1
           if (-not $exe) { throw 'Portable EXE not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-portable.json'
           $p = Start-Process -FilePath $exe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
@@ -84,13 +84,13 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          $setup = Get-ChildItem dist/Internet-Atlas-Setup-*.exe | Select-Object -First 1
+          $setup = Get-ChildItem dist/ATLANEX-Setup-*.exe | Select-Object -First 1
           if (-not $setup) { throw 'NSIS installer not found' }
           $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -PassThru -Wait
           if ($install.ExitCode -ne 0) { throw "NSIS silent install failed: $($install.ExitCode)" }
           Start-Sleep -Seconds 2
-          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Internet Atlas.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $appExe) { throw 'Installed Internet Atlas.exe not found' }
+          $appExe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'ATLANEX.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $appExe) { throw 'Installed ATLANEX.exe not found' }
           $env:ATLAS_ACCEPTANCE_LOG = Join-Path $PWD 'acceptance-installed.json'
           $test = Start-Process -FilePath $appExe.FullName -ArgumentList '--acceptance-test' -PassThru -Wait
           if (Test-Path $env:ATLAS_ACCEPTANCE_LOG) { Get-Content $env:ATLAS_ACCEPTANCE_LOG -Raw | Write-Host }
