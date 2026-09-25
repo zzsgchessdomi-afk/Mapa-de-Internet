@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('jarvis', {
   pickSave: (options = {}) => ipcRenderer.invoke('jarvis:pick-save', options),
   pickOpen: (options = {}) => ipcRenderer.invoke('jarvis:pick-open', options),
   openUserData: () => ipcRenderer.invoke('jarvis:open-user-data'),
+  exportBundled: (kind) => ipcRenderer.invoke('jarvis:export-bundled', kind),
   restartCore: () => ipcRenderer.invoke('jarvis:restart-core'),
   onCoreStatus: (handler) => {
     const listener = (_event, payload) => handler(payload);
