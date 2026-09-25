@@ -134,7 +134,10 @@ function createWindow() {
     }
   });
   win.loadFile(path.join(__dirname, 'index.html'));
-  win.once('ready-to-show', () => win.show());
+  win.once('ready-to-show', () => {
+    win.maximize();
+    win.show();
+  });
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) shell.openExternal(url);
     return { action: 'deny' };

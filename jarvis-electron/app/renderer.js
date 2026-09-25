@@ -54,6 +54,10 @@ function renderStatus(s){
   $('voiceBadge').textContent = voiceRunning ? 'ESCUCHANDO' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOZ NO DISPONIBLE' : 'VOZ INICIANDO');
   $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
   $('presenceOrb').classList.toggle('listening', voiceRunning);
+  if($('hudVoice')) $('hudVoice').textContent = voiceRunning ? 'ONLINE' : 'OFFLINE';
+  if($('hudWork')) $('hudWork').textContent = (s.workbench?.total ?? 0) > 0 ? 'ACTIVE' : 'READY';
+  if($('hudWorld')) $('hudWorld').textContent = (s.world?.entities ?? 0) > 0 ? 'SYNC' : 'EMPTY';
+  if($('hudGuardian')) $('hudGuardian').textContent = s.stop_engaged ? 'LOCKED' : 'ARMED';
   $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
   $('resetStop').disabled = !s.stop_engaged;
   $('backendDot').className = 'dot ok';
@@ -114,19 +118,13 @@ function esc(s){
 }
 
 function addChat(role, text, extra=''){
-  const feed=$('jarvisFeed');
-  const node=document.createElement('div');
-  node.className=`chat-msg ${role}`;
-  node.innerHTML=`<div class="chat-role">${role==='user'?'TÚ':'JARVIS'}</div><div class="chat-text">${esc(text)}</div>${extra}`;
-  feed.appendChild(node);
-  while(feed.children.length>6) feed.removeChild(feed.firstElementChild);
-  feed.scrollTop=feed.scrollHeight;
-  return node;
+  const input=$('lastInput'), response=$('lastResponse');
+  if(role==='user') input.textContent=String(text||'—').toUpperCase();
+  else response.textContent=String(text||'SYSTEM READY').toUpperCase();
+  return null;
 }
 
-function commandDetails(result){
-  return `<details class="tech-details"><summary>Detalles técnicos</summary><pre>${esc(JSON.stringify({state:result.state,goal_id:result.goal_id,plan:result.plan,results:result.results,verification:result.verification},null,2))}</pre></details>`;
-}
+function commandDetails(_result){ return ''; }
 
 function showCommandResult(result){
   const extra = commandDetails(result);
