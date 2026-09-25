@@ -27,22 +27,39 @@
       {
         "from": "backend-dist",
         "to": "backend",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "mobile-dist",
+        "to": "mobile",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "owner-dist",
+        "to": "owner",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "JARVIS_GM_Electron_${version}_x64.exe",
       "requestedExecutionLevel": "asInvoker"
     },
     "portable": {
-      "artifactName": "JARVIS_GM_Electron_${version}_x64.exe",
-      "requestExecutionLevel": "user"
+      "artifactName": "JARVIS_GM_Electron_${version}_x64.exe"
     }
   }
 }
