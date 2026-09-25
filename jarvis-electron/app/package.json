@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - reference HUD, voice-first, no chatbot surface",
+  "description": "JARVIS GM Infinity 7 - reference-minimal ambient voice OS",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_Setup_REFERENCE_HUD_${version}.${ext}",
+    "artifactName": "JARVIS_GM_Setup_REFERENCE_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",

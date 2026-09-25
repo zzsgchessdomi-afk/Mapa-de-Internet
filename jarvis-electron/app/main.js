@@ -117,10 +117,10 @@ function invokeBackend(op, args = {}, timeoutMs = 600000) {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 1120,
-    minHeight: 720,
+    width: 1600,
+    height: 1000,
+    minWidth: 1000,
+    minHeight: 680,
     backgroundColor: '#010408',
     show: false,
     autoHideMenuBar: true,

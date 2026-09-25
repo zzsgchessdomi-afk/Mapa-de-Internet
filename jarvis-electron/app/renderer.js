@@ -51,7 +51,7 @@ function renderStatus(s){
   ];
   $('statusStrip').innerHTML = items.map(([a,b],i)=>`<div class="status-chip s${i}"><b>${a}</b><span>${String(b)}</span></div>`).join('');
   const voiceRunning = !!p.voice?.running;
-  $('voiceBadge').textContent = voiceRunning ? 'ESCUCHANDO' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOZ NO DISPONIBLE' : 'VOZ INICIANDO');
+  $('voiceBadge').textContent = voiceRunning ? 'LISTENING' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOICE ERROR' : 'VOICE INITIALIZING');
   $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
   $('presenceOrb').classList.toggle('listening', voiceRunning);
   if($('hudVoice')) $('hudVoice').textContent = voiceRunning ? 'ONLINE' : 'OFFLINE';
@@ -61,15 +61,16 @@ function renderStatus(s){
   if($('hudGuardian')) $('hudGuardian').textContent = s.stop_engaged ? 'LOCKED' : 'ARMED';
   $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
   $('resetStop').disabled = !s.stop_engaged;
-  $('backendDot').className = 'dot ok';
-  $('backendText').textContent = voiceRunning ? `JARVIS escuchando • ${s.version}` : `Núcleo real ${s.version}`;
-  $('perceptionOutput').textContent = fmt(p);
+  const bd=$('backendDot'), bt=$('backendText');
+  if(bd) bd.className='dot ok';
+  if(bt) bt.textContent=voiceRunning?`JARVIS listening • ${s.version}`:`Core ${s.version}`;
+  if($('perceptionOutput')) $('perceptionOutput').textContent = fmt(p);
   renderPermissions(s.permissions || {});
 }
 
 async function refreshStatus(){
   try{renderStatus(await call('status'));}
-  catch(_){$('backendDot').className='dot bad';$('backendText').textContent='Núcleo no disponible';}
+  catch(_){const bd=$('backendDot'),bt=$('backendText');if(bd)bd.className='dot bad';if(bt)bt.textContent='CORE OFFLINE';}
 }
 
 function renderPermissions(perms){
@@ -245,7 +246,7 @@ window.jarvis.onEvent((evt)=>{
   if(evt.event==='ready'){refreshStatus();}
   if(evt.event==='voice-status'){
     const ok=evt.status==='running';
-    $('voiceBadge').textContent=ok?'ESCUCHANDO':(evt.status==='error'||evt.status==='unavailable'?'VOZ NO DISPONIBLE':'VOZ INICIANDO');
+    $('voiceBadge').textContent=ok?'LISTENING':(evt.status==='error'||evt.status==='unavailable'?'VOICE ERROR':'VOICE INITIALIZING');
     $('voiceBadge').classList.toggle('bad',evt.status==='error'||evt.status==='unavailable');
     $('presenceOrb').classList.toggle('listening',ok);
     if(evt.status==='error'||evt.status==='unavailable') setHudMessage('jarvis',`La voz no está disponible: ${evt.detail||evt.status}`);
@@ -277,7 +278,7 @@ window.jarvis.onEvent((evt)=>{
     $('permissionBar').classList.add('hidden');
   }
   if(evt.event==='fatal'||evt.event==='backend-exit'){
-    $('backendDot').className='dot bad';$('backendText').textContent='Núcleo detenido';
+    const bd=$('backendDot'),bt=$('backendText');if(bd)bd.className='dot bad';if(bt)bt.textContent='CORE STOPPED';
     $('goalOutput').textContent=`El núcleo JARVIS se detuvo: ${evt.error||evt.code||'error desconocido'}`;
   }
 });
@@ -291,3 +292,12 @@ window.jarvis.onEvent((evt)=>{
     const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;
   }catch(_){}
 })();
+
+function showPanel(key){
+  document.querySelectorAll('.dock-btn').forEach(x=>x.classList.toggle('active',x.dataset.panel===key));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  const target=document.getElementById('panel-'+key);
+  if(target) target.classList.add('active');
+}
+document.querySelectorAll('[data-panel]').forEach(btn=>btn.addEventListener('click',()=>showPanel(btn.dataset.panel)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')showPanel('command');});

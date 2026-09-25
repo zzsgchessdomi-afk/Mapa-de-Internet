@@ -9,182 +9,174 @@
 </head>
 <body>
 <div class="world-grid"></div>
-<div class="radial-glow"></div>
+<div class="screen-glow"></div>
 <div class="scanlines"></div>
 
-<aside class="sidebar">
-  <div class="drawer-head">
-    <div class="brand"><div class="mini-core"></div><div><strong>JARVIS</strong><span>INFINITY 7 • OWNER SYSTEM</span></div></div>
-    <button id="systemsClose" class="iconbtn" aria-label="Cerrar sistemas">×</button>
-  </div>
-  <div class="drawer-label">SUBSYSTEMS</div>
-  <nav id="nav">
-    <button class="nav active" data-panel="command">CORE</button>
-    <button class="nav" data-panel="perception">PERCEPTION</button>
-    <button class="nav" data-panel="memory">MEMORY</button>
-    <button class="nav" data-panel="research">RESEARCH CORPS</button>
-    <button class="nav" data-panel="workbench">AUTONOMOUS WORKBENCH</button>
-    <button class="nav" data-panel="swarm">COGNITIVE SWARM</button>
-    <button class="nav" data-panel="skills">SKILLS & EVOLUTION</button>
-    <button class="nav" data-panel="world">WORLD MODEL</button>
-    <button class="nav" data-panel="mobile">MOBILE BRIDGE</button>
-    <button class="nav" data-panel="reality">REALITY BRIDGE</button>
-    <button class="nav" data-panel="security">GUARDIAN</button>
-    <button class="nav" data-panel="settings">DIAGNOSTICS</button>
-  </nav>
-  <div class="sidefoot"><span id="backendDot" class="dot"></span><span id="backendText">CORE BOOTING</span></div>
-</aside>
-
 <div class="app-shell">
-  <header class="microbar">
-    <div class="micro-left"><span class="sysmark"></span><strong>JARVIS // INFINITY 7</strong></div>
-    <div class="micro-center"><span id="voiceBadge" class="voice-badge">VOICE INITIALIZING</span></div>
-    <div class="micro-right">
-      <button id="systemsToggle" class="micro-btn">SYSTEMS</button>
-      <button id="resetStop" class="micro-btn">REARM</button>
-      <button id="stopBtn" class="stop-btn">STOP</button>
+  <header class="frame-top">
+    <div class="frame-corner left"></div>
+    <div class="top-readout">
+      <span class="tiny">JARVIS // INFINITY 7</span>
+      <span id="voiceBadge" class="voice-badge">INITIALIZING</span>
     </div>
+    <div class="header-actions">
+      <button id="resetStop" class="top-button">REARM</button>
+      <button id="stopBtn" class="top-button stop">STOP</button>
+    </div>
+    <div class="frame-corner right"></div>
   </header>
 
   <main>
-    <div class="panel-heading sr-only"><h1 id="panelTitle">JARVIS</h1><p id="panelSubtitle">Core</p></div>
     <section id="statusStrip" class="status-strip"></section>
 
     <section class="panel active" id="panel-command">
       <div class="reference-stage">
-        <div class="top-notch"></div>
+        <div class="reference-frame top"></div>
+        <div class="reference-frame bottom"></div>
 
-        <div class="core-wrap">
-          <div class="orbit orbit-6"></div>
-          <div class="orbit orbit-5"></div>
-          <div class="orbit orbit-4"></div>
-          <div class="orbit orbit-3"></div>
-          <div class="orbit orbit-2"></div>
-          <div class="orbit orbit-1"></div>
-
-          <div id="presenceOrb" class="presence-orb">
-            <div class="core-energy"></div>
-            <div class="core-ring"></div>
-            <div class="core-label">JARVIS</div>
+        <div class="jarvis-core-wrap">
+          <div id="presenceOrb" class="reference-core" role="button" tabindex="0" aria-label="JARVIS core">
+            <div class="microticks"></div>
+            <div class="orbit o1"></div>
+            <div class="orbit o2"></div>
+            <div class="orbit o3"></div>
+            <div class="inner-glow"></div>
+            <span>JARVIS</span>
           </div>
 
-          <div class="voice-state">
-            <span class="voice-kicker">VOICE INTERFACE</span>
-            <h2 id="wakeHint">DI “JARVIS”</h2>
-            <div class="voice-wave" aria-hidden="true">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            </div>
+          <div class="reference-state">
+            <strong id="wakeHint">LISTENING</strong>
+            <span id="lastResponse">SYSTEM READY</span>
           </div>
         </div>
 
-        <div class="edge-status edge-left">
-          <div><span>CORE</span><b id="hudCore">ONLINE</b></div>
-          <div><span>VOICE</span><b id="hudVoice">BOOT</b></div>
-          <div><span>GUARDIAN</span><b id="hudGuardian">ARMED</b></div>
+        <div class="voice-activity">
+          <span id="lastInput">—</span>
+          <div class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
 
-        <div class="edge-status edge-right">
-          <div><span>VISION</span><b id="hudVision">OFF</b></div>
-          <div><span>WORKBENCH</span><b id="hudWork">READY</b></div>
-          <div><span>WORLD</span><b id="hudWorld">SYNC</b></div>
-        </div>
-
-        <div class="hud-message">
-          <span id="hudMode">SYSTEM READY</span>
-          <strong id="lastResponse">JARVIS ONLINE</strong>
-          <small id="lastInput"></small>
-        </div>
-
-        <div class="bottom-dock">
-          <button class="dock-dot nav" data-panel="perception" aria-label="Perception" title="Perception"></button>
-          <button class="dock-dot nav" data-panel="memory" aria-label="Memory" title="Memory"></button>
-          <button class="dock-dot nav" data-panel="workbench" aria-label="Autonomous Workbench" title="Autonomous Workbench"></button>
-          <button class="dock-dot nav" data-panel="world" aria-label="World Model" title="World Model"></button>
-          <button class="dock-dot nav" data-panel="reality" aria-label="Reality Bridge" title="Reality Bridge"></button>
-        </div>
-
-        <div id="jarvisFeed" class="jarvis-feed" aria-live="polite"></div>
+        <div id="jarvisFeed" class="sr-only" aria-live="polite"></div>
 
         <div id="permissionBar" class="permission-bar hidden">
-          <div><strong id="permissionTitle">OWNER AUTHORIZATION REQUIRED</strong><span id="permissionText"></span></div>
-          <div class="row"><button id="allowOnce" class="primary">ALLOW ONCE</button><button id="allowAlways" class="hudbtn">ALWAYS</button><button id="denyPermission" class="hudbtn">DENY</button></div>
+          <div class="permit-copy">
+            <strong id="permissionTitle">AUTHORIZATION REQUIRED</strong>
+            <span id="permissionText"></span>
+          </div>
+          <div class="row">
+            <button id="allowOnce" class="primary">ALLOW ONCE</button>
+            <button id="allowAlways" class="ghost">ALWAYS</button>
+            <button id="denyPermission" class="ghost">DENY</button>
+          </div>
+        </div>
+
+        <div class="dock" aria-label="JARVIS systems">
+          <button class="dock-btn active" data-panel="command" title="Core"><span>◉</span><small>CORE</small></button>
+          <button class="dock-btn" data-panel="perception" title="Perception"><span>⌁</span><small>SENSE</small></button>
+          <button class="dock-btn" data-panel="memory" title="Memory"><span>⌘</span><small>MEM</small></button>
+          <button class="dock-btn" data-panel="world" title="World Model"><span>◎</span><small>WORLD</small></button>
+          <button class="dock-btn" data-panel="workbench" title="Autonomous Workbench"><span>◇</span><small>WORK</small></button>
+          <button class="dock-btn" data-panel="mobile" title="Mobile Bridge"><span>▯</span><small>MOBILE</small></button>
+          <button class="dock-btn" data-panel="security" title="Guardian"><span>△</span><small>GUARD</small></button>
+          <button class="dock-btn" data-panel="settings" title="Diagnostics"><span>⋮</span><small>SYS</small></button>
         </div>
 
         <details class="text-fallback">
-          <summary>KEYBOARD FALLBACK</summary>
+          <summary>⌨</summary>
           <div class="composer">
-            <textarea id="goalInput" placeholder="Respaldo manual"></textarea>
-            <div class="row"><button id="runGoal" class="primary">EXECUTE</button><button id="screenNow" class="hudbtn">SCREEN</button><button id="refreshStatus" class="hudbtn">SYNC</button></div>
+            <textarea id="goalInput" placeholder="Manual fallback only"></textarea>
+            <div class="row"><button id="runGoal" class="primary">EXECUTE</button><button id="screenNow" class="ghost">SCREEN</button><button id="refreshStatus" class="ghost">SYNC</button></div>
           </div>
         </details>
       </div>
       <div class="sr-only"><pre id="goalOutput">Esperando orden.</pre></div>
     </section>
 
-    <section class="panel subsystem" id="panel-perception">
-      <div class="subsystem-head"><div><span>PERCEPTION LAYER</span><h2>VOICE / VISION / GESTURE</h2></div></div>
-      <div class="grid two">
-        <div class="card"><h3>Voice Runtime</h3><p>Reconocimiento privado dentro de JARVIS.</p><div class="row"><button data-op="voice_start" class="primary">Reiniciar escucha</button><button data-op="voice_stop" class="hudbtn">Detener</button></div><input id="speakText" placeholder="Prueba TTS"/><button id="speakBtn" class="hudbtn full">Probar voz</button></div>
-        <div class="card"><h3>Camera / Gesture Layer</h3><p>MediaPipe + Intent Core + Guardian.</p><div class="row"><button data-op="vision_start" class="primary">Activar cámara/gestos</button><button data-op="vision_stop" class="hudbtn">Detener</button></div></div>
-        <div class="card"><h3>Sentinel</h3><p>Observación contextual de pantalla.</p><div class="row"><button data-op="sentinel_start" class="primary">Activar</button><button data-op="sentinel_stop" class="hudbtn">Detener</button></div></div>
-        <div class="card"><h3>Perception State</h3><pre id="perceptionOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-perception">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>PERCEPTION</span><h2>VOICE / VISION / GESTURE</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two">
+          <div class="card"><h3>Voice Runtime</h3><p>Private in-process recognition. No classic Windows speech toolbar.</p><div class="row"><button data-op="voice_start" class="primary">START</button><button data-op="voice_stop" class="ghost">STOP VOICE</button></div><input id="speakText" placeholder="TTS test"/><button id="speakBtn" class="ghost full">SPEAK</button></div>
+          <div class="card"><h3>Camera / Gesture Layer</h3><p>MediaPipe + Intent Core + Guardian.</p><div class="row"><button data-op="vision_start" class="primary">CAMERA ON</button><button data-op="vision_stop" class="ghost">OFF</button></div></div>
+          <div class="card"><h3>Sentinel</h3><p>Contextual screen observation.</p><div class="row"><button data-op="sentinel_start" class="primary">START</button><button data-op="sentinel_stop" class="ghost">STOP</button></div></div>
+          <div class="card"><h3>STATE</h3><pre id="perceptionOutput">—</pre></div>
+        </div>
       </div>
     </section>
 
-    <section class="panel subsystem" id="panel-memory">
-      <div class="subsystem-head"><div><span>CONTINUITY</span><h2>MEMORY</h2></div></div>
-      <div class="grid two">
-        <div class="card"><h3>Remember</h3><input id="memoryTitle" placeholder="Título"><textarea id="memoryContent" placeholder="Qué debe recordar JARVIS"></textarea><button id="memoryRemember" class="primary full">Guardar</button></div>
-        <div class="card"><h3>Recall / Resume</h3><input id="memoryQuery" placeholder="Buscar contexto, decisiones, tareas…"><div class="row"><button id="memorySearch" class="hudbtn">Buscar</button><button id="memoryResume" class="primary">Reanudar</button></div></div>
-      </div><div class="console-card"><pre id="memoryOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-memory">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>CONTINUITY</span><h2>MEMORY</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two">
+          <div class="card"><h3>REMEMBER</h3><input id="memoryTitle" placeholder="Title"><textarea id="memoryContent" placeholder="What JARVIS should remember"></textarea><button id="memoryRemember" class="primary full">STORE</button></div>
+          <div class="card"><h3>RECALL</h3><input id="memoryQuery" placeholder="Search context"><div class="row"><button id="memorySearch" class="ghost">SEARCH</button><button id="memoryResume" class="primary">RESUME</button></div></div>
+        </div><div class="console-card"><pre id="memoryOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-research">
-      <div class="subsystem-head"><div><span>MULTI-AGENT INTELLIGENCE</span><h2>RESEARCH CORPS</h2></div></div>
-      <div class="card"><textarea id="researchQuestion" placeholder="Pregunta a investigar"></textarea><div class="row"><select id="researchDepth"><option value="standard">Standard</option><option value="deep">Deep</option></select><button id="researchRun" class="primary">Investigar</button><button id="researchList" class="hudbtn">Historial</button></div></div><div class="console-card"><pre id="researchOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-research">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>MULTI-AGENT</span><h2>RESEARCH CORPS</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><textarea id="researchQuestion" placeholder="Research objective"></textarea><div class="row"><select id="researchDepth"><option value="standard">Standard</option><option value="deep">Deep</option></select><button id="researchRun" class="primary">RUN</button><button id="researchList" class="ghost">HISTORY</button></div></div><div class="console-card"><pre id="researchOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-workbench">
-      <div class="subsystem-head"><div><span>AUTONOMOUS EXECUTION</span><h2>AUTONOMOUS WORKBENCH</h2></div></div>
-      <div class="card"><textarea id="workGoal" placeholder="Objetivo"></textarea><div class="row"><button id="workCreate" class="primary">Crear trabajo</button><button id="workCycle" class="hudbtn">Ejecutar ciclo</button><button id="workList" class="hudbtn">Listar</button></div></div><div class="console-card"><pre id="workOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-workbench">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>AUTONOMOUS EXECUTION</span><h2>AUTONOMOUS WORKBENCH</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><textarea id="workGoal" placeholder="Autonomous objective"></textarea><div class="row"><button id="workCreate" class="primary">CREATE</button><button id="workCycle" class="ghost">RUN CYCLE</button><button id="workList" class="ghost">JOBS</button></div></div><div class="console-card"><pre id="workOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-swarm">
-      <div class="subsystem-head"><div><span>DYNAMIC SPECIALISTS</span><h2>COGNITIVE SWARM</h2></div></div>
-      <div class="card"><textarea id="swarmGoal" placeholder="Problema"></textarea><div class="row"><button id="swarmRun" class="primary">Ejecutar</button><button id="swarmList" class="hudbtn">Historial</button></div></div><div class="console-card"><pre id="swarmOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-swarm">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>DYNAMIC SPECIALISTS</span><h2>COGNITIVE SWARM</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><textarea id="swarmGoal" placeholder="Problem"></textarea><div class="row"><button id="swarmRun" class="primary">RUN</button><button id="swarmList" class="ghost">HISTORY</button></div></div><div class="console-card"><pre id="swarmOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-skills">
-      <div class="subsystem-head"><div><span>CAPABILITY ENGINE</span><h2>SKILLS & EVOLUTION</h2></div></div>
-      <div class="grid two"><div class="card"><h3>Skill Forge</h3><button id="skillsList" class="primary full">Listar skills</button></div><div class="card"><h3>Self-Evolution</h3><button id="evolutionScan" class="primary full">Escanear</button><button id="evolutionList" class="hudbtn full">Candidatas</button></div></div><div class="console-card"><pre id="skillsOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-skills">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>CAPABILITY ENGINE</span><h2>SKILLS & EVOLUTION</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two"><div class="card"><h3>SKILL FORGE</h3><button id="skillsList" class="primary full">LIST SKILLS</button></div><div class="card"><h3>SELF-EVOLUTION</h3><button id="evolutionScan" class="primary full">SCAN</button><button id="evolutionList" class="ghost full">CANDIDATES</button></div></div><div class="console-card"><pre id="skillsOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-world">
-      <div class="subsystem-head"><div><span>ENVIRONMENT MODEL</span><h2>WORLD MODEL</h2></div></div>
-      <div class="card"><button id="worldRefresh" class="primary">Sincronizar</button></div><div class="console-card"><pre id="worldOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-world">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>ENVIRONMENT MODEL</span><h2>WORLD MODEL</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><button id="worldRefresh" class="primary">SYNC</button></div><div class="console-card"><pre id="worldOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-mobile">
-      <div class="subsystem-head"><div><span>CROSS-DEVICE</span><h2>MOBILE BRIDGE</h2></div></div>
-      <div class="card"><button id="mobileRefresh" class="primary">Estado móvil</button></div><div class="console-card"><pre id="mobileOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-mobile">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>CROSS-DEVICE</span><h2>MOBILE BRIDGE</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><button id="mobileRefresh" class="primary">REFRESH MOBILE</button></div><div class="console-card"><pre id="mobileOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-reality">
-      <div class="subsystem-head"><div><span>PHYSICAL WORLD</span><h2>REALITY BRIDGE</h2></div></div>
-      <div class="card"><div class="row"><button id="realityStatus" class="primary">Estado</button><button id="realityList" class="hudbtn">Dispositivos</button></div></div><div class="console-card"><pre id="realityOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-reality">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>PHYSICAL WORLD</span><h2>REALITY BRIDGE</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><div class="row"><button id="realityStatus" class="primary">STATUS</button><button id="realityList" class="ghost">DEVICES</button></div></div><div class="console-card"><pre id="realityOutput">—</pre></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-security">
-      <div class="subsystem-head"><div><span>OWNER AUTHORITY</span><h2>GUARDIAN</h2></div></div>
-      <div class="card"><div id="permissionsGrid" class="permissions-grid"></div></div>
+    <section class="panel overlay-panel" id="panel-security">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>OWNER AUTHORITY</span><h2>GUARDIAN</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="card"><div id="permissionsGrid" class="permissions-grid"></div></div>
+      </div>
     </section>
 
-    <section class="panel subsystem" id="panel-settings">
-      <div class="subsystem-head"><div><span>SYSTEM HEALTH</span><h2>DIAGNOSTICS</h2></div></div>
-      <div class="grid two">
-        <div class="card"><h3>Proveedor IA opcional</h3><label>Modelo</label><input id="modelInput" value="gemini-2.5-flash"><label>API key</label><input id="apiKeyInput" type="password" placeholder="Almacén seguro de Windows"><button id="saveProvider" class="primary full">Guardar</button></div>
-        <div class="card"><h3>Core Diagnostics</h3><div class="stack"><button id="selfTest" class="primary">Self-test</button><button id="diagnostics" class="hudbtn">Diagnóstico</button><button id="releaseGate" class="hudbtn">Release Gate</button><button id="openLog" class="hudbtn">Backend log</button></div></div>
-      </div><div class="console-card"><pre id="settingsOutput">—</pre></div>
+    <section class="panel overlay-panel" id="panel-settings">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>SYSTEM HEALTH</span><h2>DIAGNOSTICS</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two">
+          <div class="card"><h3>OPTIONAL AI PROVIDER</h3><label>Model</label><input id="modelInput" value="gemini-2.5-flash"><label>API key</label><input id="apiKeyInput" type="password" placeholder="Windows secure store"><button id="saveProvider" class="primary full">SAVE</button></div>
+          <div class="card"><h3>CORE DIAGNOSTICS</h3><div class="stack"><button id="selfTest" class="primary">SELF-TEST</button><button id="diagnostics" class="ghost">DIAGNOSTICS</button><button id="releaseGate" class="ghost">RELEASE GATE</button><button id="openLog" class="ghost">BACKEND LOG</button></div></div>
+        </div><div class="console-card"><pre id="settingsOutput">—</pre></div>
+      </div>
     </section>
   </main>
 </div>
