@@ -1,1 +1,137 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+name: JARVIS Windows Installer Gate
+
+on:
+  push:
+    branches:
+      - jarvis-windows-ci
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-gate:
+    runs-on: windows-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout temporary JARVIS branch
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: Reconstruct embedded JARVIS payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location jarvis-ci
+          $parts = Get-ChildItem 'payload.b64.part*' | Sort-Object Name
+          if ($parts.Count -lt 1) { throw 'payload chunks missing' }
+          $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
+          [IO.File]::WriteAllBytes((Join-Path (Get-Location) 'payload.zip'), [Convert]::FromBase64String($b64))
+          if ((Get-Item .\payload.zip).Length -lt 100000) { throw 'reconstructed payload too small' }
+
+      - name: Build GUI launcher and installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location jarvis-ci
+          go version
+          go build -trimpath -ldflags "-H windowsgui -s -w" -o JARVIS_GM.exe launcher.go
+          go build -trimpath -ldflags "-H windowsgui -s -w" -o JARVIS_GM_Instalar.exe installer.go
+          if (!(Test-Path .\JARVIS_GM.exe)) { throw 'launcher missing' }
+          if (!(Test-Path .\JARVIS_GM_Instalar.exe)) { throw 'installer missing' }
+
+      - name: Assert Windows GUI subsystem
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Assert-Gui([string]$Path) {
+            [byte[]]$b = [IO.File]::ReadAllBytes($Path)
+            if ($b.Length -lt 512) { throw "$Path too small" }
+            $pe = [BitConverter]::ToInt32($b, 0x3c)
+            if ([Text.Encoding]::ASCII.GetString($b, $pe, 4) -ne "PE`0`0") { throw "$Path invalid PE" }
+            $opt = $pe + 24
+            $subsystem = [BitConverter]::ToUInt16($b, $opt + 68)
+            if ($subsystem -ne 2) { throw "$Path subsystem=$subsystem expected GUI=2" }
+          }
+          Assert-Gui '.\jarvis-ci\JARVIS_GM.exe'
+          Assert-Gui '.\jarvis-ci\JARVIS_GM_Instalar.exe'
+
+      - name: Clean prior JARVIS state
+        shell: pwsh
+        run: |
+          Get-Process JARVIS_GM,JARVIS_GM_Instalar,python,pythonw -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Remove-Item "$env:LOCALAPPDATA\Programs\JARVIS GM" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "$env:LOCALAPPDATA\Programs\JARVIS GM.__new__" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "$env:LOCALAPPDATA\Programs\JARVIS GM.__old__" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "$env:LOCALAPPDATA\JARVIS_GM" -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: Run exact installer engine on Windows
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location jarvis-ci
+          $p = Start-Process -FilePath .\JARVIS_GM_Instalar.exe -ArgumentList '--ci-smoke' -Wait -PassThru
+          if ($p.ExitCode -ne 0) {
+            $log = "$env:LOCALAPPDATA\JARVIS_GM\Installer\install.log"
+            if (Test-Path $log) { Get-Content $log -Tail 250 }
+            throw "Installer CI mode failed with exit code $($p.ExitCode)"
+          }
+
+      - name: Validate installed product and private runtime
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
+          $py = Join-Path $root 'runtime\Scripts\python.exe'
+          $pyw = Join-Path $root 'runtime\Scripts\pythonw.exe'
+          $launcher = Join-Path $root 'JARVIS_GM.exe'
+          $marker = Join-Path $root 'install.json'
+          foreach ($p in @($py,$pyw,$launcher,$marker)) {
+            if (!(Test-Path $p)) { throw "Missing installed file: $p" }
+          }
+          $meta = Get-Content $marker -Raw | ConvertFrom-Json
+          if ($meta.version -ne '1.7.0rc1') { throw "Unexpected installed version: $($meta.version)" }
+          & $py -c "import jarvis_gm, tkinter, cv2, mediapipe, win32api, pywinauto, PIL, keyring, cryptography; assert jarvis_gm.__version__ == '1.7.0rc1'; print('imports-ok')"
+          if ($LASTEXITCODE -ne 0) { throw 'Installed import validation failed' }
+          & $py -m jarvis_gm.self_test
+          if ($LASTEXITCODE -ne 0) { throw 'Installed self-test failed' }
+
+      - name: GUI startup smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
+          $pyw = Join-Path $root 'runtime\Scripts\pythonw.exe'
+          $p = Start-Process -FilePath $pyw -ArgumentList '-c', 'from jarvis_gm.app import main; main()' -WorkingDirectory $root -PassThru
+          Start-Sleep -Seconds 6
+          $p.Refresh()
+          if ($p.HasExited) { throw "JARVIS GUI exited during startup with code $($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          Start-Sleep -Seconds 1
+
+      - name: Second-run regression
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
+          $py = Join-Path $root 'runtime\Scripts\python.exe'
+          & $py -m jarvis_gm.self_test
+          if ($LASTEXITCODE -ne 0) { throw 'Second-run self-test failed' }
+
+      - name: Collect successful installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS_GM_WINDOWS_TESTED
+          path: jarvis-ci/JARVIS_GM_Instalar.exe
+          if-no-files-found: error
+          retention-days: 7
