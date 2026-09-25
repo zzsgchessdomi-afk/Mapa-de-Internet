@@ -19,6 +19,21 @@ async function getText(url,headers={}){
  try{const r=await fetch(url,{signal:c.signal,headers:{"User-Agent":UA,"Accept":"text/html,application/atom+xml,text/plain;q=0.8,*/*;q=0.3",...headers}});if(!r.ok)throw new Error("HTTP "+r.status);return (await r.text()).slice(0,2_000_000)}finally{clearTimeout(t)}
 }
 function alias(q){const m={ajedrez:"chess",finanzas:"finance",clima:"weather",seguridad:"web security","ia":"artificial intelligence","inteligencia artificial":"artificial intelligence"};return m[q.toLowerCase().trim()]||q}
+function queryIntent(q){
+ const s=String(q||"").toLowerCase();
+ const technical=/\b(api|apis|software|tecnolog(?:i|í)a|developer|desarroll|github|c[oó]digo|npm|paquete|framework|librer(?:i|í)a|sdk|programaci[oó]n|open source|repositorio)\b/i.test(s);
+ const company=/\b(empresa|compañ(?:i|í)a|negocio|marca|corporaci[oó]n|competidor|mercado|producto)\b/i.test(s);
+ return{technical,company};
+}
+function lexicalTerms(q){
+ const stop=new Set(["investiga","investigar","analiza","analizar","busca","buscar","encuentra","empresa","compania","compañia","compañía","marca","negocio","producto","sobre","para","como","con","una","uno","unos","unas","del","las","los","que","the","and","company"]);
+ return String(q||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[a-z0-9][a-z0-9._-]{1,}/g)?.filter(x=>!stop.has(x))||[];
+}
+function strictDevRelevant(row,q){
+ const terms=lexicalTerms(q);if(!terms.length)return true;
+ const hay=(String(row?.title||"")+" "+String(row?.description||"")+" "+String(row?.url||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ return terms.some(t=>hay.includes(t));
+}
 function apiMatch(entries,q){
  const terms=q.toLowerCase().split(/\s+/).filter(Boolean),syn={chess:["chess"],finance:["finance","currency","cryptocurrency"],weather:["weather","environment"],security:["security","anti-malware"],video:["video","photography","machine learning"],artificial:["machine learning"],intelligence:["machine learning"]},all=new Set(terms);
  for(const t of terms)for(const s of syn[t]||[])all.add(s);
@@ -59,7 +74,7 @@ async function arxivSearch(q){
 export default async function handler(req,res){
  const raw=Array.isArray(req.query?.q)?req.query.q[0]:req.query?.q;if(!raw||String(raw).trim().length<2)return res.status(400).json({error:"Falta q"});
  const q=alias(String(raw).trim().slice(0,220)),enc=encodeURIComponent(q),out=[],diagnostics=[];
- const requestStarted=Date.now(),MIN_USEFUL_RESULTS=1;
+ const requestStarted=Date.now(),MIN_USEFUL_RESULTS=1,intent=queryIntent(q);
  const providers=[
   ["web",async()=>duckSearch(q)],
   ["wikipedia",async()=>{const d=await getJson(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${enc}&limit=6&namespace=0&format=json&origin=*`);return(d[1]||[]).map((t,i)=>({id:"wp-"+i,source:"wikipedia",type:"knowledge",title:t,url:d[3][i],description:d[2][i]||"Artículo Wikipedia",meta:["encyclopedia"]}))}],
@@ -73,7 +88,9 @@ export default async function handler(req,res){
   ["arxiv",async()=>arxivSearch(q)],
   ["publicapis",async()=>{const d=await getJson(API_CATALOG);const entries=(d.entries||[]).map(x=>({name:x.name||x.API,url:x.url||x.Link,description:x.description||x.Description||"",auth:x.auth||x.Auth||"Unknown",https:x.https!==undefined?!!x.https:/yes/i.test(x.HTTPS||""),cors:x.cors||x.Cors||x.CORS||"Unknown",category:x.category||x.Category||"Other"})).filter(x=>x.name&&x.url);return apiMatch(entries,q)}]
  ];
- await Promise.all(providers.map(async([name,fn])=>{const started=Date.now();try{const rows=await fn();if(!Array.isArray(rows))throw new Error("Respuesta inválida: se esperaba una lista");out.push(...rows);diagnostics.push({provider:name,ok:true,count:rows.length,ms:Date.now()-started,state:rows.length?"results":"empty"})}catch(e){const aborted=e?.name==="AbortError";diagnostics.push({provider:name,ok:false,count:0,ms:Date.now()-started,state:aborted?"timeout":"error",error:(aborted?"Timeout de proveedor":String(e?.message||e)).slice(0,120)})}}));
+ const activeProviders=providers.filter(([name])=>intent.technical||!["github","stackoverflow","npm","publicapis"].includes(name));
+ for(const [name] of providers)if(!activeProviders.some(([n])=>n===name))diagnostics.push({provider:name,ok:true,count:0,ms:0,state:"skipped",reason:"non-technical intent"});
+ await Promise.all(activeProviders.map(async([name,fn])=>{const started=Date.now();try{let rows=await fn();if(!Array.isArray(rows))throw new Error("Respuesta inválida: se esperaba una lista");if(["github","stackoverflow","npm","publicapis"].includes(name))rows=rows.filter(x=>strictDevRelevant(x,q));out.push(...rows);diagnostics.push({provider:name,ok:true,count:rows.length,ms:Date.now()-started,state:rows.length?"results":"empty"})}catch(e){const aborted=e?.name==="AbortError";diagnostics.push({provider:name,ok:false,count:0,ms:Date.now()-started,state:aborted?"timeout":"error",error:(aborted?"Timeout de proveedor":String(e?.message||e)).slice(0,120)})}}));
  const seen=new Set(),results=[];for(const rawResult of out){const r=normalizeResult(rawResult);if(!r)continue;const k=(r.url+"|"+r.title).toLowerCase().replace(/\/$/,"");if(seen.has(k))continue;seen.add(k);results.push(r)}
  results.sort((a,b)=>(b.rawScore||0)-(a.rawScore||0));
  res.setHeader("Cache-Control","s-maxage=60, stale-while-revalidate=180");const successfulProviders=diagnostics.filter(x=>x.ok),providersWithResults=successfulProviders.filter(x=>x.count>0);
