@@ -1,6 +1,6 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "description": "JARVIS GM Infinity 7 - immersive HUD voice-first owner runtime",
   "main": "main.js",
@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_INFINITY_HUD_Setup_${version}.${ext}",
+    "artifactName": "JARVIS_GM_Setup_INFINITY_HUD_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",
