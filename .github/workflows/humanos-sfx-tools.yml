@@ -1,0 +1,32 @@
+name: HUMANOS SFX Tools
+on:
+  push:
+    branches:
+      - humanos-electron-runtime-build
+  workflow_dispatch:
+
+jobs:
+  tools:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch 7-Zip tools
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 "https://github.com/ip7z/7zip/releases/download/26.03/7z2603-linux-x64.tar.xz" -o linux.tar.xz
+          mkdir linux7z
+          tar -xJf linux.tar.xz -C linux7z
+          chmod +x linux7z/7zz
+          curl -L --fail --retry 3 "https://github.com/ip7z/7zip/releases/download/26.03/lzma2603.7z" -o lzma.7z
+          mkdir sdk
+          ./linux7z/7zz x -osdk lzma.7z
+          mkdir out
+          cp linux7z/7zz out/
+          find sdk -type f \( -iname '7z.sfx' -o -iname '7zCon.sfx' -o -iname '7zS.sfx' -o -iname '7zSD.sfx' \) -exec cp {} out/ \;
+          find out -maxdepth 1 -type f -printf '%f\n'
+      - name: Upload SFX tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: humanos-sfx-tools
+          path: out/
+          compression-level: 0
+          if-no-files-found: error
