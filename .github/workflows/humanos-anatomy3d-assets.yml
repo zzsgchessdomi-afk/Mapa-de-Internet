@@ -1,0 +1,123 @@
+name: HUMANOS Anatomy 3D Assets
+on:
+  push:
+    branches:
+      - humanos-electron-runtime-build
+  workflow_dispatch:
+
+jobs:
+  anatomy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare Three.js and anatomy meshes
+        run: |
+          set -euxo pipefail
+          mkdir -p out/vendor out/models out/licenses
+          npm init -y >/dev/null 2>&1
+          npm install three@0.128.0 >/dev/null
+          cp node_modules/three/build/three.min.js out/vendor/
+          cp node_modules/three/examples/js/controls/OrbitControls.js out/vendor/
+          cp node_modules/three/examples/js/loaders/STLLoader.js out/vendor/
+          cp node_modules/three/LICENSE out/licenses/THREE_LICENSE.txt
+          python -m pip install --quiet trimesh fast-simplification numpy
+          cat > build_models.py <<'PY'
+          import json, os, urllib.request
+          import trimesh
+
+          base='https://raw.githubusercontent.com/Kevin-Mattheus-Moerman/BodyParts3D/main/assets/BodyParts3D_data/stl/'
+          out='out/models'
+          os.makedirs(out, exist_ok=True)
+
+          B={
+          'FMA52748':('Mandíbula','bone_mandible','face'),'FMA52734':('Hueso frontal','bone_skull','head'),
+          'FMA52788':('Parietal derecho','bone_skull','head'),'FMA52789':('Parietal izquierdo','bone_skull','head'),
+          'FMA52738':('Temporal derecho','bone_skull','head'),'FMA52739':('Temporal izquierdo','bone_skull','head'),
+          'FMA52735':('Occipital','bone_skull','head'),'FMA52736':('Esfenoides','bone_skull','head'),
+          'FMA53649':('Maxilar derecho','bone_maxilla','face'),'FMA53650':('Maxilar izquierdo','bone_maxilla','face'),
+          'FMA52892':('Cigomático derecho','bone_zygomatic','face'),'FMA52893':('Cigomático izquierdo','bone_zygomatic','face'),
+          'FMA13322':('Clavícula derecha','bone_clavicle','shoulder'),'FMA13323':('Clavícula izquierda','bone_clavicle','shoulder'),
+          'FMA13395':('Escápula derecha','bone_scapula','shoulder'),'FMA13396':('Escápula izquierda','bone_scapula','shoulder'),
+          'FMA7485':('Esternón','bone_sternum','thorax'),'FMA23130':('Húmero derecho','bone_humerus','upper_arm'),'FMA23131':('Húmero izquierdo','bone_humerus','upper_arm'),
+          'FMA23464':('Radio derecho','bone_radius','forearm'),'FMA23465':('Radio izquierdo','bone_radius','forearm'),
+          'FMA23467':('Cúbito derecho','bone_ulna','forearm'),'FMA23468':('Cúbito izquierdo','bone_ulna','forearm'),
+          'FMA16586':('Coxal derecho','bone_pelvis','pelvis'),'FMA16587':('Coxal izquierdo','bone_pelvis','pelvis'),'FMA16202':('Sacro','bone_sacrum','pelvis'),
+          'FMA24474':('Fémur derecho','bone_femur','thigh'),'FMA24475':('Fémur izquierdo','bone_femur','thigh'),
+          'FMA24486':('Rótula derecha','bone_patella','knee'),'FMA24487':('Rótula izquierda','bone_patella','knee'),
+          'FMA24477':('Tibia derecha','bone_tibia','leg'),'FMA24478':('Tibia izquierda','bone_tibia','leg'),
+          'FMA24480':('Peroné derecho','bone_fibula','leg'),'FMA24481':('Peroné izquierdo','bone_fibula','leg')
+          }
+          ribs=['FMA7857','FMA7882','FMA7909','FMA7957','FMA7987','FMA8012','FMA8039','FMA8066','FMA8093','FMA8148','FMA8175','FMA8202','FMA8229','FMA8256','FMA8283','FMA8310','FMA8364','FMA8391','FMA8445','FMA8472','FMA8531','FMA8532','FMA8533','FMA8534']
+          for x in ribs:B[x]=('Costilla','bone_ribs','thorax')
+          cervical=['FMA12519','FMA12520','FMA12521','FMA12522','FMA12523','FMA12524','FMA12525']
+          thoracic=['FMA9165','FMA9187','FMA9209','FMA9248','FMA9922','FMA9945','FMA9968','FMA9991','FMA10014','FMA10037','FMA10059','FMA10081']
+          lumbar=['FMA13072','FMA13073','FMA13074','FMA13075','FMA13076']
+          for x in cervical:B[x]=('Vértebra cervical','bone_cervical_vertebrae','neck')
+          for x in thoracic:B[x]=('Vértebra torácica','bone_thoracic_vertebrae','back')
+          for x in lumbar:B[x]=('Vértebra lumbar','bone_lumbar_vertebrae','back')
+
+          M={
+          'FMA37684':('Bíceps corto derecho','muscle_biceps_brachii','upper_arm'),'FMA37685':('Bíceps corto izquierdo','muscle_biceps_brachii','upper_arm'),
+          'FMA37686':('Bíceps largo derecho','muscle_biceps_brachii','upper_arm'),'FMA37687':('Bíceps largo izquierdo','muscle_biceps_brachii','upper_arm'),
+          'FMA37697':('Tríceps lateral derecho','muscle_triceps_brachii','upper_arm'),'FMA37698':('Tríceps lateral izquierdo','muscle_triceps_brachii','upper_arm'),
+          'FMA37699':('Tríceps largo derecho','muscle_triceps_brachii','upper_arm'),'FMA37700':('Tríceps largo izquierdo','muscle_triceps_brachii','upper_arm'),
+          'FMA37668':('Braquial derecho','muscle_brachialis','upper_arm'),'FMA37669':('Braquial izquierdo','muscle_brachialis','upper_arm'),
+          'FMA34680':('Deltoides anterior derecho','muscle_deltoid_anterior','shoulder'),'FMA34681':('Deltoides anterior izquierdo','muscle_deltoid_anterior','shoulder'),
+          'FMA34682':('Deltoides medio derecho','muscle_deltoid_middle','shoulder'),'FMA34683':('Deltoides medio izquierdo','muscle_deltoid_middle','shoulder'),
+          'FMA34684':('Deltoides posterior derecho','muscle_deltoid_posterior','shoulder'),'FMA34685':('Deltoides posterior izquierdo','muscle_deltoid_posterior','shoulder'),
+          'FMA34690':('Pectoral clavicular derecho','muscle_pectoralis_major','thorax'),'FMA34691':('Pectoral clavicular izquierdo','muscle_pectoralis_major','thorax'),
+          'FMA79979':('Pectoral esternocostal derecho','muscle_pectoralis_major','thorax'),'FMA79980':('Pectoral esternocostal izquierdo','muscle_pectoralis_major','thorax'),
+          'FMA13377':('Recto abdominal derecho','muscle_rectus_abdominis','abdomen'),'FMA13378':('Recto abdominal izquierdo','muscle_rectus_abdominis','abdomen'),
+          'FMA13358':('Dorsal ancho derecho','muscle_latissimus_dorsi','back'),'FMA13359':('Dorsal ancho izquierdo','muscle_latissimus_dorsi','back'),
+          'FMA22328':('Glúteo mayor derecho','muscle_gluteus_maximus','hip'),'FMA22329':('Glúteo mayor izquierdo','muscle_gluteus_maximus','hip'),
+          'FMA38928':('Recto femoral derecho','muscle_rectus_femoris','thigh'),'FMA38929':('Recto femoral izquierdo','muscle_rectus_femoris','thigh'),
+          'FMA38930':('Vasto lateral derecho','muscle_vastus_lateralis','thigh'),'FMA38931':('Vasto lateral izquierdo','muscle_vastus_lateralis','thigh'),
+          'FMA45888':('Bíceps femoral derecho','muscle_biceps_femoris','thigh'),'FMA45889':('Bíceps femoral izquierdo','muscle_biceps_femoris','thigh'),
+          'FMA45957':('Gastrocnemio medial derecho','muscle_gastrocnemius','leg'),'FMA45958':('Gastrocnemio medial izquierdo','muscle_gastrocnemius','leg'),
+          'FMA45960':('Gastrocnemio lateral derecho','muscle_gastrocnemius','leg'),'FMA45961':('Gastrocnemio lateral izquierdo','muscle_gastrocnemius','leg'),
+          'FMA22558':('Sóleo derecho','muscle_soleus','leg'),'FMA22559':('Sóleo izquierdo','muscle_soleus','leg'),
+          'FMA13398':('Serrato anterior derecho','muscle_serratus_anterior','thorax'),'FMA13399':('Serrato anterior izquierdo','muscle_serratus_anterior','thorax'),
+          'FMA49001':('Masetero derecho','muscle_masseter','face'),'FMA49002':('Masetero izquierdo','muscle_masseter','face'),
+          'FMA46812':('Cigomático mayor derecho','muscle_zygomaticus_major','face'),'FMA46813':('Cigomático mayor izquierdo','muscle_zygomaticus_major','face')
+          }
+
+          manifest=[]
+          def process(fid,meta,layer):
+              url=base+fid+'.stl'
+              tmp='/tmp/'+fid+'.stl'
+              try:
+                  urllib.request.urlretrieve(url,tmp)
+                  mesh=trimesh.load_mesh(tmp,file_type='stl',process=True)
+                  if isinstance(mesh,trimesh.Scene):
+                      mesh=trimesh.util.concatenate(tuple(mesh.geometry.values()))
+                  target=3500 if layer=='bone' else 4500
+                  if len(mesh.faces)>target:
+                      try: mesh=mesh.simplify_quadric_decimation(face_count=target)
+                      except Exception as e: print('simplify failed',fid,e)
+                  dst=os.path.join(out,fid+'.stl')
+                  mesh.export(dst,file_type='stl')
+                  manifest.append({'fma':fid,'label':meta[0],'structureId':meta[1],'region':meta[2],'layer':layer,'file':'models/'+fid+'.stl','faces':int(len(mesh.faces))})
+                  print(fid, layer, len(mesh.faces), os.path.getsize(dst))
+              except Exception as e:
+                  print('SKIP',fid,e)
+          for fid,meta in B.items():process(fid,meta,'bone')
+          for fid,meta in M.items():process(fid,meta,'muscle')
+          with open('out/models/manifest.json','w',encoding='utf8') as f:json.dump(manifest,f,ensure_ascii=False,indent=2)
+          print('MANIFEST',len(manifest))
+          PY
+          python build_models.py
+          curl -L --fail --retry 3 "https://raw.githubusercontent.com/Kevin-Mattheus-Moerman/BodyParts3D/main/assets/BodyParts3D_data/LICENSE_content" -o out/licenses/BODYPARTS3D_LICENSE.txt
+          printf '%s\n' 'BodyParts3D, Copyright 2008 Life Science Integrated Database Center — CC BY-SA 2.1 Japan' > out/licenses/BODYPARTS3D_CREDIT.txt
+          du -sh out
+      - name: Upload anatomy assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: humanos-anatomy3d-assets
+          path: out/
+          compression-level: 6
+          if-no-files-found: error
