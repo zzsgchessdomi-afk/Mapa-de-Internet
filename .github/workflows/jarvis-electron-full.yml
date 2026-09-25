@@ -169,6 +169,20 @@ jobs:
           Set-Location '.\jarvis-electron\app'
           npm install --no-audit --no-fund
 
+      - name: Run source syntax and wiring audit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          node --check '.\jarvis-electron\app\renderer.js'
+          node --check '.\jarvis-electron\app\main.js'
+          node --check '.\jarvis-electron\app\preload.js'
+          python -m py_compile '.\jarvis-electron\electron_bridge.py' '.\jarvis-electron\windows_sapi_inproc.py'
+          node '.\jarvis-electron\app\ui_wiring_contract_test.js' | Tee-Object -FilePath '.\UI_WIRING_CONTRACT.txt'
+          node '.\jarvis-electron\app\ipc_surface_contract_test.js' | Tee-Object -FilePath '.\IPC_SURFACE_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Source syntax or wiring audit failed' }
+          if (-not (Select-String -Path '.\UI_WIRING_CONTRACT.txt' -Pattern 'UI_WIRING_CONTRACT=PASS' -Quiet)) { throw 'UI wiring contract did not report PASS' }
+          if (-not (Select-String -Path '.\IPC_SURFACE_CONTRACT.txt' -Pattern 'IPC_SURFACE_CONTRACT=PASS' -Quiet)) { throw 'IPC surface contract did not report PASS' }
+
       - name: Assert UI has no decorative dead buttons
         shell: pwsh
         run: |

@@ -1,0 +1,10 @@
+const fs=require('fs');
+const html=fs.readFileSync(__dirname+'/index.html','utf8');
+const js=fs.readFileSync(__dirname+'/renderer.js','utf8');
+const bridge=fs.readFileSync(__dirname+'/../electron_bridge.py','utf8');
+const calls=new Set([...js.matchAll(/call\('([^']+)'/g)].map(m=>m[1]));
+for(const m of html.matchAll(/data-op="([^"]+)"/g)) calls.add(m[1]);
+const bridgeOps=new Set([...bridge.matchAll(/op == "([^"]+)"/g)].map(m=>m[1]));
+const missing=[...calls].filter(op=>!bridgeOps.has(op));
+if(missing.length) throw new Error('renderer calls missing bridge operations: '+missing.join(','));
+console.log('IPC_SURFACE_CONTRACT=PASS '+calls.size+' operations');
