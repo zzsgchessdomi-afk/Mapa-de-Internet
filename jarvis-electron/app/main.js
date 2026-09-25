@@ -39,7 +39,20 @@ function createWindow(){
     webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:false,webSecurity:true}
   });
   win.loadFile(path.join(__dirname,'index.html'));
-  win.once('ready-to-show',()=>{win.setFullScreen(true);win.show();});
+  win.once('ready-to-show',()=>{
+    win.setFullScreen(true);win.show();
+    const capturePath=process.env.JARVIS_UI_CAPTURE_PATH;
+    if(capturePath){
+      setTimeout(async()=>{
+        try{
+          const image=await win.webContents.capturePage();
+          fs.writeFileSync(capturePath,image.toPNG());
+          appendLog(`UI_CAPTURE ${capturePath}`);
+        }catch(err){appendLog(`UI_CAPTURE_ERROR ${err.stack||err}`);}
+        finally{setTimeout(()=>app.quit(),350);}
+      },2200);
+    }
+  });
   win.webContents.setWindowOpenHandler(({url})=>{if(/^https?:\/\//i.test(url))shell.openExternal(url);return{action:'deny'};});
 }
 app.whenReady().then(async()=>{

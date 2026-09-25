@@ -252,6 +252,27 @@ jobs:
           Stop-Process -Id $p.Id -Force
           Get-Process jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
+      - name: Capture unpacked reference HUD
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Get-Process 'JARVIS GM',jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $exe=(Resolve-Path '.\jarvis-electron\app\dist\win-unpacked\JARVIS GM.exe').Path
+          $capture=(Join-Path (Resolve-Path '.').Path 'JARVIS_REFERENCE_CAPTURE.png')
+          $env:JARVIS_UI_CAPTURE_PATH=$capture
+          $p=Start-Process -FilePath $exe -PassThru
+          $deadline=(Get-Date).AddSeconds(28)
+          while((Get-Date) -lt $deadline -and !(Test-Path $capture)){ Start-Sleep -Milliseconds 500 }
+          Remove-Item Env:JARVIS_UI_CAPTURE_PATH -ErrorAction SilentlyContinue
+          if(!(Test-Path $capture)){ Get-Process 'JARVIS GM',jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; throw 'Reference HUD capture was not produced' }
+          Add-Type -AssemblyName System.Drawing
+          $img=[System.Drawing.Image]::FromFile($capture)
+          try {
+            if($img.Width -lt 900 -or $img.Height -lt 600){ throw "Reference capture too small: $($img.Width)x$($img.Height)" }
+            Write-Host "REFERENCE_CAPTURE=$($img.Width)x$($img.Height)"
+          } finally { $img.Dispose() }
+          Get-Process 'JARVIS GM',jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
       - name: Build professional NSIS installer
         shell: pwsh
         env:
@@ -314,6 +335,7 @@ jobs:
           Late-bound SAPI (avoids gen_py wrappers): PASS
           Hidden System.Speech fallback contract: PASS
           Reference-mode HUD contract: PASS
+          Windows-rendered reference HUD capture: PASS
           Main surface chat UI: ABSENT
           Reactive reactor canvas: PASS
           Wake/TTS physical microphone acceptance: PENDING OWNER HARDWARE TEST
@@ -330,5 +352,6 @@ jobs:
           path: |
             jarvis-electron/app/dist/JARVIS_GM_Setup_*.exe
             JARVIS_ELECTRON_WINDOWS_VALIDATION.txt
+            JARVIS_REFERENCE_CAPTURE.png
           if-no-files-found: error
           retention-days: 7
