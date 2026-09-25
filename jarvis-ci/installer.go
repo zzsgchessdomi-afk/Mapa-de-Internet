@@ -392,6 +392,7 @@ def sqlite_session(path, *args: Any, **kwargs: Any):
     row_factory = kwargs.pop("row_factory", sqlite3.Row)
     foreign_keys = bool(kwargs.pop("foreign_keys", False))
     wal = bool(kwargs.pop("wal", False))
+    pragmas = tuple(kwargs.pop("pragmas", ()) or ())
     con = connect(path, *args, **kwargs)
     if row_factory is not None:
         con.row_factory = row_factory
@@ -399,6 +400,8 @@ def sqlite_session(path, *args: Any, **kwargs: Any):
         con.execute("PRAGMA journal_mode=WAL")
     if foreign_keys:
         con.execute("PRAGMA foreign_keys=ON")
+    for pragma in pragmas:
+        con.execute(str(pragma))
     try:
         yield con
     except Exception:
