@@ -367,6 +367,7 @@ func applyWindowsSQLiteFixes(stageDir string) error {
 	sqlitePy := `from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from typing import Any
 
 
@@ -384,6 +385,32 @@ class ClosingConnection(sqlite3.Connection):
 def connect(*args: Any, **kwargs: Any) -> ClosingConnection:
     kwargs.setdefault("factory", ClosingConnection)
     return sqlite3.connect(*args, **kwargs)
+
+
+@contextmanager
+def sqlite_session(path, *args: Any, **kwargs: Any):
+    row_factory = kwargs.pop("row_factory", sqlite3.Row)
+    foreign_keys = bool(kwargs.pop("foreign_keys", False))
+    wal = bool(kwargs.pop("wal", False))
+    con = connect(path, *args, **kwargs)
+    if row_factory is not None:
+        con.row_factory = row_factory
+    if wal:
+        con.execute("PRAGMA journal_mode=WAL")
+    if foreign_keys:
+        con.execute("PRAGMA foreign_keys=ON")
+    try:
+        yield con
+    except Exception:
+        con.rollback()
+        raise
+    else:
+        con.commit()
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
 `
 	if err := os.WriteFile(filepath.Join(coreDir, "sqlite.py"), []byte(sqlitePy), 0600); err != nil { return err }
 
