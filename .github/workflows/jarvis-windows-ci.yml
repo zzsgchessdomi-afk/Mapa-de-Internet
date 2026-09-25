@@ -111,18 +111,38 @@ jobs:
           & $py -m jarvis_gm.self_test
           if ($LASTEXITCODE -ne 0) { throw 'Installed self-test failed' }
 
-      - name: GUI startup smoke test
+      - name: GUI startup diagnostic smoke
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
-          $pyw = Join-Path $root 'runtime\Scripts\pythonw.exe'
-          $p = Start-Process -FilePath $pyw -ArgumentList '-c', 'from jarvis_gm.app import main; main()' -WorkingDirectory $root -PassThru
-          Start-Sleep -Seconds 6
+          $py = Join-Path $root 'runtime\Scripts\python.exe'
+          $out = Join-Path $env:RUNNER_TEMP 'jarvis-gui-stdout.txt'
+          $err = Join-Path $env:RUNNER_TEMP 'jarvis-gui-stderr.txt'
+          Remove-Item $out,$err -Force -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath $py -ArgumentList '-c', 'from jarvis_gm.app import main; main()' -WorkingDirectory $root -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          Start-Sleep -Seconds 7
           $p.Refresh()
-          if ($p.HasExited) { throw "JARVIS GUI exited during startup with code $($p.ExitCode)" }
+          if ($p.HasExited) {
+            if (Test-Path $out) { Write-Host '--- JARVIS GUI STDOUT ---'; Get-Content $out -Raw }
+            if (Test-Path $err) { Write-Host '--- JARVIS GUI STDERR ---'; Get-Content $err -Raw }
+            throw "JARVIS GUI exited during startup with code $($p.ExitCode)"
+          }
           Stop-Process -Id $p.Id -Force
           Start-Sleep -Seconds 1
+
+      - name: Launcher smoke
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
+          $launcher = Join-Path $root 'JARVIS_GM.exe'
+          Get-Process pythonw -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath $launcher -WorkingDirectory $root -PassThru
+          Start-Sleep -Seconds 5
+          $children = Get-Process pythonw -ErrorAction SilentlyContinue
+          if (-not $children) { throw 'JARVIS_GM.exe did not leave a live pythonw GUI process' }
+          $children | Stop-Process -Force
 
       - name: Second-run regression
         shell: pwsh
