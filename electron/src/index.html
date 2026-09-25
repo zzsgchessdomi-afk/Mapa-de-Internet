@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; connect-src 'none';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JARVIS GM</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+  <div id="app" class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><div class="brand-core"></div><div class="brand-ring r1"></div><div class="brand-ring r2"></div></div>
+        <div><div class="brand-title">JARVIS <span>GM</span></div><div class="brand-sub">INFINITY 7 · OWNER CONTROLLED</div></div>
+      </div>
+      <nav id="nav" class="nav">
+        <button class="nav-item active" data-view="dashboard"><span>◈</span> Centro</button>
+        <button class="nav-item" data-view="command"><span>⌁</span> Comandos</button>
+        <button class="nav-item" data-view="modules"><span>⬡</span> Núcleos</button>
+        <button class="nav-item" data-view="permissions"><span>◇</span> Autoridad</button>
+        <button class="nav-item" data-view="actions"><span>⌘</span> Acciones</button>
+        <button class="nav-item" data-view="devices"><span>◫</span> Móvil & Reality</button>
+        <button class="nav-item" data-view="autonomy"><span>∞</span> Autonomía</button>
+        <button class="nav-item" data-view="diagnostics"><span>≋</span> Diagnóstico</button>
+        <button class="nav-item" data-view="owner"><span>♜</span> Propietario</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="owner-lock"><span class="dot cyan"></span><div><b>Control del propietario</b><small>Sin dependencia de ChatGPT</small></div></div>
+        <button id="restartCore" class="subtle-button">Reiniciar núcleo interno</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">JARVIS GENERAL MASTER INTELLIGENCE</div>
+          <h1 id="viewTitle">Centro de mando</h1>
+        </div>
+        <div class="top-actions">
+          <div id="coreBadge" class="status-badge pending"><span class="pulse-dot"></span><span>Núcleo iniciando</span></div>
+          <button id="rearmBtn" class="button ghost">REARMAR</button>
+          <button id="stopBtn" class="button danger">STOP GLOBAL</button>
+        </div>
+      </header>
+
+      <section id="banner" class="banner hidden"></section>
+
+      <section id="view-dashboard" class="view active">
+        <div class="hero-grid">
+          <article class="panel hero-panel">
+            <div class="panel-label">ESTADO VIVO</div>
+            <div class="orb-wrap"><div class="orb"><div class="orb-inner"></div></div></div>
+            <div class="hero-copy">
+              <h2 id="heroState">Inicializando JARVIS…</h2>
+              <p id="heroDetail">Cargando Guardian, World Model, memoria, agentes, dispositivos y motores de autonomía.</p>
+              <div class="hero-actions">
+                <button id="startPerception" class="button primary">Activar voz + gestos</button>
+                <button id="startSentinel" class="button secondary">Activar Sentinel</button>
+                <button id="refreshSnapshot" class="button ghost">Actualizar estado</button>
+              </div>
+            </div>
+          </article>
+          <article class="panel stats-panel">
+            <div class="panel-label">TELEMETRÍA REAL</div>
+            <div class="stat-grid">
+              <div class="stat"><span id="statModules">—</span><small>Núcleos cargados</small></div>
+              <div class="stat"><span id="statActions">—</span><small>Acciones reales</small></div>
+              <div class="stat"><span id="statPermissions">—</span><small>Permisos activos</small></div>
+              <div class="stat"><span id="statProvider">—</span><small>IA cloud</small></div>
+            </div>
+            <div class="live-lines">
+              <div><span>Guardian</span><b id="guardianLive">—</b></div>
+              <div><span>Kill switch</span><b id="killLive">—</b></div>
+              <div><span>Safe Mode</span><b id="safeLive">—</b></div>
+              <div><span>Versión</span><b id="versionLive">—</b></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid-3">
+          <article class="panel compact">
+            <div class="panel-head"><div><div class="panel-label">WORLD MODEL</div><h3>Situación actual</h3></div><button class="mini" data-op="world_stats">Consultar</button></div>
+            <pre id="worldPreview" class="mini-output">Pulsa Consultar para leer el estado persistente.</pre>
+          </article>
+          <article class="panel compact">
+            <div class="panel-head"><div><div class="panel-label">AUTONOMOUS WORKBENCH</div><h3>Trabajo persistente</h3></div><button class="mini" data-op="workbench_stats">Consultar</button></div>
+            <pre id="workbenchPreview" class="mini-output">Pulsa Consultar para leer el scheduler.</pre>
+          </article>
+          <article class="panel compact">
+            <div class="panel-head"><div><div class="panel-label">REALITY BRIDGE</div><h3>Mundo físico</h3></div><button class="mini" data-op="reality_status">Consultar</button></div>
+            <pre id="realityPreview" class="mini-output">Pulsa Consultar para leer dispositivos enrolados.</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-command" class="view">
+        <div class="command-layout">
+          <article class="panel command-panel">
+            <div class="panel-head"><div><div class="panel-label">NATURAL LANGUAGE</div><h2>Habla con JARVIS</h2></div><span class="chip">Guardian protegido</span></div>
+            <div id="conversation" class="conversation">
+              <div class="message system"><b>JARVIS</b><p>Escribe una misión. Si requiere autoridad o una integración no configurada, te lo diré en lugar de fingir.</p></div>
+            </div>
+            <div class="composer">
+              <textarea id="commandInput" rows="3" placeholder="Ej.: Jarvis, revisa el estado del proyecto, abre la aplicación autorizada y dime qué sigue."></textarea>
+              <button id="sendCommand" class="button primary large">EJECUTAR MISIÓN</button>
+            </div>
+          </article>
+          <aside class="panel command-side">
+            <div class="panel-label">CONTROLES SENSORIALES</div>
+            <button id="voiceGestureOn" class="feature-button"><span>◎</span><div><b>Voz + Gestos</b><small>Perception Bridge</small></div></button>
+            <button id="sentinelOn" class="feature-button"><span>◉</span><div><b>Sentinel continuo</b><small>Percepción persistente</small></div></button>
+            <button id="perceptionOff" class="feature-button"><span>◌</span><div><b>Detener percepción</b><small>Libera sensores y entradas</small></div></button>
+            <div class="divider"></div>
+            <div class="panel-label">PROVEEDOR IA</div>
+            <div id="providerMini" class="info-box">Cargando…</div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="view-modules" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><div class="panel-label">INVENTARIO INFINITY</div><h2>Todos los núcleos de JARVIS</h2></div><button id="refreshModules" class="button ghost">Verificar</button></div>
+          <p class="lead">Esta pantalla no es decorativa: cada módulo figura como listo solo si existe en el runtime Infinity 7 cargado.</p>
+          <div id="moduleGrid" class="module-grid"></div>
+        </article>
+      </section>
+
+      <section id="view-permissions" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><div class="panel-label">OWNER AUTHORITY</div><h2>Permisos y fronteras</h2></div><button id="refreshPermissions" class="button ghost">Recargar</button></div>
+          <div class="warning-strip">Las capacidades sensibles permanecen apagadas hasta que tú las habilites. Guardian sigue siendo una capa separada.</div>
+          <div id="permissionGrid" class="permission-grid"></div>
+        </article>
+      </section>
+
+      <section id="view-actions" class="view">
+        <div class="action-layout">
+          <article class="panel">
+            <div class="panel-label">ACTION REGISTRY</div><h2>Consola de acciones reales</h2>
+            <p class="lead">Este registro viene directamente del Executor de Infinity 7. Permite comprobar que ninguna acción del núcleo quedó fuera de Electron.</p>
+            <input id="actionSearch" class="text-input" placeholder="Buscar acción, capacidad o módulo…" />
+            <div id="actionList" class="action-list"></div>
+          </article>
+          <article class="panel action-console">
+            <div class="panel-label">EJECUCIÓN DIRECTA</div><h3 id="selectedAction">Selecciona una acción</h3>
+            <div id="selectedCapability" class="chip muted">—</div>
+            <label>Argumentos JSON</label>
+            <textarea id="actionArgs" class="code-input" rows="12">{}</textarea>
+            <button id="runAction" class="button primary wide" disabled>EJECUTAR POR GUARDIAN</button>
+            <pre id="actionOutput" class="output">Sin ejecución.</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-devices" class="view">
+        <div class="grid-2">
+          <article class="panel">
+            <div class="panel-head"><div><div class="panel-label">MOBILE SOVEREIGN</div><h2>Teléfono</h2></div><button id="mobileRefresh" class="button ghost">Estado</button></div>
+            <pre id="mobileOutput" class="output">Consulta el estado del subsistema móvil.</pre>
+            <div id="mobileActions" class="quick-action-grid"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><div class="panel-label">REALITY BRIDGE</div><h2>Dispositivos físicos</h2></div><button id="realityRefresh" class="button ghost">Estado</button></div>
+            <pre id="realityOutput" class="output">Consulta dispositivos enrolados y estado del bridge.</pre>
+            <div id="realityActions" class="quick-action-grid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-autonomy" class="view">
+        <div class="grid-2">
+          <article class="panel"><div class="panel-head"><div><div class="panel-label">AUTONOMOUS WORKBENCH</div><h2>Misiones persistentes</h2></div><button class="button ghost" data-autonomy-stat="workbench_stats">Actualizar</button></div><pre id="autonomyWorkbench" class="output">—</pre><div id="workbenchActions" class="quick-action-grid"></div></article>
+          <article class="panel"><div class="panel-head"><div><div class="panel-label">COGNITIVE SWARM</div><h2>Equipo dinámico</h2></div><button class="button ghost" data-autonomy-stat="swarm_stats">Actualizar</button></div><pre id="autonomySwarm" class="output">—</pre><div id="swarmActions" class="quick-action-grid"></div></article>
+          <article class="panel"><div class="panel-head"><div><div class="panel-label">SELF-EVOLUTION</div><h2>Skills y benchmarks</h2></div><button class="button ghost" data-autonomy-stat="evolution_stats">Actualizar</button></div><pre id="autonomyEvolution" class="output">—</pre><div id="evolutionActions" class="quick-action-grid"></div></article>
+          <article class="panel"><div class="panel-label">RESEARCH + SKILL FORGE</div><h2>Investigación y aprendizaje</h2><div id="researchSkillActions" class="quick-action-grid"></div></article>
+        </div>
+      </section>
+
+      <section id="view-diagnostics" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><div class="panel-label">HEALTH + RELEASE GATE</div><h2>Diagnóstico integral</h2></div><div class="button-row"><button id="runSelfTest" class="button secondary">SELF-TEST</button><button id="runDiagnostics" class="button primary">DIAGNÓSTICO</button></div></div>
+          <div class="diag-summary" id="diagSummary"></div>
+          <pre id="diagnosticsOutput" class="output tall">Todavía no ejecutado.</pre>
+        </article>
+      </section>
+
+      <section id="view-owner" class="view">
+        <div class="grid-2">
+          <article class="panel">
+            <div class="panel-label">IA CLOUD — TU CLAVE</div><h2>Gemini</h2>
+            <p class="lead">La clave se guarda en el almacén seguro de Windows; no se escribe en el proyecto ni en backups.</p>
+            <label>API key</label><input id="geminiKey" type="password" class="text-input" placeholder="Pega la clave solo cuando quieras activarla" />
+            <label>Modelo</label><input id="geminiModel" class="text-input" value="gemini-3.8-flash" />
+            <div class="button-row"><button id="saveProvider" class="button primary">Guardar seguro</button><button id="clearProvider" class="button ghost">Quitar clave</button></div>
+            <pre id="providerOutput" class="mini-output">—</pre>
+          </article>
+          <article class="panel">
+            <div class="panel-label">BACKUP / RECOVERY</div><h2>Tu proyecto, tus datos</h2>
+            <p class="lead">Crea o valida backups sin depender de ChatGPT.</p>
+            <div class="button-row"><button id="createBackup" class="button secondary">Crear backup</button><button id="validateBackup" class="button ghost">Validar backup</button><button id="stageRestore" class="button ghost">Preparar restore</button></div>
+            <pre id="backupOutput" class="mini-output">—</pre>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><div class="panel-label">ACEPTACIÓN FÍSICA</div><h2>Pruebas del propietario</h2></div><button id="refreshAcceptance" class="button ghost">Recargar</button></div>
+            <div id="acceptanceGrid" class="acceptance-grid"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-label">RELEASE GATE</div><h2>Estado de producto</h2>
+            <button id="releaseGate" class="button primary">Evaluar release</button>
+            <pre id="releaseOutput" class="output">—</pre>
+            <button id="openUserData" class="subtle-button wide">Abrir carpeta de datos de la app Electron</button>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
