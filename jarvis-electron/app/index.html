@@ -8,111 +8,167 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="orb"></div><div><strong>JARVIS GM</strong><span>Infinity 7 • Owner Runtime</span></div></div>
-    <nav id="nav">
-      <button class="nav active" data-panel="command">Comando</button>
-      <button class="nav" data-panel="perception">Voz & Gestos</button>
-      <button class="nav" data-panel="memory">Memoria</button>
-      <button class="nav" data-panel="research">Research Corps</button>
-      <button class="nav" data-panel="workbench">Autonomous Workbench</button>
-      <button class="nav" data-panel="swarm">Cognitive Swarm</button>
-      <button class="nav" data-panel="skills">Skills & Evolution</button>
-      <button class="nav" data-panel="world">World Model</button>
-      <button class="nav" data-panel="mobile">Móvil</button>
-      <button class="nav" data-panel="reality">Reality Bridge</button>
-      <button class="nav" data-panel="security">Guardian & Permisos</button>
-      <button class="nav" data-panel="settings">IA & Diagnóstico</button>
-    </nav>
-    <div class="sidefoot"><span id="backendDot" class="dot"></span><span id="backendText">Núcleo iniciando…</span></div>
-  </aside>
+<div class="fx-grid"></div>
+<div class="fx-vignette"></div>
+<div class="fx-scan"></div>
+
+<aside class="sidebar">
+  <div class="drawer-head">
+    <div class="brand"><div class="orb mini"></div><div><strong>JARVIS GM</strong><span>INFINITY 7 • OWNER RUNTIME</span></div></div>
+    <button id="systemsClose" class="iconbtn">×</button>
+  </div>
+  <div class="drawer-label">SYSTEMS</div>
+  <nav id="nav">
+    <button class="nav active" data-panel="command">Core / Home</button>
+    <button class="nav" data-panel="perception">Perception</button>
+    <button class="nav" data-panel="memory">Memory</button>
+    <button class="nav" data-panel="research">Research Corps</button>
+    <button class="nav" data-panel="workbench">Autonomous Workbench</button>
+    <button class="nav" data-panel="swarm">Cognitive Swarm</button>
+    <button class="nav" data-panel="skills">Skills & Evolution</button>
+    <button class="nav" data-panel="world">World Model</button>
+    <button class="nav" data-panel="mobile">Mobile Bridge</button>
+    <button class="nav" data-panel="reality">Reality Bridge</button>
+    <button class="nav" data-panel="security">Guardian</button>
+    <button class="nav" data-panel="settings">Diagnostics</button>
+  </nav>
+  <div class="sidefoot"><span id="backendDot" class="dot"></span><span id="backendText">Núcleo iniciando…</span></div>
+</aside>
+
+<div class="app-shell">
+  <header class="hud-top">
+    <div class="hud-brand">
+      <div class="hud-mark"></div>
+      <div><strong>JARVIS</strong><span>GM // INFINITY 7</span></div>
+    </div>
+    <div class="hud-center">
+      <span class="tiny-label">OWNER RUNTIME</span>
+      <span id="voiceBadge" class="badge">VOZ INICIANDO</span>
+    </div>
+    <div class="header-actions">
+      <button id="systemsToggle" class="ghost system-btn">SYSTEMS</button>
+      <button id="resetStop" class="ghost">REARM</button>
+      <button id="stopBtn" class="stop">STOP</button>
+    </div>
+  </header>
+
   <main>
-    <header>
+    <div class="panel-heading">
       <div><h1 id="panelTitle">JARVIS</h1><p id="panelSubtitle">Orden directa al núcleo real</p></div>
-      <div class="header-actions">
-        <span id="voiceBadge" class="badge">VOZ INICIANDO</span>
-        <button id="resetStop" class="ghost">Rearmar</button>
-        <button id="stopBtn" class="stop">STOP</button>
-      </div>
-    </header>
+    </div>
 
     <section id="statusStrip" class="status-strip"></section>
 
     <section class="panel active" id="panel-command">
-      <div class="command-stage">
-        <div class="jarvis-presence">
-          <div id="presenceOrb" class="presence-orb"></div>
-          <div><div class="hero-kicker">JARVIS • VOICE FIRST</div><h2 id="wakeHint">Di “JARVIS”</h2><p>No tienes que escribir. Dime “JARVIS”, espera mi respuesta y dame la orden. El teclado queda como respaldo.</p></div>
+      <div class="hud-stage">
+        <div class="hud-left">
+          <div class="telemetry"><span>CORE</span><b>INFINITY 7</b><i>ACTIVE</i></div>
+          <div class="telemetry"><span>AUTHORITY</span><b>GUARDIAN</b><i>OWNER</i></div>
+          <div class="telemetry"><span>PERCEPTION</span><b>VOICE</b><i>AUTO</i></div>
         </div>
+
+        <div class="core-zone">
+          <div class="arc arc-a"></div>
+          <div class="arc arc-b"></div>
+          <div class="arc arc-c"></div>
+          <div id="presenceOrb" class="presence-orb">
+            <div class="orb-core"></div>
+            <div class="orb-label">JARVIS</div>
+          </div>
+          <div class="core-readout">
+            <div class="hero-kicker">VOICE-FIRST PERSONAL AI OS</div>
+            <h2 id="wakeHint">DI “JARVIS”</h2>
+            <p>Listening • Reasoning • Acting • Verifying</p>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="telemetry right"><span>WORLD MODEL</span><b>SYNC</b><i>LIVE</i></div>
+          <div class="telemetry right"><span>WORKBENCH</span><b>AUTONOMY</b><i>READY</i></div>
+          <div class="telemetry right"><span>REALITY</span><b>BRIDGE</b><i>STANDBY</i></div>
+        </div>
+
         <div id="jarvisFeed" class="jarvis-feed" aria-live="polite"></div>
+
         <div id="permissionBar" class="permission-bar hidden">
-          <div><strong id="permissionTitle">Necesito tu autorización</strong><span id="permissionText"></span></div>
-          <div class="row"><button id="allowOnce" class="primary">Permitir una vez</button><button id="allowAlways" class="ghost">Permitir siempre</button><button id="denyPermission" class="ghost">Cancelar</button></div>
+          <div><strong id="permissionTitle">JARVIS necesita tu autorización</strong><span id="permissionText"></span></div>
+          <div class="row"><button id="allowOnce" class="primary">ALLOW ONCE</button><button id="allowAlways" class="ghost">ALWAYS</button><button id="denyPermission" class="ghost">DENY</button></div>
         </div>
+
         <details class="text-fallback">
-          <summary>Escribir en vez de hablar</summary>
+          <summary>KEYBOARD FALLBACK</summary>
           <div class="composer">
-            <textarea id="goalInput" placeholder="Ej.: Abre YouTube / Escribe esto en el Bloc de notas / Revisa la pantalla y dime qué ves."></textarea>
-            <div class="row"><button id="runGoal" class="primary">Enviar a JARVIS</button><button id="screenNow" class="ghost">Ver pantalla</button><button id="refreshStatus" class="ghost">Estado</button></div>
+            <textarea id="goalInput" placeholder="Escribe solo si no quieres usar voz."></textarea>
+            <div class="row"><button id="runGoal" class="primary">EXECUTE</button><button id="screenNow" class="ghost">SCREEN</button><button id="refreshStatus" class="ghost">SYNC</button></div>
           </div>
         </details>
       </div>
       <div class="sr-only"><pre id="goalOutput">Esperando orden.</pre></div>
     </section>
 
-    <section class="panel" id="panel-perception">
+    <section class="panel subsystem" id="panel-perception">
+      <div class="subsystem-head"><div><span>PERCEPTION LAYER</span><h2>Voz, visión y gestos</h2></div><button class="nav ghost" data-panel="command">RETURN CORE</button></div>
       <div class="grid two">
-        <div class="card"><h3>Voz</h3><p>La escucha se inicia automáticamente con JARVIS. Estos controles son solo para reiniciar o detener manualmente el micrófono.</p><div class="row"><button data-op="voice_start" class="primary">Reiniciar escucha</button><button data-op="voice_stop" class="ghost">Detener voz</button></div><input id="speakText" placeholder="Texto para probar la voz de JARVIS"/><button id="speakBtn" class="ghost full">Probar voz</button></div>
-        <div class="card"><h3>Cámara & Gestos</h3><p>MediaPipe + Intent Core. La capa de intención sigue protegida por permisos y Guardian.</p><div class="row"><button data-op="vision_start" class="primary">Activar cámara/gestos</button><button data-op="vision_stop" class="ghost">Detener</button></div></div>
-        <div class="card"><h3>Sentinel</h3><p>Observación contextual continua de pantalla, sin enviar a cloud salvo permiso explícito.</p><div class="row"><button data-op="sentinel_start" class="primary">Activar Sentinel</button><button data-op="sentinel_stop" class="ghost">Detener</button></div></div>
-        <div class="card"><h3>Estado de percepción</h3><pre id="perceptionOutput">—</pre></div>
+        <div class="card"><h3>Voice Runtime</h3><p>Escucha privada integrada en JARVIS. Sin barra de reconocimiento de voz de Windows.</p><div class="row"><button data-op="voice_start" class="primary">Reiniciar escucha</button><button data-op="voice_stop" class="ghost">Detener voz</button></div><input id="speakText" placeholder="Texto para prueba TTS"/><button id="speakBtn" class="ghost full">Probar voz</button></div>
+        <div class="card"><h3>Camera / Gesture Layer</h3><p>MediaPipe + Intent Core con Guardian.</p><div class="row"><button data-op="vision_start" class="primary">Activar cámara/gestos</button><button data-op="vision_stop" class="ghost">Detener</button></div></div>
+        <div class="card"><h3>Sentinel</h3><p>Observación contextual continua de pantalla.</p><div class="row"><button data-op="sentinel_start" class="primary">Activar Sentinel</button><button data-op="sentinel_stop" class="ghost">Detener</button></div></div>
+        <div class="card"><h3>Perception State</h3><pre id="perceptionOutput">—</pre></div>
       </div>
     </section>
 
-    <section class="panel" id="panel-memory">
+    <section class="panel subsystem" id="panel-memory">
+      <div class="subsystem-head"><div><span>CONTINUITY</span><h2>Memory</h2></div></div>
       <div class="grid two">
-        <div class="card"><h3>Recordar</h3><input id="memoryTitle" placeholder="Título opcional"><textarea id="memoryContent" placeholder="Qué debe recordar JARVIS"></textarea><button id="memoryRemember" class="primary full">Guardar en memoria</button></div>
-        <div class="card"><h3>Buscar / Reanudar</h3><input id="memoryQuery" placeholder="Buscar contexto, decisiones, tareas…"><div class="row"><button id="memorySearch" class="ghost">Buscar</button><button id="memoryResume" class="primary">Reanudar contexto</button></div></div>
+        <div class="card"><h3>Remember</h3><input id="memoryTitle" placeholder="Título opcional"><textarea id="memoryContent" placeholder="Qué debe recordar JARVIS"></textarea><button id="memoryRemember" class="primary full">Guardar</button></div>
+        <div class="card"><h3>Recall / Resume</h3><input id="memoryQuery" placeholder="Buscar contexto, decisiones, tareas…"><div class="row"><button id="memorySearch" class="ghost">Buscar</button><button id="memoryResume" class="primary">Reanudar</button></div></div>
       </div><div class="console-card"><pre id="memoryOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-research">
-      <div class="card"><h3>Research Corps</h3><p>Investigación multiagente real. Requiere permisos de research y proveedor configurado.</p><textarea id="researchQuestion" placeholder="Problema o pregunta a investigar"></textarea><div class="row"><select id="researchDepth"><option value="standard">Standard</option><option value="deep">Deep</option></select><button id="researchRun" class="primary">Investigar</button><button id="researchList" class="ghost">Historial</button></div></div><div class="console-card"><pre id="researchOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-research">
+      <div class="subsystem-head"><div><span>MULTI-AGENT INTELLIGENCE</span><h2>Research Corps</h2></div></div>
+      <div class="card"><textarea id="researchQuestion" placeholder="Problema o pregunta a investigar"></textarea><div class="row"><select id="researchDepth"><option value="standard">Standard</option><option value="deep">Deep</option></select><button id="researchRun" class="primary">Investigar</button><button id="researchList" class="ghost">Historial</button></div></div><div class="console-card"><pre id="researchOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-workbench">
-      <div class="card"><h3>Autonomous Workbench</h3><p>Trabajos persistentes, dependencias, presupuestos, checkpoints y recuperación.</p><textarea id="workGoal" placeholder="Objetivo de trabajo autónomo"></textarea><div class="row"><button id="workCreate" class="primary">Crear trabajo</button><button id="workCycle" class="ghost">Ejecutar ciclo</button><button id="workList" class="ghost">Listar trabajos</button></div></div><div class="console-card"><pre id="workOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-workbench">
+      <div class="subsystem-head"><div><span>AUTONOMOUS EXECUTION</span><h2>Workbench</h2></div></div>
+      <div class="card"><textarea id="workGoal" placeholder="Objetivo de trabajo autónomo"></textarea><div class="row"><button id="workCreate" class="primary">Crear trabajo</button><button id="workCycle" class="ghost">Ejecutar ciclo</button><button id="workList" class="ghost">Listar trabajos</button></div></div><div class="console-card"><pre id="workOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-swarm">
-      <div class="card"><h3>Cognitive Swarm</h3><p>Crea especialistas temporales, crítico/verificador y sintetizador final.</p><textarea id="swarmGoal" placeholder="Problema para el enjambre"></textarea><div class="row"><button id="swarmRun" class="primary">Formar equipo y ejecutar</button><button id="swarmList" class="ghost">Historial</button></div></div><div class="console-card"><pre id="swarmOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-swarm">
+      <div class="subsystem-head"><div><span>DYNAMIC SPECIALISTS</span><h2>Cognitive Swarm</h2></div></div>
+      <div class="card"><textarea id="swarmGoal" placeholder="Problema para el enjambre"></textarea><div class="row"><button id="swarmRun" class="primary">Ejecutar</button><button id="swarmList" class="ghost">Historial</button></div></div><div class="console-card"><pre id="swarmOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-skills">
-      <div class="grid two"><div class="card"><h3>Skill Forge</h3><p>Habilidades instaladas en el núcleo.</p><button id="skillsList" class="primary full">Listar skills</button></div><div class="card"><h3>Self-Evolution</h3><p>Escaneo y benchmark. Nunca autopromueve sin tu permiso.</p><button id="evolutionScan" class="primary full">Escanear mejoras</button><button id="evolutionList" class="ghost full">Candidatas</button></div></div><div class="console-card"><pre id="skillsOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-skills">
+      <div class="subsystem-head"><div><span>CAPABILITY ENGINE</span><h2>Skills & Evolution</h2></div></div>
+      <div class="grid two"><div class="card"><h3>Skill Forge</h3><button id="skillsList" class="primary full">Listar skills</button></div><div class="card"><h3>Self-Evolution</h3><button id="evolutionScan" class="primary full">Escanear mejoras</button><button id="evolutionList" class="ghost full">Candidatas</button></div></div><div class="console-card"><pre id="skillsOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-world">
-      <div class="card"><h3>World Model</h3><p>Estado vivo de proyectos, dispositivos, observaciones y relaciones.</p><button id="worldRefresh" class="primary">Sincronizar y mostrar</button></div><div class="console-card"><pre id="worldOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-world">
+      <div class="subsystem-head"><div><span>ENVIRONMENT MODEL</span><h2>World Model</h2></div></div>
+      <div class="card"><button id="worldRefresh" class="primary">Sincronizar y mostrar</button></div><div class="console-card"><pre id="worldOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-mobile">
-      <div class="card"><h3>Mobile Bridge</h3><p>Dispositivos autorizados, relay, ubicación, seguridad y mensajería según permisos.</p><button id="mobileRefresh" class="primary">Estado móvil</button></div><div class="console-card"><pre id="mobileOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-mobile">
+      <div class="subsystem-head"><div><span>CROSS-DEVICE</span><h2>Mobile Bridge</h2></div></div>
+      <div class="card"><button id="mobileRefresh" class="primary">Estado móvil</button></div><div class="console-card"><pre id="mobileOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-reality">
-      <div class="card"><h3>Reality Bridge</h3><p>Dispositivos físicos enrolados explícitamente. Nada se controla por sorpresa.</p><div class="row"><button id="realityStatus" class="primary">Estado</button><button id="realityList" class="ghost">Dispositivos</button></div></div><div class="console-card"><pre id="realityOutput">—</pre></div>
+    <section class="panel subsystem" id="panel-reality">
+      <div class="subsystem-head"><div><span>PHYSICAL WORLD</span><h2>Reality Bridge</h2></div></div>
+      <div class="card"><div class="row"><button id="realityStatus" class="primary">Estado</button><button id="realityList" class="ghost">Dispositivos</button></div></div><div class="console-card"><pre id="realityOutput">—</pre></div>
     </section>
 
-    <section class="panel" id="panel-security">
-      <div class="card"><h3>Guardian & permisos del propietario</h3><p>Tú decides qué puede hacer JARVIS. Los permisos peligrosos siguen OFF hasta que los habilites.</p><div id="permissionsGrid" class="permissions-grid"></div></div>
+    <section class="panel subsystem" id="panel-security">
+      <div class="subsystem-head"><div><span>OWNER AUTHORITY</span><h2>Guardian</h2></div></div>
+      <div class="card"><div id="permissionsGrid" class="permissions-grid"></div></div>
     </section>
 
-    <section class="panel" id="panel-settings">
+    <section class="panel subsystem" id="panel-settings">
+      <div class="subsystem-head"><div><span>SYSTEM HEALTH</span><h2>Diagnostics</h2></div></div>
       <div class="grid two">
-        <div class="card"><h3>Proveedor IA</h3><label>Modelo Gemini</label><input id="modelInput" value="gemini-2.5-flash"><label>API key</label><input id="apiKeyInput" type="password" placeholder="Se guarda en el almacén seguro de Windows"><button id="saveProvider" class="primary full">Guardar proveedor</button></div>
-        <div class="card"><h3>Diagnóstico real</h3><div class="stack"><button id="selfTest" class="primary">Self-test completo</button><button id="diagnostics" class="ghost">Diagnóstico</button><button id="releaseGate" class="ghost">Release Gate</button><button id="openLog" class="ghost">Log Electron/backend</button></div></div>
+        <div class="card"><h3>Proveedor IA opcional</h3><label>Modelo</label><input id="modelInput" value="gemini-2.5-flash"><label>API key</label><input id="apiKeyInput" type="password" placeholder="Almacén seguro de Windows"><button id="saveProvider" class="primary full">Guardar proveedor</button></div>
+        <div class="card"><h3>Core Diagnostics</h3><div class="stack"><button id="selfTest" class="primary">Self-test</button><button id="diagnostics" class="ghost">Diagnóstico</button><button id="releaseGate" class="ghost">Release Gate</button><button id="openLog" class="ghost">Backend log</button></div></div>
       </div><div class="console-card"><pre id="settingsOutput">—</pre></div>
     </section>
   </main>

@@ -49,7 +49,7 @@ function renderStatus(s){
     ['Workbench', `${s.workbench?.total ?? 0} jobs`],
     ['World', `${s.world?.entities ?? 0} entities`]
   ];
-  $('statusStrip').innerHTML = items.map(([a,b])=>`<div class="status-chip"><b>${a}</b><span>${String(b)}</span></div>`).join('');
+  $('statusStrip').innerHTML = items.map(([a,b],i)=>`<div class="status-chip s${i}"><b>${a}</b><span>${String(b)}</span></div>`).join('');
   const voiceRunning = !!p.voice?.running;
   $('voiceBadge').textContent = voiceRunning ? 'ESCUCHANDO' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOZ NO DISPONIBLE' : 'VOZ INICIANDO');
   $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
@@ -84,6 +84,13 @@ function renderPermissions(perms){
   });
 }
 
+
+const systemsToggle = $('systemsToggle');
+const systemsClose = $('systemsClose');
+const sidebar = document.querySelector('.sidebar');
+if(systemsToggle) systemsToggle.addEventListener('click',()=>sidebar.classList.toggle('open'));
+if(systemsClose) systemsClose.addEventListener('click',()=>sidebar.classList.remove('open'));
+
 for(const btn of document.querySelectorAll('.nav')){
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
@@ -92,6 +99,7 @@ for(const btn of document.querySelectorAll('.nav')){
     const key=btn.dataset.panel;
     $(`panel-${key}`).classList.add('active');
     $('panelTitle').textContent=panelMeta[key][0];$('panelSubtitle').textContent=panelMeta[key][1];
+    sidebar.classList.remove('open');
   });
 }
 
@@ -111,6 +119,7 @@ function addChat(role, text, extra=''){
   node.className=`chat-msg ${role}`;
   node.innerHTML=`<div class="chat-role">${role==='user'?'TÚ':'JARVIS'}</div><div class="chat-text">${esc(text)}</div>${extra}`;
   feed.appendChild(node);
+  while(feed.children.length>6) feed.removeChild(feed.firstElementChild);
   feed.scrollTop=feed.scrollHeight;
   return node;
 }
