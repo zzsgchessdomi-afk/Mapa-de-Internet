@@ -1,0 +1,147 @@
+name: JARVIS Electron Windows Gate
+
+on:
+  push:
+    branches:
+      - jarvis-electron-ci
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  electron-windows-gate:
+    runs-on: windows-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout JARVIS Electron branch
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate embedded Infinity 7 payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = '.\jarvis-ci\payload.zip'
+          if (!(Test-Path $zip)) { throw 'jarvis-ci/payload.zip missing' }
+          if ((Get-Item $zip).Length -lt 100000) { throw 'Infinity 7 payload is too small' }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip))
+          try {
+            if ($z.Entries.Count -lt 100) { throw "Infinity 7 payload entry count too small: $($z.Entries.Count)" }
+            if (-not ($z.Entries.FullName -contains 'app/pyproject.toml')) { throw 'pyproject missing from Infinity 7 payload' }
+            if (-not ($z.Entries.FullName -contains 'app/src/jarvis_gm/runtime.py')) { throw 'Infinity 7 runtime missing' }
+          } finally { $z.Dispose() }
+
+      - name: Extract and install complete JARVIS core
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path jarvis-payload | Out-Null
+          Expand-Archive -LiteralPath .\jarvis-ci\payload.zip -DestinationPath .\jarvis-payload -Force
+          python -m pip install --upgrade pip wheel setuptools
+          python -m pip install '.\jarvis-payload\app[windows]' 'pyinstaller>=6.22,<7'
+          python -c "import jarvis_gm; assert jarvis_gm.__version__ == '1.7.0rc1'; print('jarvis-core-version-ok')"
+          python -m jarvis_gm.self_test
+
+      - name: Compile hidden JARVIS core executable
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Remove-Item .\electron\backend-build -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item .\electron\backend-work -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item .\electron\backend-spec -Recurse -Force -ErrorAction SilentlyContinue
+          python -m PyInstaller .\electron\backend\electron_bridge.py \
+            --noconfirm --clean --onedir --console \
+            --name jarvis_core \
+            --distpath .\electron\backend-build \
+            --workpath .\electron\backend-work \
+            --specpath .\electron\backend-spec \
+            --collect-all mediapipe \
+            --collect-all cv2 \
+            --collect-all PIL \
+            --collect-submodules win32com \
+            --hidden-import pythoncom \
+            --hidden-import pywintypes \
+            --hidden-import keyring.backends.Windows
+          $built = '.\electron\backend-build\jarvis_core'
+          if (!(Test-Path "$built\jarvis_core.exe")) { throw 'jarvis_core.exe not produced' }
+          Remove-Item .\electron\backend-dist -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path .\electron\backend-dist | Out-Null
+          Copy-Item "$built\*" .\electron\backend-dist -Recurse -Force
+
+      - name: Smoke-test packaged JARVIS core
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $p = Start-Process -FilePath .\electron\backend-dist\jarvis_core.exe -ArgumentList '--smoke' -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "jarvis_core smoke failed with exit code $($p.ExitCode)" }
+
+      - name: Install Electron build dependencies
+        shell: pwsh
+        working-directory: electron
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm install --no-audit --no-fund
+          npx electron --version
+          npx electron-builder --version
+
+      - name: Build single-file Electron portable EXE
+        shell: pwsh
+        working-directory: electron
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm run dist
+          $exe = Get-ChildItem .\dist\JARVIS_GM_Electron_*_x64.exe | Select-Object -First 1
+          if (-not $exe) { throw 'Electron portable EXE was not produced' }
+          if ($exe.Length -lt 80000000) { throw "Electron EXE suspiciously small: $($exe.Length)" }
+          Write-Host "Electron EXE: $($exe.FullName) size=$($exe.Length)"
+
+      - name: Run packaged Electron + Infinity 7 smoke test
+        shell: pwsh
+        working-directory: electron
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = (Get-ChildItem .\dist\JARVIS_GM_Electron_*_x64.exe | Select-Object -First 1).FullName
+          $p = Start-Process -FilePath $exe -ArgumentList '--ci-smoke' -Wait -PassThru
+          if ($p.ExitCode -ne 0) {
+            $logRoot = Join-Path $env:APPDATA 'JARVIS GM'
+            Get-ChildItem $env:APPDATA -Recurse -Filter jarvis-core.log -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "==== $($_.FullName) ===="
+              Get-Content $_.FullName -Tail 250
+            }
+            throw "Electron packaged smoke failed with exit code $($p.ExitCode)"
+          }
+
+      - name: Calculate SHA-256
+        id: hash
+        shell: pwsh
+        working-directory: electron
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Get-ChildItem .\dist\JARVIS_GM_Electron_*_x64.exe | Select-Object -First 1
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($exe.Name)" | Set-Content -Encoding ascii .\dist\JARVIS_GM_Electron_SHA256.txt
+          Write-Host "SHA256=$hash"
+
+      - name: Upload Windows-tested JARVIS Electron
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS_GM_ELECTRON_WINDOWS_TESTED
+          path: |
+            electron/dist/JARVIS_GM_Electron_*_x64.exe
+            electron/dist/JARVIS_GM_Electron_SHA256.txt
+          if-no-files-found: error
+          retention-days: 7
