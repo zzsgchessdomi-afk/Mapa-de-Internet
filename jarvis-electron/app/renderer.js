@@ -122,12 +122,12 @@ function esc(s){
 function setHudMessage(role, text, extra=''){
   const input=$('lastInput'), response=$('lastResponse'), mode=$('hudMode');
   if(role==='user'){
-    input.textContent='INPUT // '+String(text||'—').toUpperCase();
-    mode.textContent='COMMAND RECEIVED';
+    if(input) input.textContent=String(text||'—').toUpperCase();
+    if(mode) mode.textContent='COMMAND RECEIVED';
     document.body.classList.add('thinking');
   }else{
-    response.textContent=String(text||'SYSTEM READY').toUpperCase();
-    mode.textContent='SYSTEM READY';
+    if(response) response.textContent=String(text||'SYSTEM READY').toUpperCase();
+    if(mode) mode.textContent='SYSTEM READY';
     document.body.classList.remove('thinking');
   }
   return null;
