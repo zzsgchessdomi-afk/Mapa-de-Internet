@@ -111,13 +111,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
-          $pyw = Join-Path $root 'runtime\Scripts\pythonw.exe'
-          $p = Start-Process -FilePath $pyw -ArgumentList '-c', 'from jarvis_gm.app import main; main()' -WorkingDirectory $root -PassThru
-          Start-Sleep -Seconds 6
-          $p.Refresh()
-          if ($p.HasExited) { throw "JARVIS GUI exited during startup with code $($p.ExitCode)" }
-          Stop-Process -Id $p.Id -Force
-          Start-Sleep -Seconds 1
+          $py = Join-Path $root 'runtime\Scripts\python.exe'
+          $env:JARVIS_CI_GUI_SMOKE = '1'
+          Push-Location $root
+          & $py -c "from jarvis_gm.app import main; main()"
+          $code = $LASTEXITCODE
+          Pop-Location
+          Remove-Item Env:JARVIS_CI_GUI_SMOKE -ErrorAction SilentlyContinue
+          if ($code -ne 0) { throw "JARVIS GUI smoke failed: $code" }
 
       - name: Second-run regression
         shell: pwsh
