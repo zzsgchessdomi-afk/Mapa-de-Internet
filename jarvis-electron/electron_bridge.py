@@ -3,9 +3,12 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+import queue
 import re
 import sys
 import threading
+import time
+import unicodedata
 import traceback
 from enum import Enum
 from pathlib import Path
@@ -148,16 +151,266 @@ def _goal_response(goal, *, original: str, normalized: str, alias: str | None = 
     }
 
 
+def _normalize_phrase(text: str) -> str:
+    raw = unicodedata.normalize("NFKD", str(text or "").casefold())
+    raw = "".join(ch for ch in raw if not unicodedata.combining(ch))
+    raw = re.sub(r"[^a-z0-9áéíóúüñ ]+", " ", raw)
+    return re.sub(r"\s+", " ", raw).strip()
+
+
+def _confirmation_mode(text: str) -> str | None:
+    low = _normalize_phrase(text)
+    if low in {"no", "cancela", "cancelar", "no lo hagas", "detente", "olvidalo", "olvídalo"}:
+        return "cancel"
+    if low in {"siempre", "permite siempre", "permitir siempre", "autoriza siempre", "autorizalo siempre", "autorízalo siempre"}:
+        return "always"
+    if low in {"si", "sí", "dale", "hazlo", "adelante", "confirma", "confirmo", "autoriza", "autorizar", "permite", "permitir", "permite una vez", "autoriza una vez"}:
+        return "once"
+    return None
+
+
+class AssistantVoiceLoop:
+    """Voice-first owner interaction for Infinity 7.
+
+    The original IntentControlBridge remains responsible for gestures. Voice commands
+    are removed from that bridge and handled here so wake, spoken replies and owner
+    permission confirmation form one closed loop.
+    """
+
+    def __init__(self, runtime) -> None:
+        self.runtime = runtime
+        self._token = None
+        self._queue: queue.Queue[Any | None] = queue.Queue(maxsize=256)
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._pending: dict[str, Any] | None = None
+        self._mute_until = 0.0
+        self.autostart_attempted = False
+        self.last_voice_error: str | None = None
+
+    def prepare(self) -> None:
+        # Do not let the legacy bridge execute voice.command in parallel.
+        try:
+            self.runtime.bridge.EVENT_TYPES = set(self.runtime.bridge.EVENT_TYPES) - {"voice.command"}
+        except Exception:
+            pass
+
+    def start(self) -> None:
+        if self._token is None:
+            self._token = self.runtime.perception.bus.subscribe(self._enqueue)
+        if self._thread is None or not self._thread.is_alive():
+            self._stop.clear()
+            self._thread = threading.Thread(target=self._worker, name="jarvis-assistant-voice", daemon=True)
+            self._thread.start()
+        self.autostart_attempted = True
+        try:
+            self.runtime.perception.start_voice()
+        except Exception as exc:
+            self.last_voice_error = str(exc)
+            _emit({"event": "voice-status", "status": "error", "detail": str(exc)})
+
+    def stop(self) -> None:
+        if self._token is not None:
+            try:
+                self.runtime.perception.bus.unsubscribe(self._token)
+            except Exception:
+                pass
+            self._token = None
+        self._stop.set()
+        try:
+            self._queue.put_nowait(None)
+        except queue.Full:
+            pass
+        if self._thread and self._thread.is_alive() and threading.current_thread() is not self._thread:
+            self._thread.join(timeout=1.5)
+        self._thread = None
+
+    def status(self) -> dict[str, Any]:
+        return {
+            "voice_first": True,
+            "autostart_attempted": self.autostart_attempted,
+            "pending_permission": bool(self._pending),
+            "last_voice_error": self.last_voice_error,
+        }
+
+    def _enqueue(self, event) -> None:
+        if event.type not in {"voice.transcript", "voice.wake", "voice.command", "sensor.voice"}:
+            return
+        try:
+            self._queue.put_nowait(event)
+        except queue.Full:
+            try:
+                self._queue.get_nowait()
+                self._queue.put_nowait(event)
+            except queue.Empty:
+                pass
+
+    def _worker(self) -> None:
+        while not self._stop.is_set():
+            try:
+                event = self._queue.get(timeout=0.25)
+            except queue.Empty:
+                continue
+            if event is None:
+                break
+            try:
+                self._handle_event(event)
+            except Exception as exc:
+                self.last_voice_error = str(exc)
+                _emit({"event": "assistant", "kind": "error", "text": f"Tuve un problema con la voz: {exc}"})
+
+    def _speak(self, text: str, *, kind: str = "assistant") -> None:
+        clean = str(text or "").strip()
+        if not clean:
+            return
+        # Prevent the recognizer from treating JARVIS' own TTS as a new command.
+        self._mute_until = time.time() + max(1.4, min(8.0, len(clean) / 13.0))
+        _emit({"event": "assistant", "kind": kind, "text": clean})
+        try:
+            self.runtime.perception.speak(clean)
+        except Exception as exc:
+            self.last_voice_error = str(exc)
+            _emit({"event": "voice-status", "status": "tts-error", "detail": str(exc)})
+
+    def _handle_event(self, event) -> None:
+        if event.type == "sensor.voice":
+            _emit({
+                "event": "voice-status",
+                "status": str(event.payload.get("status", "")),
+                "detail": str(event.payload.get("detail", "")),
+            })
+            return
+
+        if event.type == "voice.transcript":
+            if time.time() < self._mute_until:
+                return
+            text = str(event.payload.get("text", "")).strip()
+            low = _normalize_phrase(text)
+            if low in {"estas ahi", "jarvis estas ahi", "sigues ahi", "jarvis sigues ahi"}:
+                self._speak("Sí, aquí estoy.")
+            return
+
+        if time.time() < self._mute_until:
+            return
+
+        if event.type == "voice.wake":
+            _emit({"event": "voice-wake"})
+            self._speak("Sí, aquí estoy.", kind="wake")
+            return
+
+        if event.type == "voice.command":
+            text = str(event.payload.get("text", "")).strip()
+            if not text:
+                return
+            _emit({"event": "voice-command", "text": text})
+            self._handle_command(text)
+
+    def _handle_command(self, text: str) -> None:
+        low = _normalize_phrase(text)
+
+        if low in {"estas ahi", "sigues ahi"}:
+            self._speak("Sí, aquí estoy.")
+            return
+
+        if self._pending is not None:
+            mode = _confirmation_mode(text)
+            if mode == "cancel":
+                self._pending = None
+                _emit({"event": "voice-permission-cleared"})
+                self._speak("Entendido. No haré esa acción.")
+                return
+            if mode in {"once", "always"}:
+                self.confirm_pending(mode)
+                return
+
+        normalized, alias = _normalize_owner_goal(text)
+        goal = self.runtime.orchestrator.run(normalized)
+        payload = _goal_response(goal, original=text, normalized=normalized, alias=alias)
+        self._announce_goal(payload)
+
+    def _announce_goal(self, payload: dict[str, Any]) -> None:
+        state = str(payload.get("state", "")).lower()
+        if state == "blocked" and payload.get("capability"):
+            capability = str(payload["capability"])
+            self._pending = {
+                "text": str(payload.get("text", "")),
+                "capability": capability,
+            }
+            label = payload.get("capability_label") or capability
+            prompt = f"Necesito tu autorización para {label}. Di permite una vez, permite siempre o cancela."
+            _emit({
+                "event": "voice-permission",
+                "text": self._pending["text"],
+                "capability": capability,
+                "capability_label": label,
+                "prompt": prompt,
+            })
+            self._speak(prompt, kind="permission")
+            return
+
+        self._pending = None
+        _emit({"event": "voice-permission-cleared"})
+        self._speak(str(payload.get("message") or "Orden procesada."), kind=state or "assistant")
+
+    def confirm_pending(self, mode: str) -> dict[str, Any]:
+        mode = str(mode or "").strip().lower()
+        if mode == "cancel":
+            self._pending = None
+            _emit({"event": "voice-permission-cleared"})
+            self._speak("Entendido. No haré esa acción.")
+            return {"cancelled": True}
+        if mode not in {"once", "always"}:
+            raise ValueError("mode debe ser once, always o cancel")
+        if not self._pending:
+            self._speak("No tengo ninguna autorización pendiente.")
+            return {"pending": False}
+
+        pending = dict(self._pending)
+        capability = str(pending["capability"])
+        text = str(pending["text"])
+        original_allowed = self.runtime.policy.is_allowed(capability)
+        normalized, alias = _normalize_owner_goal(text)
+        try:
+            self.runtime.policy.set(capability, True)
+            # A one-use lease is harmless for medium-risk actions and required for high-risk ones.
+            try:
+                self.runtime.guardian.grant_capability(capability, ttl_s=90.0, uses=1)
+            except Exception:
+                pass
+            goal = self.runtime.orchestrator.run(normalized)
+        finally:
+            if mode == "once":
+                self.runtime.policy.set(capability, original_allowed)
+
+        if mode == "always":
+            self.runtime.policy.set(capability, True)
+
+        payload = _goal_response(goal, original=text, normalized=normalized, alias=alias)
+        payload["permission_mode"] = mode
+        payload["permission_persisted"] = bool(mode == "always")
+        self._announce_goal(payload)
+        return payload
+
+
+
 class Bridge:
     def __init__(self) -> None:
         self.runtime = build_infinity7_runtime()
         self._lock = threading.RLock()
+        self.voice_loop = AssistantVoiceLoop(self.runtime)
+        self.voice_loop.prepare()
         try:
             self.runtime.start_bridge()
         except Exception:
             pass
+        # Voice is the primary interface. Text remains only a fallback.
+        self.voice_loop.start()
 
     def close(self) -> None:
+        try:
+            self.voice_loop.stop()
+        except Exception:
+            pass
         try:
             self.runtime.clean_shutdown()
         except Exception:
@@ -205,6 +458,7 @@ class Bridge:
             "workbench": _jsonable(r.workbench.store.stats()),
             "swarm": _jsonable(r.swarm.store.stats()),
             "evolution": _jsonable(r.evolution.store.stats()),
+            "assistant": self.voice_loop.status(),
         }
 
     def handle(self, req: dict[str, Any]) -> dict[str, Any]:
@@ -265,6 +519,8 @@ class Bridge:
                 r.kill_switch.reset()
                 try: r.ensure_health_monitor()
                 except Exception: pass
+                try: r.perception.start_voice()
+                except Exception: pass
                 return {"ok": True, "result": {"stop_engaged": False}}
             if op == "permissions":
                 return {"ok": True, "result": dict(r.policy.rules)}
@@ -302,6 +558,8 @@ class Bridge:
                 r.perception.start_voice(); return {"ok": True, "result": r.perception.status()}
             if op == "voice_stop":
                 r.perception.stop_voice(); return {"ok": True, "result": r.perception.status()}
+            if op == "voice_permission":
+                return {"ok": True, "result": self.voice_loop.confirm_pending(str(args.get("mode", "once")))}
             if op == "vision_start":
                 r.perception.start_vision(); return {"ok": True, "result": r.perception.status()}
             if op == "vision_stop":

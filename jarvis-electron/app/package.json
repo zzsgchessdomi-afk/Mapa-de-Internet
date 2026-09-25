@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - Electron shell with full local core",
+  "description": "JARVIS GM Infinity 7 - voice-first Electron shell with full local core",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_Setup_${version}.${ext}",
+    "artifactName": "JARVIS_GM_VOICE_FIRST_Setup_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",
@@ -31,11 +31,15 @@
       {
         "from": "backend-dist",
         "to": "backend",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {

@@ -50,11 +50,14 @@ function renderStatus(s){
     ['World', `${s.world?.entities ?? 0} entities`]
   ];
   $('statusStrip').innerHTML = items.map(([a,b])=>`<div class="status-chip"><b>${a}</b><span>${String(b)}</span></div>`).join('');
-  $('providerBadge').textContent = s.provider || 'IA';
+  const voiceRunning = !!p.voice?.running;
+  $('voiceBadge').textContent = voiceRunning ? 'ESCUCHANDO' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOZ NO DISPONIBLE' : 'VOZ INICIANDO');
+  $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
+  $('presenceOrb').classList.toggle('listening', voiceRunning);
   $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
   $('resetStop').disabled = !s.stop_engaged;
   $('backendDot').className = 'dot ok';
-  $('backendText').textContent = `Núcleo real ${s.version}`;
+  $('backendText').textContent = voiceRunning ? `JARVIS escuchando • ${s.version}` : `Núcleo real ${s.version}`;
   $('perceptionOutput').textContent = fmt(p);
   renderPermissions(s.permissions || {});
 }
@@ -159,20 +162,32 @@ $('allowOnce').addEventListener('click',async()=>{
   if(!pendingPermission)return;
   const p={...pendingPermission};
   $('permissionBar').classList.add('hidden');
-  pendingPermission=p;
-  await executeGoal(p.text,'once');
+  if(p.source==='voice'){
+    await call('voice_permission',{mode:'once'});
+    pendingPermission=null;
+  }else{
+    pendingPermission=p;
+    await executeGoal(p.text,'once');
+  }
 });
 $('allowAlways').addEventListener('click',async()=>{
   if(!pendingPermission)return;
   const p={...pendingPermission};
   $('permissionBar').classList.add('hidden');
-  pendingPermission=p;
-  await executeGoal(p.text,'always');
+  if(p.source==='voice'){
+    await call('voice_permission',{mode:'always'});
+    pendingPermission=null;
+  }else{
+    pendingPermission=p;
+    await executeGoal(p.text,'always');
+  }
 });
-$('denyPermission').addEventListener('click',()=>{
+$('denyPermission').addEventListener('click',async()=>{
+  const p=pendingPermission;
   pendingPermission=null;
   $('permissionBar').classList.add('hidden');
-  addChat('jarvis','Entendido. No haré esa acción.');
+  if(p?.source==='voice') await call('voice_permission',{mode:'cancel'});
+  else addChat('jarvis','Entendido. No haré esa acción.');
 });
 $('goalInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('runGoal').click()});
 $('screenNow').addEventListener('click',()=>call('screen_snapshot',{},'goalOutput'));
@@ -213,6 +228,36 @@ $('openLog').addEventListener('click',()=>window.jarvis.openLog());
 
 window.jarvis.onEvent((evt)=>{
   if(evt.event==='ready'){refreshStatus();}
+  if(evt.event==='voice-status'){
+    const ok=evt.status==='running';
+    $('voiceBadge').textContent=ok?'ESCUCHANDO':(evt.status==='error'||evt.status==='unavailable'?'VOZ NO DISPONIBLE':'VOZ INICIANDO');
+    $('voiceBadge').classList.toggle('bad',evt.status==='error'||evt.status==='unavailable');
+    $('presenceOrb').classList.toggle('listening',ok);
+    if(evt.status==='error'||evt.status==='unavailable') addChat('jarvis',`La voz no está disponible: ${evt.detail||evt.status}`);
+  }
+  if(evt.event==='voice-wake'){
+    $('wakeHint').textContent='Te escucho…';
+    $('presenceOrb').classList.add('awake');
+    setTimeout(()=>$('presenceOrb').classList.remove('awake'),2200);
+  }
+  if(evt.event==='voice-command'){
+    addChat('user',evt.text);
+    $('wakeHint').textContent='Procesando tu orden…';
+  }
+  if(evt.event==='assistant' && evt.text){
+    addChat('jarvis',evt.text);
+    $('wakeHint').textContent='Di “JARVIS”';
+  }
+  if(evt.event==='voice-permission'){
+    pendingPermission={source:'voice',text:evt.text,capability:evt.capability};
+    $('permissionTitle').textContent='JARVIS necesita tu autorización';
+    $('permissionText').textContent=evt.prompt||`Necesito permiso para ${evt.capability_label||evt.capability}.`;
+    $('permissionBar').classList.remove('hidden');
+  }
+  if(evt.event==='voice-permission-cleared'){
+    if(pendingPermission?.source==='voice') pendingPermission=null;
+    $('permissionBar').classList.add('hidden');
+  }
   if(evt.event==='fatal'||evt.event==='backend-exit'){
     $('backendDot').className='dot bad';$('backendText').textContent='Núcleo detenido';
     $('goalOutput').textContent=`El núcleo JARVIS se detuvo: ${evt.error||evt.code||'error desconocido'}`;
@@ -220,7 +265,7 @@ window.jarvis.onEvent((evt)=>{
 });
 
 (async()=>{
-  addChat('jarvis','Núcleo Infinity 7 activo. Dame una orden.');
+  addChat('jarvis','Estoy activo. Di “JARVIS” y háblame. Puedes escribir solo si lo necesitas.');
   const state=await window.jarvis.state();
   if(state.ready) await refreshStatus();
   else setTimeout(refreshStatus,1200);

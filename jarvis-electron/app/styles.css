@@ -23,3 +23,11 @@
 .composer textarea{min-height:88px;margin:0 0 10px}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @media(max-width:900px){.permission-bar{align-items:flex-start;flex-direction:column}.chat-msg{max-width:94%}}
+
+.bad{border-color:#713544!important;color:#ff8c9a!important}
+.presence-orb.listening{animation:jarvisPulse 1.9s ease-in-out infinite}
+.presence-orb.awake{box-shadow:0 0 42px rgba(96,217,255,.85),inset 0 0 24px rgba(96,217,255,.3)}
+.text-fallback{margin-top:2px;color:var(--muted)}
+.text-fallback>summary{cursor:pointer;font-size:12px;padding:8px 4px;user-select:none}
+.text-fallback[open]>summary{margin-bottom:8px}
+@keyframes jarvisPulse{0%,100%{box-shadow:0 0 20px rgba(96,217,255,.3),inset 0 0 16px rgba(96,217,255,.16)}50%{box-shadow:0 0 38px rgba(96,217,255,.72),inset 0 0 24px rgba(96,217,255,.26)}}

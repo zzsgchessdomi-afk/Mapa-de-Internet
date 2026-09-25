@@ -48,6 +48,10 @@ function handleBackendLine(line) {
     if (win && !win.isDestroyed()) win.webContents.send('jarvis:event', msg);
     return;
   }
+  if (msg.event) {
+    if (win && !win.isDestroyed()) win.webContents.send('jarvis:event', msg);
+    return;
+  }
   if (msg.id != null && pending.has(msg.id)) {
     const item = pending.get(msg.id);
     pending.delete(msg.id);

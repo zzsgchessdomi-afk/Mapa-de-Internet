@@ -31,7 +31,7 @@
     <header>
       <div><h1 id="panelTitle">JARVIS</h1><p id="panelSubtitle">Orden directa al núcleo real</p></div>
       <div class="header-actions">
-        <span id="providerBadge" class="badge">Gemini</span>
+        <span id="voiceBadge" class="badge">VOZ INICIANDO</span>
         <button id="resetStop" class="ghost">Rearmar</button>
         <button id="stopBtn" class="stop">STOP</button>
       </div>
@@ -42,25 +42,28 @@
     <section class="panel active" id="panel-command">
       <div class="command-stage">
         <div class="jarvis-presence">
-          <div class="presence-orb"></div>
-          <div><div class="hero-kicker">JARVIS ONLINE</div><h2>¿Qué quieres que haga?</h2><p>Háblame como a un asistente. Yo planifico, pido autorización cuando haga falta y ejecuto.</p></div>
+          <div id="presenceOrb" class="presence-orb"></div>
+          <div><div class="hero-kicker">JARVIS • VOICE FIRST</div><h2 id="wakeHint">Di “JARVIS”</h2><p>No tienes que escribir. Dime “JARVIS”, espera mi respuesta y dame la orden. El teclado queda como respaldo.</p></div>
         </div>
         <div id="jarvisFeed" class="jarvis-feed" aria-live="polite"></div>
         <div id="permissionBar" class="permission-bar hidden">
           <div><strong id="permissionTitle">Necesito tu autorización</strong><span id="permissionText"></span></div>
           <div class="row"><button id="allowOnce" class="primary">Permitir una vez</button><button id="allowAlways" class="ghost">Permitir siempre</button><button id="denyPermission" class="ghost">Cancelar</button></div>
         </div>
-        <div class="composer">
-          <textarea id="goalInput" placeholder="Ej.: Abre YouTube / Escribe esto en el Bloc de notas / Revisa la pantalla y dime qué ves."></textarea>
-          <div class="row"><button id="runGoal" class="primary">Enviar a JARVIS</button><button id="screenNow" class="ghost">Ver pantalla</button><button id="refreshStatus" class="ghost">Estado</button></div>
-        </div>
+        <details class="text-fallback">
+          <summary>Escribir en vez de hablar</summary>
+          <div class="composer">
+            <textarea id="goalInput" placeholder="Ej.: Abre YouTube / Escribe esto en el Bloc de notas / Revisa la pantalla y dime qué ves."></textarea>
+            <div class="row"><button id="runGoal" class="primary">Enviar a JARVIS</button><button id="screenNow" class="ghost">Ver pantalla</button><button id="refreshStatus" class="ghost">Estado</button></div>
+          </div>
+        </details>
       </div>
       <div class="sr-only"><pre id="goalOutput">Esperando orden.</pre></div>
     </section>
 
     <section class="panel" id="panel-perception">
       <div class="grid two">
-        <div class="card"><h3>Voz</h3><p>Windows SAPI + wake gate del núcleo JARVIS.</p><div class="row"><button data-op="voice_start" class="primary">Activar voz</button><button data-op="voice_stop" class="ghost">Detener voz</button></div><input id="speakText" placeholder="Texto para que JARVIS hable"/><button id="speakBtn" class="ghost full">Hablar</button></div>
+        <div class="card"><h3>Voz</h3><p>La escucha se inicia automáticamente con JARVIS. Estos controles son solo para reiniciar o detener manualmente el micrófono.</p><div class="row"><button data-op="voice_start" class="primary">Reiniciar escucha</button><button data-op="voice_stop" class="ghost">Detener voz</button></div><input id="speakText" placeholder="Texto para probar la voz de JARVIS"/><button id="speakBtn" class="ghost full">Probar voz</button></div>
         <div class="card"><h3>Cámara & Gestos</h3><p>MediaPipe + Intent Core. La capa de intención sigue protegida por permisos y Guardian.</p><div class="row"><button data-op="vision_start" class="primary">Activar cámara/gestos</button><button data-op="vision_stop" class="ghost">Detener</button></div></div>
         <div class="card"><h3>Sentinel</h3><p>Observación contextual continua de pantalla, sin enviar a cloud salvo permiso explícito.</p><div class="row"><button data-op="sentinel_start" class="primary">Activar Sentinel</button><button data-op="sentinel_stop" class="ghost">Detener</button></div></div>
         <div class="card"><h3>Estado de percepción</h3><pre id="perceptionOutput">—</pre></div>

@@ -54,6 +54,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Infinity 7 source self-test failed on Windows' }
           if (-not (Select-String -Path '.\SELFTEST_SOURCE.txt' -Pattern 'RESULT=PASS' -Quiet)) { throw 'Self-test did not report PASS' }
 
+      - name: Run voice-first assistant contract tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:PYTHONPATH=(Resolve-Path '.\work\app\src')
+          python '.\jarvis-electron\voice_contract_test.py' | Tee-Object -FilePath '.\VOICE_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Voice-first assistant contract failed' }
+          if (-not (Select-String -Path '.\VOICE_CONTRACT.txt' -Pattern 'VOICE_ASSISTANT_CONTRACT=PASS' -Quiet)) { throw 'Voice assistant contract did not report PASS' }
+
       - name: Freeze full JARVIS core as private backend
         shell: pwsh
         run: |
@@ -93,6 +102,8 @@ jobs:
           $self=$parsed | Where-Object { $_.id -eq 4 }
           if (-not $ping.ok) { throw 'Ping failed' }
           if (-not $status.ok) { throw 'Status failed' }
+          if (-not $status.result.assistant.voice_first) { throw 'Voice-first assistant mode is not active' }
+          if (-not $status.result.assistant.autostart_attempted) { throw 'Voice autostart was not attempted' }
           if (-not $self.ok) { throw 'Frozen Infinity 7 self-test failed' }
 
       - name: Prepare Electron app with frozen full core
@@ -200,6 +211,9 @@ jobs:
           Silent install: PASS
           Installed Electron startup: PASS
           Backend ready after install: PASS
+          Voice-first integration: PASS
+          Voice autostart attempt: PASS
+          Wake/TTS physical microphone acceptance: PENDING OWNER HARDWARE TEST
           localhost/127.0.0.1 transport: NOT USED
           User Python install: NOT REQUIRED
           User CMD/PowerShell: NOT REQUIRED
