@@ -507,21 +507,79 @@ def _register_owner_apps(runtime) -> dict[str, str]:
     return found
 
 
+class PerceptionUiRelay:
+    """Mirror safe perception/intent events to Electron without changing authority.
+
+    Execution still belongs to IntentControlBridge -> Guardian -> ActionGateway.
+    This relay is visualization-only and rate-limits continuous hand motion.
+    """
+    EVENT_TYPES = {
+        "gesture.armed", "gesture.disarmed", "gesture.point",
+        "gesture.pinch_start", "gesture.pinch_move", "gesture.pinch_end",
+        "gesture.swipe_left", "gesture.swipe_right", "gesture.transform", "gesture.static",
+        "intent.execute", "intent.confirm", "intent.block", "intent.ignore",
+        "intent.goal_result", "intent.execution_result", "intent.error",
+    }
+    CONTINUOUS = {"gesture.point", "gesture.pinch_move", "gesture.transform"}
+
+    def __init__(self, runtime) -> None:
+        self.runtime = runtime
+        self._token: int | None = None
+        self._last_emit: dict[str, float] = {}
+        self._min_interval = 1.0 / 15.0
+
+    def start(self) -> None:
+        if self._token is None:
+            self._token = self.runtime.perception.bus.subscribe(self._on_event)
+
+    def stop(self) -> None:
+        if self._token is not None:
+            try:
+                self.runtime.perception.bus.unsubscribe(self._token)
+            except Exception:
+                pass
+            self._token = None
+
+    def _on_event(self, event) -> None:
+        typ = str(getattr(event, "type", ""))
+        if typ not in self.EVENT_TYPES:
+            return
+        now = time.time()
+        if typ in self.CONTINUOUS:
+            last = self._last_emit.get(typ, 0.0)
+            if now - last < self._min_interval:
+                return
+            self._last_emit[typ] = now
+        _emit({
+            "event": "perception-ui",
+            "type": typ,
+            "payload": _jsonable(getattr(event, "payload", {}) or {}),
+            "confidence": float(getattr(event, "confidence", 1.0) or 0.0),
+            "timestamp": float(getattr(event, "timestamp", now) or now),
+        })
+
+
 class Bridge:
     def __init__(self) -> None:
         self.runtime = build_infinity7_runtime()
         self.owner_apps = _register_owner_apps(self.runtime)
         self._lock = threading.RLock()
         self.voice_loop = AssistantVoiceLoop(self.runtime)
+        self.perception_ui = PerceptionUiRelay(self.runtime)
         self.voice_loop.prepare()
         try:
             self.runtime.start_bridge()
         except Exception:
             pass
         # Voice is the primary interface. Text remains only a fallback.
+        self.perception_ui.start()
         self.voice_loop.start()
 
     def close(self) -> None:
+        try:
+            self.perception_ui.stop()
+        except Exception:
+            pass
         try:
             self.voice_loop.stop()
         except Exception:

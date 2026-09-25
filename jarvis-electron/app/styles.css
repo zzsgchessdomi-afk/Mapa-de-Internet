@@ -37,3 +37,20 @@ input,textarea,select{width:100%;background:#02090c;color:#dff9ff;border:1px sol
 .top-mark{-webkit-app-region:drag}
 .top-mark span{-webkit-app-region:drag}
 .window-hotzone,.window-controls,.window-controls button,.dock,.dock-btn,.panic-stop,.rearm,.text-fallback{-webkit-app-region:no-drag}
+
+/* REAL HAND-PERCEPTION FEEDBACK — visualization only; control remains Guardian-gated. */
+.gesture-layer{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .18s}
+.gesture-layer.armed{opacity:1}
+.gesture-cursor{position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border:1px solid rgba(126,232,255,.58);border-radius:50%;box-shadow:0 0 16px rgba(78,213,250,.16);transition:width .08s,height .08s,box-shadow .08s,border-color .08s}
+.gesture-cursor:before,.gesture-cursor:after{content:"";position:absolute;background:rgba(129,231,255,.54)}
+.gesture-cursor:before{width:1px;height:34px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.gesture-cursor:after{height:1px;width:34px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.gesture-cursor i{position:absolute;inset:6px;border:1px solid rgba(176,244,255,.24);border-radius:50%}
+.gesture-cursor b{position:absolute;width:3px;height:3px;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);background:#dffbff;box-shadow:0 0 8px rgba(133,232,255,.8)}
+.gesture-cursor.pinch{width:36px;height:36px;border-color:rgba(210,251,255,.82);box-shadow:0 0 24px rgba(91,222,255,.42)}
+.gesture-cursor.intent-ok{animation:gestureOk .34s ease-out}
+.gesture-cursor.intent-block{border-color:rgba(255,201,107,.78);box-shadow:0 0 22px rgba(255,201,107,.20)}
+.gesture-label{position:absolute;left:50%;top:calc(50% + 76px);transform:translateX(-50%);font-size:4px;letter-spacing:.28em;color:#5a8c9b;opacity:.65}
+body[data-mode="gesture"] .core{box-shadow:0 0 0 5px rgba(61,183,225,.055),0 0 34px rgba(70,213,255,.26),inset 0 0 20px rgba(73,203,242,.12)}
+body[data-mode="gesture"] .ring-a{animation-duration:5s}
+@keyframes gestureOk{0%{transform:translate(-50%,-50%) scale(1)}45%{transform:translate(-50%,-50%) scale(1.55);box-shadow:0 0 34px rgba(114,237,255,.65)}100%{transform:translate(-50%,-50%) scale(1)}}

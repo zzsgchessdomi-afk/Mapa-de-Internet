@@ -181,6 +181,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Ambient runtime contract failed' }
           if (-not (Select-String -Path '.\AMBIENT_RUNTIME_CONTRACT.txt' -Pattern 'AMBIENT_RUNTIME_CONTRACT=PASS' -Quiet)) { throw 'Ambient runtime contract did not report PASS' }
 
+      - name: Run gesture perception UI contracts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python '.\jarvis-electron\gesture_ui_relay_contract_test.py' | Tee-Object -FilePath '.\GESTURE_RELAY_CONTRACT.txt'
+          node '.\jarvis-electron\app\gesture_hud_contract_test.js' | Tee-Object -FilePath '.\GESTURE_HUD_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Gesture UI contracts failed' }
+          if (-not (Select-String -Path '.\GESTURE_RELAY_CONTRACT.txt' -Pattern 'GESTURE_UI_RELAY_CONTRACT=PASS' -Quiet)) { throw 'Gesture relay contract did not report PASS' }
+          if (-not (Select-String -Path '.\GESTURE_HUD_CONTRACT.txt' -Pattern 'GESTURE_HUD_CONTRACT=PASS' -Quiet)) { throw 'Gesture HUD contract did not report PASS' }
+
       - name: Run source syntax and wiring audit
         shell: pwsh
         run: |

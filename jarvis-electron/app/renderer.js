@@ -11,7 +11,7 @@ async function call(op,args={},outputId=null){
 }
 function setMode(mode,label=null){
   document.body.dataset.mode=mode;
-  const map={boot:'INITIALIZING',idle:'SYSTEM READY',listening:'LISTENING',awake:'LISTENING',processing:'PROCESSING',auth:'AUTHORIZATION',stopped:'STOPPED','voice-offline':'VOICE OFFLINE',error:'CORE ERROR'};
+  const map={boot:'INITIALIZING',idle:'SYSTEM READY',listening:'LISTENING',awake:'LISTENING',processing:'PROCESSING',gesture:'GESTURE CONTROL',auth:'AUTHORIZATION',stopped:'STOPPED','voice-offline':'VOICE OFFLINE',error:'CORE ERROR'};
   $('wakeHint').textContent=label||map[mode]||'SYSTEM READY';
 }
 function safeHud(text,fallback='SYSTEM READY'){
@@ -137,8 +137,72 @@ $('winClose').addEventListener('click',()=>window.jarvis.window('close'));
 $('presenceOrb').addEventListener('click',async()=>{try{if(!status?.perception?.voice?.running){setMode('boot','VOICE STARTING');await call('voice_start');setTimeout(refreshStatus,700);}else await call('speak',{text:'Sí, aquí estoy.'});}catch(_){setMode('voice-offline');}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')showPanel('command');if(e.key==='F11'){e.preventDefault();window.jarvis.window('fullscreen');}if((e.ctrlKey||e.metaKey)&&e.code==='Space'){e.preventDefault();const f=document.querySelector('.text-fallback');f.open=!f.open;if(f.open)$('goalInput').focus();}});
 
+function gesturePoint(payload){
+  const layer=$('gestureLayer'), cursor=$('gestureCursor');
+  const x=Math.max(0,Math.min(1,Number(payload?.x??.5)));
+  const y=Math.max(0,Math.min(1,Number(payload?.y??.5)));
+  const stage=document.querySelector('.hud-stage').getBoundingClientRect();
+  cursor.style.left=(x*stage.width)+'px';
+  cursor.style.top=(y*stage.height)+'px';
+  layer.classList.add('armed');
+}
+function gesturePulse(kind){
+  const cursor=$('gestureCursor');
+  cursor.classList.remove('intent-ok','intent-block');
+  void cursor.offsetWidth;
+  cursor.classList.add(kind);
+  setTimeout(()=>cursor.classList.remove(kind),430);
+}
+function handlePerceptionUi(evt){
+  const type=String(evt.type||''), p=evt.payload||{}, layer=$('gestureLayer'), cursor=$('gestureCursor'), label=$('gestureLabel');
+  if(type==='gesture.armed'){
+    layer.classList.add('armed');label.textContent='GESTURE CONTROL';setMode('gesture');
+    return;
+  }
+  if(type==='gesture.disarmed'){
+    layer.classList.remove('armed');cursor.classList.remove('pinch','intent-block');
+    if(status?.perception?.voice?.running)setMode('listening');else setMode('idle');
+    return;
+  }
+  if(type==='gesture.point'||type==='gesture.pinch_start'||type==='gesture.pinch_move'||type==='gesture.pinch_end'){
+    if(p.x!=null&&p.y!=null)gesturePoint(p);
+    cursor.classList.toggle('pinch',type==='gesture.pinch_start'||type==='gesture.pinch_move');
+    if(type==='gesture.pinch_end')cursor.classList.remove('pinch');
+    return;
+  }
+  if(type==='gesture.transform'){
+    const center=p.center||{};
+    if(center.x!=null&&center.y!=null)gesturePoint(center);
+    const scale=Math.max(.72,Math.min(1.35,Number(p.scale_delta||1)));
+    const rot=Math.max(-30,Math.min(30,Number(p.rotation_delta_deg||0)));
+    cursor.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rot}deg)`;
+    setTimeout(()=>{cursor.style.transform='translate(-50%,-50%)';},90);
+    label.textContent='TWO-HAND TRANSFORM';
+    return;
+  }
+  if(type==='gesture.swipe_left'||type==='gesture.swipe_right'){
+    label.textContent=type.endsWith('left')?'SWIPE LEFT':'SWIPE RIGHT';gesturePulse('intent-ok');return;
+  }
+  if(type==='gesture.static'){
+    label.textContent=String(p.name||'GESTURE').replaceAll('_',' ').toUpperCase();return;
+  }
+  if(type==='intent.execution_result'){
+    label.textContent=p.ok?'ACTION VERIFIED':'ACTION BLOCKED';
+    gesturePulse(p.ok?'intent-ok':'intent-block');return;
+  }
+  if(type==='intent.goal_result'){
+    label.textContent=String(p.state||'RESULT').toUpperCase();
+    gesturePulse(String(p.state||'').toLowerCase()==='verified'?'intent-ok':'intent-block');return;
+  }
+  if(type==='intent.block'||type==='intent.confirm'||type==='intent.error'){
+    label.textContent=type==='intent.confirm'?'CONFIRMATION REQUIRED':'ACTION BLOCKED';
+    gesturePulse('intent-block');
+  }
+}
+
 window.jarvis.onEvent(evt=>{
   if(evt.event==='ready')refreshStatus();
+  if(evt.event==='perception-ui'){handlePerceptionUi(evt);return;}
   if(evt.event==='voice-status'){
     lastVoiceDetail=String(evt.detail||'');
     const ok=evt.status==='running';
@@ -171,7 +235,7 @@ window.jarvis.onEvent(evt=>{
   let w=1,h=1,dpr=1,cx=0,cy=0,last=performance.now(),phase=0,mx=0,my=0,tx=0,ty=0,particles=[];
   function resize(){const r=stage.getBoundingClientRect();dpr=Math.max(1,Math.min(2,devicePixelRatio||1));w=r.width;h=r.height;canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);const cr=core.getBoundingClientRect();cx=cr.left-r.left+cr.width/2;cy=cr.top-r.top+cr.height/2;seed();}
   function seed(){const n=Math.max(45,Math.min(90,Math.floor(w*h/23000)));particles=Array.from({length:n},(_,i)=>({a:i/n*Math.PI*2,r:115+(i*73)%330,s:.25+(i*17)%9/10,z:.18+(i*31)%70/100,v:(i%2?1:-1)*(.000025+(i%11)*.000004)}));}
-  function modePower(){const m=document.body.dataset.mode;return m==='awake'?1:m==='processing'?.92:m==='listening'?.58:m==='auth'?.72:m==='voice-offline'?.18:.30;}
+  function modePower(){const m=document.body.dataset.mode;return m==='awake'?1:m==='processing'?.92:m==='gesture'?.72:m==='listening'?.58:m==='auth'?.72:m==='voice-offline'?.18:.30;}
   function ring(radius,alpha,speed,count,width){ctx.save();ctx.translate(cx+mx,cy+my);ctx.rotate(phase*speed);ctx.strokeStyle=`rgba(104,222,255,${alpha})`;ctx.lineWidth=width;ctx.shadowColor='rgba(78,210,250,.55)';ctx.shadowBlur=6;for(let i=0;i<count;i++){const a=i/count*Math.PI*2,span=.035+((i*7)%5)*.012;ctx.beginPath();ctx.arc(0,0,radius,a,a+span);ctx.stroke();}ctx.restore();}
   function draw(now){const dt=Math.min(40,now-last);last=now;phase+=dt*.001;mx+=(tx-mx)*.025;my+=(ty-my)*.025;const p=modePower();ctx.clearRect(0,0,w,h);ctx.save();ctx.globalCompositeOperation='lighter';
     const glow=ctx.createRadialGradient(cx+mx,cy+my,6,cx+mx,cy+my,285);glow.addColorStop(0,`rgba(192,249,255,${.028+p*.035})`);glow.addColorStop(.20,`rgba(65,207,248,${.018+p*.020})`);glow.addColorStop(.62,'rgba(27,111,147,.008)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
