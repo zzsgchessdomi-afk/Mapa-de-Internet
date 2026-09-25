@@ -480,6 +480,36 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
   .proofHero{padding:12px}.proofHero h3{font-size:13px}.proofHero p{font-size:7.8px}
   .claimCard{padding:9px}.claimTop b{font-size:8.2px}.claimValue{font-size:7.5px}.claimEvidence{font-size:7px}
 }
+
+/* ATLANEX readability pass — no microtext in the desktop command center */
+@media (min-width:821px){
+ .mcRoot{font-size:13px}
+ .mcBrand b{font-size:18px}.mcBrand small{font-size:8px}
+ .mcSearch input{font-size:13px}.mcSearch button{font-size:10px}
+ .mcTopActions .btn{font-size:9px}.mcStatus{font-size:9px}
+ .mcPulse span{font-size:8px}.mcPulse b{font-size:9px}
+ .mcProject .ey{font-size:8px}.mcProject h3{font-size:15px}.mcProject p{font-size:10px}
+ .mcNav button{font-size:11px}.mcNav button span{font-size:9px}
+ .mcSectionTitle{font-size:9px}.mcRun b{font-size:10px}.mcRun span{font-size:8px}
+ .mcBranch{font-size:9px}.mcStatsGrid span{font-size:8px}
+ .mcGraphHead h2{font-size:16px}.mcGraphHead p{font-size:10px}.mcGraphTools button{font-size:9px}
+ .mcNode{min-width:150px;max-width:205px;padding:11px 13px}.mcNode.query{min-width:205px}
+ .mcNode b{font-size:11px;line-height:1.28}.mcNode small{font-size:8.5px}.mcNode .score{font-size:8px}
+ .mcReplayHead b{font-size:11px}.mcReplayHead span,.mcReplayNow{font-size:9px}
+ .mcForkInline input,.mcForkInline button{font-size:9px}
+ .mcAgent b{font-size:9.5px}.mcAgent span{font-size:8px}
+ .mcRightTabs button{font-size:9px}
+ .mcBoxHead b{font-size:10px}.mcBoxHead span{font-size:8px}
+ .mcConflictEmpty,.scenarioIntro,.mcCompareText{font-size:9px;line-height:1.55}
+ .mcEvSource b{font-size:10px}.mcEvSource span{font-size:8px}
+ .mcVerified,.mcProvisional{font-size:8px}
+ .mcEvTitle{font-size:13px}.mcEvExcerpt,.mcEvidenceLine{font-size:9px}
+ .mcEvActions button,.caseToolbar button{font-size:8.5px}
+ .proofHero .ey{font-size:8px}.proofHero h3{font-size:14px}.proofHero p{font-size:9px}
+ .claimTop b{font-size:9.5px}.claimStatus{font-size:8px}.claimValue{font-size:9px}.claimEvidence{font-size:8.5px}
+ .traceText b{font-size:9px}.traceText span{font-size:8px}.traceSource b{font-size:8.5px}.traceSource span{font-size:7.5px}
+ .sourceIntake b{font-size:10px}.sourceIntake p{font-size:9px;line-height:1.5}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
 <script src="./lib/capsule-core.js"></script>
@@ -793,7 +823,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
  </div>
  <div class="machineActions"><button class="btn primary" id="machineRun">Ejecutar misión</button><button class="btn" id="machineStop">Detener</button></div>
  <div class="section"><div class="label">Registro de decisiones</div><div class="machineLog" id="machineLog"><div class="machineEvent"><b>READY</b><span>Esperando una misión.</span></div></div></div>
- <div class="monitorCard"><h3>Persistent Monitor · Desktop</h3><p>Atlas puede quedarse en la bandeja de Windows, revisar las URLs vigiladas por SHA-256 y avisar cuando cambie el contenido.</p>
+ <div class="monitorCard"><h3>Persistent Monitor · Desktop</h3><p>Atlanex puede quedarse en la bandeja de Windows, revisar las URLs vigiladas por SHA-256 y avisar cuando cambie el contenido.</p>
   <div class="monitorToggles"><label><input type="checkbox" id="monitorEnabled" checked> monitor activo</label><label><input type="checkbox" id="monitorStartup"> iniciar con Windows</label><button class="btn" id="monitorSync">Sincronizar</button><button class="btn" id="monitorNow">Revisar ahora</button></div>
   <div class="monitorJobs" id="monitorJobs"><div class="sub">Disponible en Atlanex Desktop.</div></div>
  </div>
@@ -816,12 +846,12 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
   <div class="row"><input class="field" id="groqKey" type="password" autocomplete="off" placeholder="Groq API key"><button class="btn" data-save-key="groq">Guardar</button><button class="btn" data-clear-key="groq">Borrar</button></div>
   <div class="row"><input class="field" id="openrouterKey" type="password" autocomplete="off" placeholder="OpenRouter API key"><button class="btn" data-save-key="openrouter">Guardar</button><button class="btn" data-clear-key="openrouter">Borrar</button></div>
  </div>
- <div class="modehint">El modelo corre en la nube. Atlas no descarga pesos de IA al dispositivo.</div>
+ <div class="modehint">El modelo corre en la nube. Atlanex no descarga pesos de IA al dispositivo.</div>
  <div class="section" style="margin-top:12px"><div class="label">Capacidades</div>
    <div class="aiFeature"><b>Research Planner <span class="aiBadge">AI</span></b><span>Genera consultas adicionales según tu objetivo y modo de investigación.</span></div>
    <div class="aiFeature"><b>Requirement Extractor <span class="aiBadge">AI</span></b><span>Detecta requisitos explícitos que el parser normal puede perder.</span></div>
    <div class="aiFeature"><b>Evidence Analyst <span class="aiBadge">AI</span></b><span>Redacta conclusiones usando únicamente la evidencia recopilada.</span></div>
-   <div class="aiFeature"><b>Ask Atlas <span class="aiBadge">AI</span></b><span>Cuando la IA está activa, responde semánticamente sobre el corpus de evidencia.</span></div>
+   <div class="aiFeature"><b>Ask Atlanex <span class="aiBadge">AI</span></b><span>Cuando la IA está activa, responde semánticamente sobre el corpus de evidencia.</span></div>
  </div>
  <div class="row"><button class="btn" id="aiBrief">Generar AI Brief</button><button class="btn" id="aiStop">Detener</button></div>
  <div class="section" style="margin-top:12px"><div class="label">Salida IA</div><div class="aiOutput" id="aiOutput">IA aún no activada.</div></div>
@@ -850,7 +880,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
   <div class="replayNow" id="replayNow">Sin investigación cargada.</div><div class="replayTimeline" id="replayTimeline"></div><div class="lineageTree" id="lineageTree"></div>
  </div>
  <div class="labView hidden" data-lab-view="fork">
-  <div class="summary">Crea una rama desde la investigación actual. Atlas conserva el padre y ejecuta una hipótesis nueva sin destruir el run original.</div>
+  <div class="summary">Crea una rama desde la investigación actual. Atlanex conserva el padre y ejecuta una hipótesis nueva sin destruir el run original.</div>
   <textarea class="field forkInput" id="forkInput" placeholder="Ej. ¿Qué cambia si todo debe ser open-source y funcionar localmente?"></textarea>
   <div class="actions"><button class="btn primary" id="forkCreate">Crear rama e investigar</button></div>
   <div class="lineage" id="lineage"></div>
@@ -866,7 +896,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
 </section>
 
 <section class="healthPanel glass" id="healthPanel">
- <div class="detailTop"><div><div class="ey">SYSTEM HEALTH</div><h2>Preflight & fuentes</h2><div class="sub">Comprueba qué partes de Atlas están listas antes de una investigación.</div></div><button class="btn icon" id="healthClose">×</button></div>
+ <div class="detailTop"><div><div class="ey">SYSTEM HEALTH</div><h2>Preflight & fuentes</h2><div class="sub">Comprueba qué partes de Atlanex están listas antes de una investigación.</div></div><button class="btn icon" id="healthClose">×</button></div>
  <div class="healthGrid" id="healthGrid"></div>
  <div class="actions"><button class="btn primary" id="runHealth">Volver a comprobar</button><button class="btn" id="retryFailed">Reintentar fallos recientes</button></div>
 </section>
@@ -877,7 +907,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
  <div class="presBottom"><div class="presResults" id="presResults"></div><div class="presCard" style="max-width:320px"><div class="ey">DECISION STATUS</div><p id="presBlockers"></p></div></div>
 </section>
 
-<div class="recovery glass" id="recovery"><div style="flex:1"><b>Atlas recuperó una sesión anterior</b><span id="recoveryText">Hay trabajo guardado.</span></div><button class="btn primary" id="resumeSession">Continuar</button><button class="btn" id="dismissRecovery">Descartar aviso</button></div>
+<div class="recovery glass" id="recovery"><div style="flex:1"><b>Atlanex recuperó una sesión anterior</b><span id="recoveryText">Hay trabajo guardado.</span></div><button class="btn primary" id="resumeSession">Continuar</button><button class="btn" id="dismissRecovery">Descartar aviso</button></div>
 
 <section class="tour" id="tour"><div class="tourCard"><div class="ey">TOUR DE 30 SEGUNDOS</div><h2 id="tourTitle">—</h2><p id="tourText"></p><div class="tourDots" id="tourDots"></div><div class="actions"><button class="btn" id="tourSkip">Saltar</button><button class="btn primary" id="tourNext">Siguiente</button></div></div></section>
 
@@ -1011,9 +1041,9 @@ function maybeShowRecovery(){
  if(project?.runs?.length){const r=project.runs[0];$('recoveryText').textContent=`Último proyecto: ${project.name} · ${new Date(r.at).toLocaleString()} · ${r.coverage||0}% cobertura`;$('recovery').classList.add('show')}
 }
 const TOUR=[
- {t:'1. Define el objetivo',d:'Escribe una meta completa. Atlas detecta requisitos y construye un plan de investigación.'},
+ {t:'1. Define el objetivo',d:'Escribe una meta completa. Atlanex detecta requisitos y construye un plan de investigación.'},
  {t:'2. Comprueba evidencia',d:'La matriz separa verificado, provisional y desconocido. No tienes que interpretar nodos a ciegas.'},
- {t:'3. Usa IA cuando aporte valor',d:'Ask Atlas y AI Brief trabajan sobre la evidencia ya recopilada.'},
+ {t:'3. Usa IA cuando aporte valor',d:'Ask Atlanex y AI Brief trabajan sobre la evidencia ya recopilada.'},
  {t:'4. Entrega el trabajo',d:'Decision Pack, presentación, exportación de datos y proyectos portables convierten la investigación en un entregable.'}
 ];
 function renderTour(){const s=TOUR[tourIndex];$('tourTitle').textContent=s.t;$('tourText').textContent=s.d;$('tourDots').innerHTML=TOUR.map((_,i)=>`<i class="${i===tourIndex?'on':''}"></i>`).join('');$('tourNext').textContent=tourIndex===TOUR.length-1?'Terminar':'Siguiente'}
@@ -1072,7 +1102,7 @@ async function runAgentDoctor(){
 }
 async function repairAgentEngine(){
  if(!IS_DESKTOP)return;
- if(!confirm('Atlas eliminará solo el entorno Python interno de agentes y lo reinstalará. ¿Continuar?'))return;
+ if(!confirm('Atlanex eliminará solo el entorno Python interno de agentes y lo reinstalará. ¿Continuar?'))return;
  setAgentEngine('running','reparando','Reconstruyendo entorno CrewAI + GPT Researcher…');agentLog('Reparación iniciada');
  await globalThis.atlasDesktop.repairAgents();
  let tries=0;
@@ -1532,7 +1562,7 @@ function coverage(){
 function memo(){
  const top=entities.slice(0,3);if(!top.length)return'No hubo resultados suficientes.';
  const req=criteria.filter(c=>c.required),perfect=entities.filter(e=>req.every(c=>e.criteria?.[c.id]?.value==='yes'&&e.criteria?.[c.id]?.verified)).length;
- let s=`Atlas agrupó ${rawResults.length} hallazgos en ${entities.length} entidades y comparó ${criteria.length} criterios. `;
+ let s=`Atlanex agrupó ${rawResults.length} hallazgos en ${entities.length} entidades y comparó ${criteria.length} criterios. `;
  if(perfect)s+=`${perfect} entidades cumplen todos los requisitos obligatorios con evidencia verificada. `;else s+='Ninguna entidad cumple todavía todos los requisitos obligatorios con evidencia completa; los mejores resultados necesitan revisión donde aparezca “provisional” o “?”. ';
  s+=`Los tres mejores scores actuales son ${top.map(e=>`${e.title} (${e.score}/100)`).join(', ')}.`;
  return s
@@ -2013,7 +2043,7 @@ body.booting{overflow:hidden!important}
 }
 function exportDecisionPack(){
  if(!current)return toast('Primero investiga');
- const doc=decisionPackHtml(),a=document.createElement('a'),b=new Blob([doc],{type:'text/html'});a.href=URL.createObjectURL(b);a.download='Internet_Atlas_Decision_Pack.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+ const doc=decisionPackHtml(),a=document.createElement('a'),b=new Blob([doc],{type:'text/html'});a.href=URL.createObjectURL(b);a.download='Atlanex_Decision_Pack.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
 function renderWatch(){
  const box=$('watchList');if(!box)return;
@@ -2122,7 +2152,7 @@ async function run(obj){
  step(2,'on','buscando');liveStage('discovery','running','Descubriendo fuentes');setStatus('BUSCANDO','consultando fuentes y catálogos');let qs=variants(obj);if(aiState.engine)try{qs=await aiQueriesFor(obj,qs)}catch{}recordReplay('discovery','Plan de consultas',qs.join(' | '));let all=[];
  for(let i=0;i<qs.length;i++){if(tk!==token)return;const part=await researchPass(qs[i],tk);all.push(...part);recordReplay('discovery','Consulta '+(i+1),`${part.length} hallazgos · ${qs[i].slice(0,95)}`);setCoverage(8+i*5)}
  rawResults=all;step(2,'done',rawResults.length+' hallazgos');liveStage('discovery',rawResults.length?'done':'error',rawResults.length+' hallazgos');
- if(!rawResults.length){entities=[];setCoverage(0);setStatus('SIN RESULTADOS',IS_RESTRICTED_ORIGIN?'El modo local no encontró coincidencias en el catálogo embebido.':'Las fuentes disponibles no devolvieron hallazgos.');step(3,'done','0 entidades');for(let i=4;i<=7;i++)step(i,'','—');recordReplay('memory','Sin resultados','Run terminado sin evidencia');toast('Sin resultados para este objetivo. En Desktop/hosting Atlas puede consultar más fuentes.');return}
+ if(!rawResults.length){entities=[];setCoverage(0);setStatus('SIN RESULTADOS',IS_RESTRICTED_ORIGIN?'El modo local no encontró coincidencias en el catálogo embebido.':'Las fuentes disponibles no devolvieron hallazgos.');step(3,'done','0 entidades');for(let i=4;i<=7;i++)step(i,'','—');recordReplay('memory','Sin resultados','Run terminado sin evidencia');toast('Sin resultados para este objetivo. En Desktop/hosting Atlanex puede consultar más fuentes.');return}
  step(3,'on','fusionando');liveStage('evidence','running','Agrupando candidatos');entities=groupEntities(rawResults);step(3,'done',entities.length+' entidades');entities=entities.map(evaluateEntity).sort((a,b)=>b.score-a.score);recordReplay('evidence','Entidades agrupadas',entities.slice(0,8).map(e=>e.title).join(' · '));
  const cfg=depthConfig();step(4,'on','top '+cfg.inspect);const top=entities.slice(0,cfg.inspect);
  for(let i=0;i<top.length;i+=3){if(tk!==token)return;await Promise.all(top.slice(i,i+3).map(e=>inspectEntity(e,false)));evaluateAll();recordReplay('evidence','Inspección',`${Math.min(i+3,top.length)}/${top.length}`);setCoverage(34+Math.round((i+3)/Math.max(1,top.length)*27))}
@@ -2167,21 +2197,21 @@ function renderMissionGraph(){
  if(!current||!entities.length){empty.style.display='block';return}
  empty.style.display='none';
  const {w,h}=mcLayout(),cx=w*.50,cy=h*.48;
- const top=entities.slice(0,10),sources=[...new Set(top.flatMap(e=>e.sources||[]))].slice(0,6);
+ const top=entities.slice(0,8),sources=[...new Set(top.flatMap(e=>e.sources||[]))].slice(0,4);
  const positions=new Map();
  positions.set('query',{x:cx,y:cy});
  graph.insertAdjacentHTML('beforeend',mcNodeHTML('query',current.objective.slice(0,55),`${entities.length} entidades · ${current.coverage??coverage()}% cobertura`,cx,cy,'query'));
- const radius=Math.min(w*.34,h*.37),n=Math.max(1,top.length);
+ const rx=Math.min(w*.31,360),ry=Math.min(h*.30,220),n=Math.max(1,top.length);
  top.forEach((e,i)=>{
    const a=-Math.PI/2+i*2*Math.PI/n;
-   const x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;
+   const x=cx+Math.cos(a)*rx,y=cy+Math.sin(a)*ry;
    positions.set(e.id,{x,y});
    graph.insertAdjacentHTML('beforeend',mcNodeHTML(e.id,e.title,`${mcKind(e)} · ${e.score}/100`,x,y,'entity',mcEntityClass(e)));
  });
- const sr=Math.min(w*.46,h*.48);
+ const srx=Math.min(w*.43,500),sry=Math.min(h*.43,310);
  sources.forEach((s,i)=>{
    const a=(-Math.PI*.72)+i*(Math.PI*1.44/Math.max(1,sources.length-1));
-   const x=cx+Math.cos(a)*sr,y=cy+Math.sin(a)*sr;
+   const x=cx+Math.cos(a)*srx,y=cy+Math.sin(a)*sry;
    const id='source:'+s;positions.set(id,{x,y});
    graph.insertAdjacentHTML('beforeend',mcNodeHTML(id,SRC[s]?.label||s,'fuente de descubrimiento',x,y,'source'));
  });
@@ -2270,7 +2300,7 @@ function renderProofTrace(e,c,r){
    <div class="traceStep"><i class="traceDot">2</i><div class="traceText"><b>Entidad</b><span>${esc(e.title)} · score base ${e.score}/100</span></div></div>
    <div class="traceStep"><i class="traceDot">3</i><div class="traceText"><b>Criterio</b><span>${esc(c.label)} → ${esc(criterionHuman(r))}</span></div></div>
    <div class="traceStep"><i class="traceDot">4</i><div class="traceText"><b>Fragmento</b><span class="${integrity?'proofExact':'proofUnverified'}">${esc(r?.evidence?.[0]||'No existe fragmento verificable.')}</span></div></div>
-   <div class="traceStep"><i class="traceDot">5</i><div class="traceText"><b>Provenance</b><span>${integrity?'El fragmento existe literalmente dentro del snapshot cuya huella aparece abajo.':'Atlas no tiene snapshot + hash + coincidencia exacta suficientes para verificar este criterio.'}</span></div></div>
+   <div class="traceStep"><i class="traceDot">5</i><div class="traceText"><b>Provenance</b><span>${integrity?'El fragmento existe literalmente dentro del snapshot cuya huella aparece abajo.':'Atlanex no tiene snapshot + hash + coincidencia exacta suficientes para verificar este criterio.'}</span></div></div>
   </div>
   ${snap?`<div class="snapshotCard"><div class="snapshotTop"><b>${esc(snap.title||domainOf(snap.url))}</b><span>${esc(new Date(snap.fetchedAt).toLocaleString())}</span></div><div class="snapshotHash">SHA-256 ${esc(snap.contentHash)}</div><div class="snapshotMeta">${esc(snap.url)} · HTTP ${esc(snap.httpStatus||'')} · ${esc(snap.extractor||'')}</div></div>`:''}
   <div class="traceSources">${sources.slice(0,6).map((s,i)=>`<div class="traceSource"><div><b>${esc(s.title)}</b><span>${esc(SRC[s.source]?.label||s.source)} · ${esc(s.url||'sin URL')}</span></div><button class="btn" data-proof-source="${i}">Abrir</button></div>`).join('')||'<div class="caseEmpty">No hay fuentes con URL almacenadas para esta entidad.</div>'}</div>
@@ -2280,7 +2310,7 @@ function renderProofTrace(e,c,r){
 function renderMCEvidence(e){
  if(!e){
    $('mcEvidenceCounter').textContent=`${mcSourceCount()} fuentes`;
-   $('mcEvidenceBody').innerHTML=`<div class="mcConflictEmpty">Selecciona una entidad del mapa. Atlas mostrará la cadena <b>objetivo → entidad → criterio → evidencia → fuente</b>.</div>`;
+   $('mcEvidenceBody').innerHTML=`<div class="mcConflictEmpty">Selecciona una entidad del mapa. Atlanex mostrará la cadena <b>objetivo → entidad → criterio → evidencia → fuente</b>.</div>`;
    return
  }
  const claims=criteria.map(c=>({c,r:e.criteria?.[c.id]}));
@@ -2325,7 +2355,7 @@ function detectEvidenceConflicts(){
 }
 function renderMCConflicts(){
  const list=detectEvidenceConflicts();$('mcConflictCount').textContent=list.length;
- $('mcConflictBody').innerHTML=list.length?list.map(c=>`<div class="mcConflictItem"><div class="mcConflictSide pos"><b>${esc(c.a.source||'fuente')}</b><br>${esc(c.a.text.slice(0,190))}</div><div class="mcVS">VS</div><div class="mcConflictSide neg"><b>${esc(c.b.source||'fuente')}</b><br>${esc(c.b.text.slice(0,190))}</div></div>`).join(''):`<div class="mcConflictEmpty">No hay conflictos textuales confirmables en este run. Atlas no fabricará una contradicción para llenar este panel.</div>`;
+ $('mcConflictBody').innerHTML=list.length?list.map(c=>`<div class="mcConflictItem"><div class="mcConflictSide pos"><b>${esc(c.a.source||'fuente')}</b><br>${esc(c.a.text.slice(0,190))}</div><div class="mcVS">VS</div><div class="mcConflictSide neg"><b>${esc(c.b.source||'fuente')}</b><br>${esc(c.b.text.slice(0,190))}</div></div>`).join(''):`<div class="mcConflictEmpty">No hay conflictos textuales confirmables en este run. Atlanex no fabricará una contradicción para llenar este panel.</div>`;
 }
 function renderMCRuns(){
  const runs=project?.runs||[];$('mcRunsCount').textContent=runs.length;$('mcNavRuns').textContent=runs.length;$('mcStatRuns').textContent=runs.length;
@@ -2467,7 +2497,7 @@ function exportProofBundle(){
      verification:'exact-source-snapshot'
    }))
  };
- downloadBlob((project.name||'Atlas').replace(/[^\w-]+/g,'_')+'_Proof_Bundle.json',JSON.stringify(bundle,null,2),'application/json');
+ downloadBlob((project.name||'Atlanex').replace(/[^\w-]+/g,'_')+'_Proof_Bundle.json',JSON.stringify(bundle,null,2),'application/json');
  if(rejected)toast('Proof Bundle exportado; '+rejected+' prueba(s) obsoletas o no verificables fueron excluidas',5000)
 }
 
@@ -2638,7 +2668,7 @@ async function closeEvidenceGaps(){
  const unique=[...new Set(gaps.map(x=>x.e))];
  for(const e of unique){await inspectEntity(e,true);evaluateAll();renderMissionControl()}
  if(current){current.entities=entities;current.coverage=coverage();current.memo=memo();saveState()}
- renderAll();setStatus('LISTO',`${evidenceGapCount()} gaps pendientes`);toast('Atlas intentó cerrar los gaps con las páginas disponibles')
+ renderAll();setStatus('LISTO',`${evidenceGapCount()} gaps pendientes`);toast('Atlanex intentó cerrar los gaps con las páginas disponibles')
 }
 function renderCaseFile(){
  project.caseFile=Array.isArray(project.caseFile)?project.caseFile:[];
@@ -2649,8 +2679,8 @@ function renderCaseFile(){
 function exportCaseFile(){
  const items=project.caseFile||[];if(!items.length)return toast('Case File está vacío');
  const body=items.map(x=>`<section><h2>${esc(x.entity)}</h2><p><b>${esc(x.criterion)}:</b> ${esc(String(x.value))} · Verificado por snapshot exacto</p><blockquote>${esc((x.evidence||[])[0]||'')}</blockquote><p><b>URL:</b> ${esc(x.snapshot?.url||x.proof?.url||'')}</p><p><b>SHA-256:</b> <code>${esc(x.snapshot?.contentHash||x.proof?.contentHash||'')}</code></p><p><b>Capturado:</b> ${esc(x.snapshot?.fetchedAt||x.proof?.fetchedAt||'')}</p></section>`).join('');
- const doc=`<!doctype html><meta charset="utf-8"><title>Atlas Case File</title><style>body{font:15px system-ui;max-width:900px;margin:40px auto;padding:0 22px;color:#142033}section{padding:18px 0;border-bottom:1px solid #ddd}blockquote{background:#f5f7fa;padding:12px;border-left:4px solid #4d8dff}code{word-break:break-all}</style><h1>${esc(project.name)} — Verified Case File</h1><p>${esc(current?.objective||'')}</p><p>Cada claim incluido aquí fue respaldado por un fragmento literal dentro de un snapshot de fuente identificado por SHA-256.</p>${body}`;
- downloadBlob((project.name||'Atlas').replace(/[^\w-]+/g,'_')+'_Verified_Case_File.html',doc,'text/html')
+ const doc=`<!doctype html><meta charset="utf-8"><title>Atlanex Case File</title><style>body{font:15px system-ui;max-width:900px;margin:40px auto;padding:0 22px;color:#142033}section{padding:18px 0;border-bottom:1px solid #ddd}blockquote{background:#f5f7fa;padding:12px;border-left:4px solid #4d8dff}code{word-break:break-all}</style><h1>${esc(project.name)} — Verified Case File</h1><p>${esc(current?.objective||'')}</p><p>Cada claim incluido aquí fue respaldado por un fragmento literal dentro de un snapshot de fuente identificado por SHA-256.</p>${body}`;
+ downloadBlob((project.name||'Atlanex').replace(/[^\w-]+/g,'_')+'_Verified_Case_File.html',doc,'text/html')
 }
 function renderDecisionRibbon(){
  const req=criteria.filter(c=>c.required),top=entities[0],parts=[];
@@ -2811,7 +2841,7 @@ function plain(r){if(!r)return'?';if(r.value==='yes')return r.verified?'sí ✓'
 function exportData(){
  if(!current)return toast('Primero investiga');
  const payload={project:project.name,objective:current.objective,mode:current.mode,depth:current.depth,coverage:current.coverage,criteria,entities,audit:current.audit,diff:current.diff,exportedAt:new Date().toISOString()};
- const a=document.createElement('a'),b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});a.href=URL.createObjectURL(b);a.download='Internet_Atlas_Data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+ const a=document.createElement('a'),b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});a.href=URL.createObjectURL(b);a.download='Atlanex_Data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
 function exportReport(){
  if(!current)return toast('Primero investiga');const head='<th>Entidad</th><th>Score</th>'+criteria.map(c=>`<th>${esc(c.label)}</th>`).join('');const rows=entities.slice(0,20).map(e=>`<tr><td>${esc(e.title)}</td><td>${e.score}</td>${criteria.map(c=>`<td>${esc(plain(e.criteria?.[c.id]))}</td>`).join('')}</tr>`).join('');
@@ -3021,7 +3051,7 @@ body.booting{overflow:hidden!important}
 @media(max-width:1000px){.liveGraph{width:calc(100vw - 30px);bottom:55px}.replayEvent{grid-template-columns:48px 70px 1fr}.runComparePick{grid-template-columns:1fr}.runComparePick>span{display:none}}
 
 </style><h1>${esc(current.objective)}</h1><p>${esc(current.memo||memo())}</p><p><b>Cobertura:</b> ${current.coverage}%</p><table><tr>${head}</tr>${rows}</table>${auditHtml}<h2>Evidencia</h2>${claims}`;
- const a=document.createElement('a'),b=new Blob([doc],{type:'text/html'});a.href=URL.createObjectURL(b);a.download='Internet_Atlas_Report.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+ const a=document.createElement('a'),b=new Blob([doc],{type:'text/html'});a.href=URL.createObjectURL(b);a.download='Atlanex_Report.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
 
 function buildGraph(obj){
