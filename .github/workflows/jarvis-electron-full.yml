@@ -48,6 +48,16 @@ jobs:
           if (-not (Select-String -Path '.\PRIVATE_SAPI_CONTRACT.txt' -Pattern 'PRIVATE_SAPI_CONTRACT=PASS' -Quiet)) { throw 'Private SAPI contract did not report PASS' }
           if (Select-String -Path '.\work\app\src\jarvis_gm\perception\voice\windows_sapi.py' -SimpleMatch 'Dispatch("SAPI.SpSharedRecognizer")' -Quiet) { throw 'Shared Windows Speech recognizer still present' }
 
+      - name: Run resilient Windows voice contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python '.\jarvis-electron\resilient_voice_contract_test.py' | Tee-Object -FilePath '.\RESILIENT_VOICE_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Resilient Windows voice contract failed' }
+          if (-not (Select-String -Path '.\RESILIENT_VOICE_CONTRACT.txt' -Pattern 'RESILIENT_WINDOWS_VOICE_CONTRACT=PASS' -Quiet)) { throw 'Resilient voice contract did not report PASS' }
+          powershell.exe -NoLogo -NoProfile -NonInteractive -Command "Add-Type -AssemblyName System.Speech; if (-not ('System.Speech.Recognition.SpeechRecognitionEngine' -as [type])) { exit 22 }; Write-Host 'SYSTEM_SPEECH_ASSEMBLY=PASS'"
+          if ($LASTEXITCODE -ne 0) { throw 'System.Speech assembly fallback unavailable on Windows runner' }
+
       - name: Install backend build dependencies
         shell: pwsh
         run: |
@@ -233,6 +243,8 @@ jobs:
           Voice-first integration: PASS
           Voice autostart attempt: PASS
           Private in-process SAPI (no Windows Speech Recognition toolbar): PASS
+          Late-bound SAPI (avoids gen_py wrappers): PASS
+          Hidden System.Speech fallback contract: PASS
           Cinematic HUD contract: PASS
           Main surface chat UI: ABSENT
           Reactive reactor canvas: PASS

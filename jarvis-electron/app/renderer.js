@@ -221,7 +221,12 @@ window.jarvis.onEvent((evt)=>{
     $('voiceBadge').textContent=ok?'LISTENING':(evt.status==='error'||evt.status==='unavailable'?'VOICE ERROR':'VOICE INITIALIZING');
     $('voiceBadge').classList.toggle('bad',evt.status==='error'||evt.status==='unavailable');
     $('presenceOrb').classList.toggle('listening',ok);
-    if(evt.status==='error'||evt.status==='unavailable') setHudMessage('jarvis',`La voz no está disponible: ${evt.detail||evt.status}`);
+    if(evt.status==='error'||evt.status==='unavailable'){
+      $('wakeHint').textContent='VOICE OFFLINE';
+      setHudMessage('jarvis',`VOICE ERROR // ${evt.detail||evt.status}`);
+    } else if(evt.status==='starting'){
+      $('wakeHint').textContent='VOICE STARTING';
+    }
   }
   if(evt.event==='voice-wake'){
     $('wakeHint').textContent='TE ESCUCHO';

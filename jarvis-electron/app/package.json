@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - cinematic ambient voice OS",
+  "description": "JARVIS GM Infinity 7 - cinematic ambient voice OS with resilient dual Windows speech engine",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
