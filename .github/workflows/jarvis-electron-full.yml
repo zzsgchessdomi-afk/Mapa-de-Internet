@@ -169,6 +169,14 @@ jobs:
           Set-Location '.\jarvis-electron\app'
           npm install --no-audit --no-fund
 
+      - name: Run ambient runtime contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          node '.\jarvis-electron\app\ambient_runtime_contract_test.js' | Tee-Object -FilePath '.\AMBIENT_RUNTIME_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Ambient runtime contract failed' }
+          if (-not (Select-String -Path '.\AMBIENT_RUNTIME_CONTRACT.txt' -Pattern 'AMBIENT_RUNTIME_CONTRACT=PASS' -Quiet)) { throw 'Ambient runtime contract did not report PASS' }
+
       - name: Run source syntax and wiring audit
         shell: pwsh
         run: |

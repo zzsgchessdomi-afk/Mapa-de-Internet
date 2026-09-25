@@ -1,10 +1,13 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
 let win=null, backend=null, backendReady=false, nextId=1, buffer='', shuttingDown=false;
 const pending=new Map();
+const gotLock=app.requestSingleInstanceLock();
+if(!gotLock){app.quit();}
+app.on('second-instance',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}});
 
 function backendPath(){if(process.env.JARVIS_BACKEND_EXE)return process.env.JARVIS_BACKEND_EXE;return path.join(process.resourcesPath,'backend','jarvis_bridge.exe');}
 function logFile(){return path.join(app.getPath('userData'),'electron-backend.log');}
@@ -50,7 +53,12 @@ app.whenReady().then(async()=>{
     else if(action==='close')win.close();
     return true;
   });
-  try{startBackend();createWindow();}catch(err){appendLog(`FATAL_START ${err.stack||err}`);dialog.showErrorBox('JARVIS GM',`No se pudo iniciar el núcleo completo de JARVIS.\n\n${err.message}`);app.quit();}
+  try{
+    startBackend();createWindow();
+    globalShortcut.register('CommandOrControl+Shift+J',()=>{if(!win||win.isDestroyed())return;if(win.isMinimized())win.restore();win.show();win.focus();});
+    globalShortcut.register('CommandOrControl+Shift+Space',()=>{if(!win||win.isDestroyed())return;if(win.isVisible())win.minimize();else{win.show();win.focus();}});
+  }catch(err){appendLog(`FATAL_START ${err.stack||err}`);dialog.showErrorBox('JARVIS GM',`No se pudo iniciar el núcleo completo de JARVIS.\n\n${err.message}`);app.quit();}
 });
 app.on('window-all-closed',()=>app.quit());
+app.on('will-quit',()=>{try{globalShortcut.unregisterAll();}catch(_){}});
 app.on('before-quit',()=>{shuttingDown=true;try{if(backend&&!backend.killed){backend.stdin.write(JSON.stringify({id:nextId++,op:'shutdown',args:{}})+'\n');setTimeout(()=>{try{backend.kill();}catch(_){}},1200).unref();}}catch(_){}});
