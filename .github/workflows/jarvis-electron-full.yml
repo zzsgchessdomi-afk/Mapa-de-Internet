@@ -137,6 +137,15 @@ jobs:
           if ($renderer -match 'TODO|FIXME') { throw 'TODO/FIXME found in renderer' }
           if ($html -notmatch 'Autonomous Workbench' -or $html -notmatch 'Cognitive Swarm' -or $html -notmatch 'Reality Bridge' -or $html -notmatch 'Guardian') { throw 'Core Infinity modules missing from Electron UI' }
 
+      - name: Run cinematic HUD contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-Location '.\jarvis-electron\app'
+          node '.\cinematic_contract_test.js' | Tee-Object -FilePath '..\..\CINEMATIC_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Cinematic HUD contract failed' }
+          if (-not (Select-String -Path '..\..\CINEMATIC_CONTRACT.txt' -Pattern 'CINEMATIC_VISUAL_CONTRACT=PASS' -Quiet)) { throw 'Cinematic HUD contract did not report PASS' }
+
       - name: Build unpacked Electron application
         shell: pwsh
         env:
@@ -224,6 +233,9 @@ jobs:
           Voice-first integration: PASS
           Voice autostart attempt: PASS
           Private in-process SAPI (no Windows Speech Recognition toolbar): PASS
+          Cinematic HUD contract: PASS
+          Main surface chat UI: ABSENT
+          Reactive reactor canvas: PASS
           Wake/TTS physical microphone acceptance: PENDING OWNER HARDWARE TEST
           localhost/127.0.0.1 transport: NOT USED
           User Python install: NOT REQUIRED
