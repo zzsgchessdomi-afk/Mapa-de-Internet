@@ -1,0 +1,157 @@
+const $ = (id) => document.getElementById(id);
+const fmt = (v) => typeof v === 'string' ? v : JSON.stringify(v, null, 2);
+const panelMeta = {
+  command:['JARVIS','Orden directa al núcleo real'],
+  perception:['Voz & Gestos','Percepción multimodal y capa de intención'],
+  memory:['Memoria','Continuidad, proyectos y contexto persistente'],
+  research:['Research Corps','Investigación multiagente con evidencia'],
+  workbench:['Autonomous Workbench','Trabajos persistentes y checkpoints'],
+  swarm:['Cognitive Swarm','Especialistas dinámicos, crítico y síntesis'],
+  skills:['Skills & Evolution','Skill Forge, benchmark y evolución controlada'],
+  world:['World Model','Modelo vivo de tu entorno y relaciones'],
+  mobile:['Móvil','Dispositivos autorizados y acciones móviles'],
+  reality:['Reality Bridge','Dispositivos físicos enrolados'],
+  security:['Guardian & Permisos','Autoridad final del propietario'],
+  settings:['IA & Diagnóstico','Proveedor, self-test y estado del release']
+};
+
+let status = null;
+let busyCount = 0;
+
+function busy(on){
+  busyCount += on ? 1 : -1;
+  busyCount = Math.max(0,busyCount);
+  document.body.classList.toggle('busy', busyCount>0);
+}
+
+async function call(op,args={},outputId=null){
+  busy(true);
+  try{
+    const result = await window.jarvis.invoke(op,args);
+    if(outputId) $(outputId).textContent = fmt(result);
+    return result;
+  }catch(err){
+    const text = `ERROR: ${err.message}`;
+    if(outputId) $(outputId).textContent = text;
+    else alert(text);
+    throw err;
+  }finally{busy(false)}
+}
+
+function renderStatus(s){
+  status = s;
+  const p = s.perception || {};
+  const items = [
+    ['Core', s.mode || 'Infinity 7'],
+    ['STOP', s.stop_engaged ? 'ENGAGED' : 'Ready'],
+    ['Voz', p.voice?.running ? 'ON' : 'OFF'],
+    ['Visión', p.vision?.running ? 'ON' : 'OFF'],
+    ['Workbench', `${s.workbench?.total ?? 0} jobs`],
+    ['World', `${s.world?.entities ?? 0} entities`]
+  ];
+  $('statusStrip').innerHTML = items.map(([a,b])=>`<div class="status-chip"><b>${a}</b><span>${String(b)}</span></div>`).join('');
+  $('providerBadge').textContent = s.provider || 'IA';
+  $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
+  $('resetStop').disabled = !s.stop_engaged;
+  $('backendDot').className = 'dot ok';
+  $('backendText').textContent = `Núcleo real ${s.version}`;
+  $('perceptionOutput').textContent = fmt(p);
+  renderPermissions(s.permissions || {});
+}
+
+async function refreshStatus(){
+  try{renderStatus(await call('status'));}
+  catch(_){$('backendDot').className='dot bad';$('backendText').textContent='Núcleo no disponible';}
+}
+
+function renderPermissions(perms){
+  const root=$('permissionsGrid');
+  root.innerHTML='';
+  Object.entries(perms).sort(([a],[b])=>a.localeCompare(b)).forEach(([cap,allowed])=>{
+    const row=document.createElement('div');row.className='perm';
+    const label=document.createElement('span');label.textContent=cap;
+    const input=document.createElement('input');input.type='checkbox';input.className='switch';input.checked=!!allowed;
+    input.addEventListener('change', async()=>{
+      input.disabled=true;
+      try{await call('set_permission',{capability:cap,allowed:input.checked});await refreshStatus();}
+      catch(_){input.checked=!input.checked}
+      finally{input.disabled=false}
+    });
+    row.append(label,input);root.appendChild(row);
+  });
+}
+
+for(const btn of document.querySelectorAll('.nav')){
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    const key=btn.dataset.panel;
+    $(`panel-${key}`).classList.add('active');
+    $('panelTitle').textContent=panelMeta[key][0];$('panelSubtitle').textContent=panelMeta[key][1];
+  });
+}
+
+document.querySelectorAll('[data-op]').forEach(btn=>btn.addEventListener('click',async()=>{
+  try{const r=await call(btn.dataset.op);$('perceptionOutput').textContent=fmt(r);await refreshStatus();}catch(_){}
+}));
+
+$('runGoal').addEventListener('click',async()=>{
+  const text=$('goalInput').value.trim();if(!text)return;
+  $('goalOutput').textContent='Ejecutando…';
+  try{await call('run_goal',{text},'goalOutput');}catch(_){}
+  await refreshStatus();
+});
+$('goalInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('runGoal').click()});
+$('screenNow').addEventListener('click',()=>call('screen_snapshot',{},'goalOutput'));
+$('refreshStatus').addEventListener('click',refreshStatus);
+$('stopBtn').addEventListener('click',async()=>{await call('stop');await refreshStatus();});
+$('resetStop').addEventListener('click',async()=>{await call('reset_stop');await refreshStatus();});
+$('speakBtn').addEventListener('click',()=>call('speak',{text:$('speakText').value},'perceptionOutput'));
+
+$('memoryRemember').addEventListener('click',()=>call('memory_remember',{title:$('memoryTitle').value,content:$('memoryContent').value},'memoryOutput'));
+$('memorySearch').addEventListener('click',()=>call('memory_search',{query:$('memoryQuery').value},'memoryOutput'));
+$('memoryResume').addEventListener('click',()=>call('memory_resume',{query:$('memoryQuery').value},'memoryOutput'));
+
+$('researchRun').addEventListener('click',()=>call('research_run',{question:$('researchQuestion').value,depth:$('researchDepth').value},'researchOutput'));
+$('researchList').addEventListener('click',()=>call('research_list',{},'researchOutput'));
+
+$('workCreate').addEventListener('click',()=>call('workbench_create',{goal:$('workGoal').value},'workOutput'));
+$('workCycle').addEventListener('click',()=>call('workbench_cycle',{},'workOutput'));
+$('workList').addEventListener('click',()=>call('workbench_list',{},'workOutput'));
+
+$('swarmRun').addEventListener('click',()=>call('swarm_run',{goal:$('swarmGoal').value},'swarmOutput'));
+$('swarmList').addEventListener('click',()=>call('swarm_list',{},'swarmOutput'));
+$('skillsList').addEventListener('click',()=>call('skills_list',{},'skillsOutput'));
+$('evolutionScan').addEventListener('click',()=>call('evolution_scan',{},'skillsOutput'));
+$('evolutionList').addEventListener('click',()=>call('evolution_list',{},'skillsOutput'));
+$('worldRefresh').addEventListener('click',()=>call('world_snapshot',{},'worldOutput'));
+$('mobileRefresh').addEventListener('click',()=>call('mobile_summary',{},'mobileOutput'));
+$('realityStatus').addEventListener('click',()=>call('reality_status',{},'realityOutput'));
+$('realityList').addEventListener('click',()=>call('reality_list',{},'realityOutput'));
+
+$('saveProvider').addEventListener('click',async()=>{
+  const result=await call('provider_set',{model:$('modelInput').value,api_key:$('apiKeyInput').value},'settingsOutput');
+  $('apiKeyInput').value='';$('providerBadge').textContent=result.active||'IA';await refreshStatus();
+});
+$('selfTest').addEventListener('click',()=>call('self_test',{},'settingsOutput'));
+$('diagnostics').addEventListener('click',()=>call('diagnostics',{},'settingsOutput'));
+$('releaseGate').addEventListener('click',()=>call('release_gate',{},'settingsOutput'));
+$('openLog').addEventListener('click',()=>window.jarvis.openLog());
+
+window.jarvis.onEvent((evt)=>{
+  if(evt.event==='ready'){refreshStatus();}
+  if(evt.event==='fatal'||evt.event==='backend-exit'){
+    $('backendDot').className='dot bad';$('backendText').textContent='Núcleo detenido';
+    $('goalOutput').textContent=`El núcleo JARVIS se detuvo: ${evt.error||evt.code||'error desconocido'}`;
+  }
+});
+
+(async()=>{
+  const state=await window.jarvis.state();
+  if(state.ready) await refreshStatus();
+  else setTimeout(refreshStatus,1200);
+  try{
+    const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;$('providerBadge').textContent=p.active||'IA';
+  }catch(_){}
+})();
