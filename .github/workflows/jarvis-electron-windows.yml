@@ -12,7 +12,7 @@ permissions:
 jobs:
   electron-windows-gate:
     runs-on: windows-latest
-    timeout-minutes: 55
+    timeout-minutes: 70
 
     steps:
       - name: Checkout JARVIS Electron branch
@@ -27,6 +27,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle 9.6
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
 
       - name: Validate embedded Infinity 7 payload
         shell: pwsh
@@ -50,6 +61,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path jarvis-payload | Out-Null
           Expand-Archive -LiteralPath .\jarvis-ci\payload.zip -DestinationPath .\jarvis-payload -Force
           python -m pip install --upgrade pip wheel setuptools
+          python -m pip install "opencv-contrib-python<5"
           python -m pip install '.\jarvis-payload\app[windows]' 'pyinstaller>=6.22,<7'
           python -c "import jarvis_gm; assert jarvis_gm.__version__ == '1.7.0rc1'; print('jarvis-core-version-ok')"
           python -m jarvis_gm.self_test
@@ -61,19 +73,21 @@ jobs:
           Remove-Item .\electron\backend-build -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item .\electron\backend-work -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item .\electron\backend-spec -Recurse -Force -ErrorAction SilentlyContinue
-          python -m PyInstaller .\electron\backend\electron_bridge.py \
-            --noconfirm --clean --onedir --console \
-            --name jarvis_core \
-            --distpath .\electron\backend-build \
-            --workpath .\electron\backend-work \
-            --specpath .\electron\backend-spec \
-            --collect-all mediapipe \
-            --collect-all cv2 \
-            --collect-all PIL \
-            --collect-submodules win32com \
-            --hidden-import pythoncom \
-            --hidden-import pywintypes \
-            --hidden-import keyring.backends.Windows
+          $pyi = @(
+            '.\electron\backend\electron_bridge.py',
+            '--noconfirm','--clean','--onedir','--console',
+            '--name','jarvis_core',
+            '--distpath','.\electron\backend-build',
+            '--workpath','.\electron\backend-work',
+            '--specpath','.\electron\backend-spec',
+            '--collect-all','mediapipe',
+            '--collect-all','keyring',
+            '--collect-submodules','win32com',
+            '--hidden-import','pythoncom',
+            '--hidden-import','pywintypes',
+            '--hidden-import','keyring.backends.Windows'
+          )
+          python -m PyInstaller @pyi
           $built = '.\electron\backend-build\jarvis_core'
           if (!(Test-Path "$built\jarvis_core.exe")) { throw 'jarvis_core.exe not produced' }
           Remove-Item .\electron\backend-dist -Recurse -Force -ErrorAction SilentlyContinue
@@ -84,8 +98,47 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $p = Start-Process -FilePath .\electron\backend-dist\jarvis_core.exe -ArgumentList '--smoke' -Wait -PassThru -NoNewWindow
-          if ($p.ExitCode -ne 0) { throw "jarvis_core smoke failed with exit code $($p.ExitCode)" }
+          $out = & .\electron\backend-dist\jarvis_core.exe --smoke 2>&1
+          $code = $LASTEXITCODE
+          $out | Write-Host
+          if ($code -ne 0) { throw "jarvis_core smoke failed with exit code $code" }
+          $joined = ($out -join [Environment]::NewLine)
+          if ($joined -notmatch '"ok"\s*:\s*true') { throw 'jarvis_core smoke did not report ok=true' }
+
+      - name: Prepare owner source bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = '.\jarvis-ci\JARVIS_GM_OWNER_SOURCE_1.7.0rc1.zip'
+          if (!(Test-Path $src)) { throw 'Owner source bundle missing' }
+          Remove-Item .\electron\owner-dist -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path .\electron\owner-dist | Out-Null
+          Copy-Item $src .\electron\owner-dist\JARVIS_GM_OWNER_SOURCE_1.7.0rc1.zip -Force
+
+      - name: Build installable Android companion debug APK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Remove-Item .\owner-src -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path .\owner-src | Out-Null
+          Expand-Archive -LiteralPath .\jarvis-ci\JARVIS_GM_OWNER_SOURCE_1.7.0rc1.zip -DestinationPath .\owner-src -Force
+          if ($env:ANDROID_HOME) {
+            $sdkmanager = Join-Path $env:ANDROID_HOME 'cmdline-tools\latest\bin\sdkmanager.bat'
+            if (Test-Path $sdkmanager) {
+              & $sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+              if ($LASTEXITCODE -ne 0) { throw 'sdkmanager failed' }
+            }
+          }
+          Push-Location .\owner-src\android_companion
+          try {
+            gradle --no-daemon --stacktrace assembleDebug
+            if ($LASTEXITCODE -ne 0) { throw 'Android companion build failed' }
+          } finally { Pop-Location }
+          $apk = '.\owner-src\android_companion\app\build\outputs\apk\debug\app-debug.apk'
+          if (!(Test-Path $apk)) { throw 'Android debug APK was not produced' }
+          Remove-Item .\electron\mobile-dist -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path .\electron\mobile-dist | Out-Null
+          Copy-Item $apk .\electron\mobile-dist\JARVIS_GM_Companion_debug.apk -Force
 
       - name: Install Electron build dependencies
         shell: pwsh
@@ -117,7 +170,6 @@ jobs:
           $exe = (Get-ChildItem .\dist\JARVIS_GM_Electron_*_x64.exe | Select-Object -First 1).FullName
           $p = Start-Process -FilePath $exe -ArgumentList '--ci-smoke' -Wait -PassThru
           if ($p.ExitCode -ne 0) {
-            $logRoot = Join-Path $env:APPDATA 'JARVIS GM'
             Get-ChildItem $env:APPDATA -Recurse -Filter jarvis-core.log -ErrorAction SilentlyContinue | ForEach-Object {
               Write-Host "==== $($_.FullName) ===="
               Get-Content $_.FullName -Tail 250
@@ -126,7 +178,6 @@ jobs:
           }
 
       - name: Calculate SHA-256
-        id: hash
         shell: pwsh
         working-directory: electron
         run: |
