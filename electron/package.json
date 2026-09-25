@@ -1,0 +1,48 @@
+{
+  "name": "jarvis-gm-electron",
+  "version": "1.7.0-rc.1",
+  "description": "JARVIS GM Infinity 7 — Electron desktop shell with the full JARVIS core",
+  "main": "src/main.js",
+  "author": "Owner-controlled JARVIS project",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable --x64",
+    "dist:dir": "electron-builder --win dir --x64"
+  },
+  "devDependencies": {
+    "electron": "39.0.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "com.jarvisgm.desktop",
+    "productName": "JARVIS GM",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend-dist",
+        "to": "backend",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "JARVIS_GM_Electron_${version}_x64.exe",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "portable": {
+      "artifactName": "JARVIS_GM_Electron_${version}_x64.exe",
+      "requestExecutionLevel": "user"
+    }
+  }
+}
