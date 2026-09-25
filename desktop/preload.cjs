@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('atlasDesktop',{
  aiSecretStatus:()=>ipcRenderer.invoke('atlas:ai-secret-status'),
  setAISecret:(provider,key)=>ipcRenderer.invoke('atlas:ai-secret-set',{provider,key}),
  clearAISecret:(provider)=>ipcRenderer.invoke('atlas:ai-secret-clear',provider),
+ cloudChat:(messages)=>ipcRenderer.invoke('atlas:cloud-chat',{messages}),
 
  pickResearchFiles:()=>ipcRenderer.invoke('atlas:pick-research-files'),
  openEvidenceViewer:(url,title)=>ipcRenderer.invoke('atlas:open-evidence',{url,title}),
