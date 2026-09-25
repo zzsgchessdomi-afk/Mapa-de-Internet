@@ -1,0 +1,66 @@
+name: VoicePresence Electron Windows Build
+
+on:
+  push:
+    branches:
+      - voicepresence-electron-build-200
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout temporary build branch
+        uses: actions/checkout@v4
+
+      - name: Rehydrate VoicePresence source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force voicepresence-electron | Out-Null
+          $parts = Get-ChildItem ".vpbuild\source.part.*" | Sort-Object Name
+          if ($parts.Count -ne 6) { throw "Expected 6 source chunks, found $($parts.Count)" }
+          $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          [IO.File]::WriteAllBytes("$PWD\.vpbuild\source.tar.xz", [Convert]::FromBase64String($b64))
+          tar -xJf ".vpbuild\source.tar.xz" -C "voicepresence-electron"
+          if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install exact dependencies
+        working-directory: voicepresence-electron
+        run: npm install --no-audit --no-fund
+
+      - name: Audit project matrix
+        working-directory: voicepresence-electron
+        run: npm test
+
+      - name: Build portable Electron EXE
+        working-directory: voicepresence-electron
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder --win portable --x64
+
+      - name: Verify Windows binary
+        shell: pwsh
+        run: |
+          $p = "voicepresence-electron\dist\VoicePresence-2.0.0-Windows-x64.exe"
+          if (!(Test-Path $p)) { throw "EXE missing" }
+          $f = Get-Item $p
+          if ($f.Length -lt 50000000) { throw "EXE unexpectedly small: $($f.Length)" }
+          Get-FileHash $p -Algorithm SHA256
+          Write-Host "EXE_BYTES=$($f.Length)"
+
+      - name: Upload one-click Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoicePresence-Windows-x64
+          path: voicepresence-electron/dist/VoicePresence-2.0.0-Windows-x64.exe
+          if-no-files-found: error
+          retention-days: 1
