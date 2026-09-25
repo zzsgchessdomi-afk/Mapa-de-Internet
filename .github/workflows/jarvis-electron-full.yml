@@ -1,0 +1,217 @@
+name: JARVIS Electron Full Gate
+
+on:
+  push:
+    branches:
+      - jarvis-electron-final
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  electron-full-windows:
+    runs-on: windows-latest
+    timeout-minutes: 70
+
+    steps:
+      - name: Checkout temporary branch
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Extract full Infinity 7 source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if (!(Test-Path '.\jarvis-ci\payload.zip')) { throw 'Infinity 7 payload missing' }
+          Remove-Item '.\work' -Recurse -Force -ErrorAction SilentlyContinue
+          Expand-Archive '.\jarvis-ci\payload.zip' '.\work' -Force
+          if (!(Test-Path '.\work\app\src\jarvis_gm\runtime.py')) { throw 'Full JARVIS runtime missing' }
+          Copy-Item '.\jarvis-electron\electron_bridge.py' '.\work\app\src\jarvis_gm\electron_bridge.py' -Force
+
+      - name: Install backend build dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m pip install --upgrade pip
+          python -m pip install -e '.\work\app[windows]' 'pyinstaller>=6.22,<7'
+
+      - name: Run Infinity 7 self-test on Windows source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:PYTHONPATH=(Resolve-Path '.\work\app\src')
+          python -m jarvis_gm.self_test | Tee-Object -FilePath '.\SELFTEST_SOURCE.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Infinity 7 source self-test failed on Windows' }
+          if (-not (Select-String -Path '.\SELFTEST_SOURCE.txt' -Pattern 'RESULT=PASS' -Quiet)) { throw 'Self-test did not report PASS' }
+
+      - name: Freeze full JARVIS core as private backend
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          pyinstaller --noconfirm --clean --onedir --name jarvis_bridge `
+            --paths '.\work\app\src' `
+            --collect-all mediapipe `
+            --collect-all cv2 `
+            --collect-all pywinauto `
+            --collect-all keyring `
+            --collect-all cryptography `
+            --collect-all PIL `
+            --collect-all comtypes `
+            --collect-all sounddevice `
+            '.\jarvis-electron\electron_bridge.py'
+          if (!(Test-Path '.\dist\jarvis_bridge\jarvis_bridge.exe')) { throw 'Frozen JARVIS backend missing' }
+
+      - name: Smoke-test frozen backend IPC and self-test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          @'
+          {"id":1,"op":"ping"}
+          {"id":2,"op":"status"}
+          {"id":3,"op":"world_snapshot"}
+          {"id":4,"op":"self_test"}
+          {"id":5,"op":"shutdown"}
+          '@ | Set-Content '.\bridge_input.txt' -Encoding utf8NoBOM
+          cmd /c "dist\jarvis_bridge\jarvis_bridge.exe < bridge_input.txt > bridge_output.txt 2> bridge_error.txt"
+          if ($LASTEXITCODE -ne 0) { Get-Content '.\bridge_error.txt'; throw 'Frozen backend process failed' }
+          $lines=Get-Content '.\bridge_output.txt' | Where-Object { $_.Trim() }
+          if ($lines.Count -lt 6) { Get-Content '.\bridge_output.txt'; throw 'Frozen backend output incomplete' }
+          $parsed=@($lines | ForEach-Object { $_ | ConvertFrom-Json })
+          if (-not ($parsed | Where-Object { $_.event -eq 'ready' })) { throw 'Backend never became ready' }
+          $ping=$parsed | Where-Object { $_.id -eq 1 }
+          $status=$parsed | Where-Object { $_.id -eq 2 }
+          $self=$parsed | Where-Object { $_.id -eq 4 }
+          if (-not $ping.ok) { throw 'Ping failed' }
+          if (-not $status.ok) { throw 'Status failed' }
+          if (-not $self.ok) { throw 'Frozen Infinity 7 self-test failed' }
+
+      - name: Prepare Electron app with frozen full core
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dst='.\jarvis-electron\app\backend-dist'
+          Remove-Item $dst -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path $dst | Out-Null
+          Copy-Item '.\dist\jarvis_bridge\*' $dst -Recurse -Force
+          Set-Location '.\jarvis-electron\app'
+          npm install --no-audit --no-fund
+
+      - name: Assert UI has no decorative dead buttons
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $html=Get-Content '.\jarvis-electron\app\index.html' -Raw
+          $renderer=Get-Content '.\jarvis-electron\app\renderer.js' -Raw
+          if ($html -match 'coming soon|placeholder|demo|mock') { throw 'Decorative placeholder text found in UI' }
+          if ($renderer -match 'TODO|FIXME') { throw 'TODO/FIXME found in renderer' }
+          if ($html -notmatch 'Autonomous Workbench' -or $html -notmatch 'Cognitive Swarm' -or $html -notmatch 'Reality Bridge' -or $html -notmatch 'Guardian') { throw 'Core Infinity modules missing from Electron UI' }
+
+      - name: Build unpacked Electron application
+        shell: pwsh
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-Location '.\jarvis-electron\app'
+          npx electron-builder --win dir --x64
+          if (!(Test-Path '.\dist\win-unpacked\JARVIS GM.exe')) { throw 'Electron unpacked EXE missing' }
+          if (!(Test-Path '.\dist\win-unpacked\resources\backend\jarvis_bridge.exe')) { throw 'Full JARVIS backend was not embedded' }
+
+      - name: Smoke-test unpacked Electron plus real backend
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Get-Process 'JARVIS GM',jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $exe=(Resolve-Path '.\jarvis-electron\app\dist\win-unpacked\JARVIS GM.exe').Path
+          $p=Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 18
+          $p.Refresh()
+          if ($p.HasExited) { throw "Electron app exited during smoke test: $($p.ExitCode)" }
+          $log=Get-ChildItem $env:APPDATA -Filter 'electron-backend.log' -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $log) { throw 'Electron backend log not found' }
+          $text=Get-Content $log.FullName -Raw
+          if ($text -notmatch 'event.*ready') { Get-Content $log.FullName -Tail 200; throw 'Electron did not receive backend ready event' }
+          Stop-Process -Id $p.Id -Force
+          Get-Process jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+      - name: Build professional NSIS installer
+        shell: pwsh
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-Location '.\jarvis-electron\app'
+          npx electron-builder --win nsis --x64
+          $setup=Get-ChildItem '.\dist\JARVIS_GM_Setup_*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $setup) { throw 'NSIS installer not produced' }
+          Write-Host "SETUP=$($setup.FullName)"
+
+      - name: Install silently and test installed Electron app
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Get-Process 'JARVIS GM',jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $setup=Get-ChildItem '.\jarvis-electron\app\dist\JARVIS_GM_Setup_*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $ip=Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
+          if ($ip.ExitCode -ne 0) { throw "Installer returned $($ip.ExitCode)" }
+          $candidates=@(
+            "$env:LOCALAPPDATA\Programs\JARVIS GM\JARVIS GM.exe",
+            "$env:LOCALAPPDATA\Programs\jarvis-gm-electron\JARVIS GM.exe"
+          )
+          $installed=$candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $installed) { throw 'Installed JARVIS GM.exe not found' }
+          $p=Start-Process -FilePath $installed -PassThru
+          Start-Sleep -Seconds 18
+          $p.Refresh()
+          if ($p.HasExited) { throw "Installed Electron app exited during startup: $($p.ExitCode)" }
+          $log=Get-ChildItem $env:APPDATA -Filter 'electron-backend.log' -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $log) { throw 'Installed Electron backend log missing' }
+          $text=Get-Content $log.FullName -Raw
+          if ($text -notmatch 'event.*ready') { Get-Content $log.FullName -Tail 200; throw 'Installed app backend did not become ready' }
+          Stop-Process -Id $p.Id -Force
+          Get-Process jarvis_bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+      - name: Produce validation report
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $setup=Get-ChildItem '.\jarvis-electron\app\dist\JARVIS_GM_Setup_*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $hash=(Get-FileHash $setup.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          @"
+          JARVIS GM Electron Full Gate
+          ============================
+          Windows runner: PASS
+          Infinity 7 source self-test: PASS
+          Frozen backend IPC: PASS
+          Frozen backend self-test: PASS
+          Electron unpacked startup: PASS
+          Full backend embedded: PASS
+          NSIS installer: PASS
+          Silent install: PASS
+          Installed Electron startup: PASS
+          Backend ready after install: PASS
+          localhost/127.0.0.1 transport: NOT USED
+          User Python install: NOT REQUIRED
+          User CMD/PowerShell: NOT REQUIRED
+          SHA256: $hash
+          "@ | Set-Content '.\JARVIS_ELECTRON_WINDOWS_VALIDATION.txt' -Encoding utf8
+
+      - name: Upload Windows-tested JARVIS Electron installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS_GM_ELECTRON_FULL_WINDOWS_TESTED
+          path: |
+            jarvis-electron/app/dist/JARVIS_GM_Setup_*.exe
+            JARVIS_ELECTRON_WINDOWS_VALIDATION.txt
+          if-no-files-found: error
+          retention-days: 7
