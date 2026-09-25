@@ -33,3 +33,7 @@ input,textarea,select{width:100%;background:#02090c;color:#dff9ff;border:1px sol
 .hidden{display:none!important}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @keyframes spin{to{transform:rotate(360deg)}}@keyframes spinr{to{transform:rotate(-360deg)}}@keyframes aura{0%,100%{transform:scale(.95);opacity:.54}50%{transform:scale(1.08);opacity:.96}}@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}@keyframes eq{0%,100%{height:2px;opacity:.28}50%{height:10px;opacity:1}}
 @media(max-width:900px){.grid.two{grid-template-columns:1fr}.overlay-panel{padding:4vh 3vw}.overlay-window{height:92vh}.dock-btn{width:25px}.telemetry-rail{display:none}}
+/* Frameless-window usability when fullscreen is toggled off. */
+.top-mark{-webkit-app-region:drag}
+.top-mark span{-webkit-app-region:drag}
+.window-hotzone,.window-controls,.window-controls button,.dock,.dock-btn,.panic-stop,.rearm,.text-fallback{-webkit-app-region:no-drag}

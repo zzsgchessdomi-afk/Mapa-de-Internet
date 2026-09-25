@@ -144,6 +144,11 @@ window.jarvis.onEvent(evt=>{
     $('voiceBadge').textContent=ok?'ONLINE':(evt.status==='error'||evt.status==='unavailable'?'VOICE OFFLINE':'STARTING');
     $('presenceOrb').classList.toggle('listening',ok);
     if(ok){$('voiceBadge').classList.remove('bad');setMode('listening');$('lastResponse').textContent='SYSTEM READY';}
+    else if(evt.status==='tts-error'){
+      $('lastResponse').textContent='VOICE OUTPUT UNAVAILABLE';
+      if($('perceptionOutput'))$('perceptionOutput').textContent='TTS DETAIL\n'+lastVoiceDetail;
+      if(status?.perception?.voice?.running){$('voiceBadge').textContent='ONLINE';setMode('listening');}
+    }
     else if(evt.status==='error'||evt.status==='unavailable'){$('voiceBadge').classList.add('bad');setMode('voice-offline');$('lastResponse').textContent='VOICE ENGINE UNAVAILABLE';if($('perceptionOutput'))$('perceptionOutput').textContent='VOICE DETAIL\n'+lastVoiceDetail;}
     else setMode('boot','VOICE STARTING');
   }

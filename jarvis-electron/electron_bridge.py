@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import glob
 import json
 import os
 import queue
@@ -409,7 +410,14 @@ def _first_existing(candidates: list[str]) -> str | None:
         resolved = shutil.which(candidate)
         if resolved:
             return resolved
-        p = Path(os.path.expandvars(candidate)).expanduser()
+        expanded = os.path.expandvars(candidate)
+        if "*" in expanded or "?" in expanded:
+            hits = sorted((Path(x) for x in glob.glob(expanded)), key=lambda p: p.stat().st_mtime if p.exists() else 0, reverse=True)
+            for hit in hits:
+                if hit.is_file():
+                    return str(hit)
+            continue
+        p = Path(expanded).expanduser()
         if p.is_file():
             return str(p)
     return None
@@ -427,7 +435,7 @@ def _register_owner_apps(runtime) -> dict[str, str]:
         "firefox": ["firefox.exe", rf"{pf}\Mozilla Firefox\firefox.exe", rf"{pfx86}\Mozilla Firefox\firefox.exe"],
         "vscode": ["code.exe", rf"{local}\Programs\Microsoft VS Code\Code.exe", rf"{pf}\Microsoft VS Code\Code.exe"],
         "spotify": ["Spotify.exe", rf"{roaming}\Spotify\Spotify.exe"],
-        "discord": ["Discord.exe", rf"{local}\Discord\Update.exe"],
+        "discord": ["Discord.exe", rf"{local}\Discord\app-*\Discord.exe"],
         "wps": ["wps.exe", rf"{local}\Kingsoft\WPS Office\ksolaunch.exe"],
     }
     aliases = {
@@ -449,6 +457,13 @@ def _register_owner_apps(runtime) -> dict[str, str]:
         if target in found:
             try:
                 runtime.apps.register(alias, found[target])
+            except Exception:
+                pass
+    browser = found.get("chrome") or found.get("edge") or found.get("firefox")
+    if browser:
+        for alias in ("navegador", "browser", "internet"):
+            try:
+                runtime.apps.register(alias, browser)
             except Exception:
                 pass
     return found
