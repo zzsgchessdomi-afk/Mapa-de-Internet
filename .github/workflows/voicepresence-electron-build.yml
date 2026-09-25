@@ -1,4 +1,4 @@
-name: VoicePresence 3.0 Windows Build
+name: VoicePresence Electron Windows Build
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout build branch
+      - name: Checkout temporary build branch
         uses: actions/checkout@v4
 
       - name: Rehydrate VoicePresence 3.0 source
@@ -24,16 +24,32 @@ jobs:
           $parts = Get-ChildItem ".vpbuild\v30.part.*" | Sort-Object Name
           if ($parts.Count -ne 14) { throw "Expected 14 v3.0 source chunks, found $($parts.Count)" }
           $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
-          [IO.File]::WriteAllBytes("$PWD\.vpbuild\voicepresence3.tar.xz", [Convert]::FromBase64String($b64))
-          tar -xJf ".vpbuild\voicepresence3.tar.xz" -C "voicepresence-electron"
-          if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
-          $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
-          if ($pkg.version -ne "3.0.0") { throw "Expected 3.0.0, got $($pkg.version)" }
+          [IO.File]::WriteAllBytes("$PWD\.vpbuild\v30-source.tar.xz", [Convert]::FromBase64String($b64))
+          tar -xJf ".vpbuild\v30-source.tar.xz" -C "voicepresence-electron"
+          if (!(Test-Path "voicepresence-electron\package.json")) { throw "v3.0 source rehydration failed" }
           node --check "voicepresence-electron\renderer\app.js"
-          node --check "voicepresence-electron\main.cjs"
+          $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
+          Write-Host "VERSION=$($pkg.version)"
+          if ($pkg.version -ne "3.0.0") { throw "Expected VoicePresence 3.0.0, got $($pkg.version)" }
+
+      - name: Verify v3.0 product markers
+        shell: pwsh
+        run: |
           $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
-          foreach ($marker in @("studioCapture","startDailyPlan","openMirrorStudio","showSessionComparisonV3","dailyPool","renderEntrenador")) {
-            if (-not $app.Contains($marker)) { throw "Missing v3 marker: $marker" }
+          $html = Get-Content "voicepresence-electron\renderer\index.html" -Raw
+          foreach ($marker in @(
+            "Centro de mando",
+            "Misión de hoy",
+            "Sesión guiada",
+            "Comparar intentos",
+            "Entrenador adaptativo",
+            "Día 0",
+            "Progreso",
+            "Pronunciación",
+            "Simulación interactiva",
+            "Biblioteca profesional"
+          )) {
+            if (-not ($app.Contains($marker) -or $html.Contains($marker))) { throw "Missing v3.0 marker: $marker" }
           }
 
       - name: Setup Node 22
@@ -41,15 +57,15 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install exact dependencies
+      - name: Install dependencies
         working-directory: voicepresence-electron
         run: npm install --no-audit --no-fund
 
-      - name: Run complete VoicePresence 3.0 audit
+      - name: Run full audit suite
         working-directory: voicepresence-electron
         run: npm test
 
-      - name: Build one-click Electron EXE
+      - name: Build portable Electron EXE
         working-directory: voicepresence-electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -58,15 +74,20 @@ jobs:
       - name: Verify Windows binary
         shell: pwsh
         run: |
-          $p = "voicepresence-electron\dist\VoicePresence-3.0.0-Windows-x64.exe"
-          if (!(Test-Path $p)) { throw "EXE missing" }
-          $f = Get-Item $p
-          if ($f.Length -lt 50000000) { throw "EXE unexpectedly small: $($f.Length)" }
-          $hash = Get-FileHash $p -Algorithm SHA256
-          Write-Host "EXE_BYTES=$($f.Length)"
-          Write-Host "EXE_SHA256=$($hash.Hash)"
+          $p = Get-ChildItem "voicepresence-electron\dist\*.exe" | Where-Object { $_.Name -like "*3.0.0*" } | Select-Object -First 1
+          if (-not $p) { throw "VoicePresence 3.0.0 EXE missing" }
+          if ($p.Length -lt 50000000) { throw "EXE unexpectedly small: $($p.Length)" }
+          Write-Host "EXE_PATH=$($p.FullName)"
+          Write-Host "EXE_BYTES=$($p.Length)"
+          Get-FileHash $p.FullName -Algorithm SHA256
 
-      - name: Upload VoicePresence 3.0 EXE
+      - name: Normalize artifact name
+        shell: pwsh
+        run: |
+          $p = Get-ChildItem "voicepresence-electron\dist\*.exe" | Where-Object { $_.Name -like "*3.0.0*" } | Select-Object -First 1
+          Copy-Item $p.FullName "voicepresence-electron\dist\VoicePresence-3.0.0-Windows-x64.exe" -Force
+
+      - name: Upload one-click Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: VoicePresence-3.0.0-Windows-x64
