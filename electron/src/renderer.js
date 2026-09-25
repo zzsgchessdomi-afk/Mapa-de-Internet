@@ -246,6 +246,8 @@ function wire() {
   $('stageRestore').addEventListener('click', async () => { const p=await window.jarvis.pickOpen({title:'Preparar restauración JARVIS',properties:['openFile'],filters:[{name:'JARVIS Backup',extensions:['jarvisbackup']}]}); if(!p.length)return; try{$('backupOutput').textContent=pretty(await call('backup_stage_restore',{source:p[0]}));toast('Restore validado; se aplicará al reiniciar JARVIS');}catch(_){} });
   $('refreshAcceptance').addEventListener('click', refreshAcceptance);
   $('releaseGate').addEventListener('click', async () => { try{$('releaseOutput').textContent=pretty(await call('release_gate'));}catch(_){} });
+  $('exportAndroid').addEventListener('click', async () => { try { const p=await window.jarvis.exportBundled('android'); if(p) toast('Companion Android exportado'); } catch(err) { toast(err.message,true); } });
+  $('exportSource').addEventListener('click', async () => { try { const p=await window.jarvis.exportBundled('source'); if(p) toast('Código fuente completo exportado'); } catch(err) { toast(err.message,true); } });
   $('openUserData').addEventListener('click', () => window.jarvis.openUserData());
 }
 
