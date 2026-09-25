@@ -401,15 +401,11 @@ def connect(*args: Any, **kwargs: Any) -> ClosingConnection:
 		txt := string(b)
 		txt = strings.ReplaceAll(txt, "sqlite3.connect(", "sqlite_connect(")
 		if !strings.Contains(txt, imp) {
-			if strings.Contains(txt, "from __future__ import annotations
-") {
-				txt = strings.Replace(txt, "from __future__ import annotations
-", "from __future__ import annotations
-"+imp+"
-", 1)
+			futureLine := "from __future__ import annotations\\n"
+			if strings.Contains(txt, futureLine) {
+				txt = strings.Replace(txt, futureLine, futureLine+imp+"\\n", 1)
 			} else {
-				txt = imp + "
-" + txt
+				txt = imp + "\\n" + txt
 			}
 		}
 		if err := os.WriteFile(p, []byte(txt), 0600); err != nil {
