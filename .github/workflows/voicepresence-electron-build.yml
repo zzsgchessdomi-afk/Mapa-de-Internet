@@ -71,12 +71,6 @@ jobs:
           Write-Host "EXE_BYTES=$($p.Length)"
           Get-FileHash $p.FullName -Algorithm SHA256
 
-      - name: Normalize artifact name
-        shell: pwsh
-        run: |
-          $p = Get-ChildItem "voicepresence-electron\dist\*.exe" | Where-Object { $_.Name -like "*3.0.0*" } | Select-Object -First 1
-          Copy-Item $p.FullName "voicepresence-electron\dist\VoicePresence-3.0.0-Windows-x64.exe" -Force
-
       - name: Upload one-click Windows EXE
         uses: actions/upload-artifact@v4
         with:
