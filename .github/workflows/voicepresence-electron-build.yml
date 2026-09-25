@@ -28,25 +28,20 @@ jobs:
           tar -xJf ".vpbuild\source.tar.xz" -C "voicepresence-electron"
           if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
 
-      - name: Apply VoicePresence 2.1 guided-coach patch
+      - name: Apply exact VoicePresence 2.1 guided-session patch
         shell: pwsh
         run: |
-          $parts = Get-ChildItem ".vpbuild\v21.patch.part.*" | Sort-Object Name
-          if ($parts.Count -ne 9) { throw "Expected 9 patch chunks, found $($parts.Count)" }
-          $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
-          [IO.File]::WriteAllBytes("$PWD\.vpbuild\v21.patch.gz", [Convert]::FromBase64String($b64))
-          $input = [IO.File]::OpenRead("$PWD\.vpbuild\v21.patch.gz")
-          $gzip = [IO.Compression.GzipStream]::new($input, [IO.Compression.CompressionMode]::Decompress)
-          $output = [IO.File]::Create("$PWD\.vpbuild\v21.patch")
-          $gzip.CopyTo($output)
-          $output.Dispose(); $gzip.Dispose(); $input.Dispose()
-          $text = [IO.File]::ReadAllText("$PWD\.vpbuild\v21.patch")
-          $text = $text.Replace("/mnt/data/vp20orig/", "a/").Replace("/mnt/data/vp2/", "b/")
-          [IO.File]::WriteAllText("$PWD\.vpbuild\v21.rel.patch", $text)
-          git apply --check --directory=voicepresence-electron ".vpbuild/v21.rel.patch"
-          git apply --directory=voicepresence-electron ".vpbuild/v21.rel.patch"
-          $pkg = Get-Content "voicepresence-electron\package.json" -Raw
-          if ($pkg -notmatch '"version"\s*:\s*"2\.1\.0"') { throw "2.1 patch did not apply" }
+          $patchParts = Get-ChildItem ".vpbuild\v21.part.*" | Sort-Object Name
+          if ($patchParts.Count -ne 7) { throw "Expected 7 v2.1 patch chunks, found $($patchParts.Count)" }
+          ($patchParts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v21-exact.cjs" -Encoding UTF8
+          node ".vpbuild\apply-v21-exact.cjs" "voicepresence-electron"
+          node --check "voicepresence-electron\renderer\app.js"
+          $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
+          if ($pkg.version -ne "2.1.0") { throw "Version patch failed: $($pkg.version)" }
+          $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
+          foreach ($marker in @("startGuidedSession","showCorrectionPhase","showSessionComparison","sessionComparisonHTML")) {
+            if (-not $app.Contains($marker)) { throw "Missing guided-session marker: $marker" }
+          }
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -57,7 +52,7 @@ jobs:
         working-directory: voicepresence-electron
         run: npm install --no-audit --no-fund
 
-      - name: Audit project matrix and guided session flow
+      - name: Audit project matrix and guided flow
         working-directory: voicepresence-electron
         run: npm test
 
@@ -65,7 +60,7 @@ jobs:
         working-directory: voicepresence-electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: npx electron-builder --win portable --x64 --publish never
+        run: npx electron-builder --win portable --x64
 
       - name: Verify Windows binary
         shell: pwsh
