@@ -5,6 +5,7 @@ import json
 import os
 import queue
 import re
+import shutil
 import sys
 import threading
 import time
@@ -401,9 +402,62 @@ class AssistantVoiceLoop:
 
 
 
+def _first_existing(candidates: list[str]) -> str | None:
+    for candidate in candidates:
+        if not candidate:
+            continue
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+        p = Path(os.path.expandvars(candidate)).expanduser()
+        if p.is_file():
+            return str(p)
+    return None
+
+
+def _register_owner_apps(runtime) -> dict[str, str]:
+    """Register common desktop apps only when they actually exist on this PC."""
+    pf = os.environ.get("ProgramFiles", r"C:\Program Files")
+    pfx86 = os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+    local = os.environ.get("LOCALAPPDATA", "")
+    roaming = os.environ.get("APPDATA", "")
+    catalog = {
+        "chrome": ["chrome.exe", rf"{pf}\Google\Chrome\Application\chrome.exe", rf"{pfx86}\Google\Chrome\Application\chrome.exe", rf"{local}\Google\Chrome\Application\chrome.exe"],
+        "edge": ["msedge.exe", rf"{pf}\Microsoft\Edge\Application\msedge.exe", rf"{pfx86}\Microsoft\Edge\Application\msedge.exe"],
+        "firefox": ["firefox.exe", rf"{pf}\Mozilla Firefox\firefox.exe", rf"{pfx86}\Mozilla Firefox\firefox.exe"],
+        "vscode": ["code.exe", rf"{local}\Programs\Microsoft VS Code\Code.exe", rf"{pf}\Microsoft VS Code\Code.exe"],
+        "spotify": ["Spotify.exe", rf"{roaming}\Spotify\Spotify.exe"],
+        "discord": ["Discord.exe", rf"{local}\Discord\Update.exe"],
+        "wps": ["wps.exe", rf"{local}\Kingsoft\WPS Office\ksolaunch.exe"],
+    }
+    aliases = {
+        "google chrome": "chrome", "navegador chrome": "chrome",
+        "microsoft edge": "edge", "navegador edge": "edge",
+        "mozilla firefox": "firefox", "visual studio code": "vscode", "vs code": "vscode",
+    }
+    found: dict[str, str] = {}
+    for alias, candidates in catalog.items():
+        executable = _first_existing(candidates)
+        if not executable:
+            continue
+        try:
+            runtime.apps.register(alias, executable)
+            found[alias] = executable
+        except Exception:
+            continue
+    for alias, target in aliases.items():
+        if target in found:
+            try:
+                runtime.apps.register(alias, found[target])
+            except Exception:
+                pass
+    return found
+
+
 class Bridge:
     def __init__(self) -> None:
         self.runtime = build_infinity7_runtime()
+        self.owner_apps = _register_owner_apps(self.runtime)
         self._lock = threading.RLock()
         self.voice_loop = AssistantVoiceLoop(self.runtime)
         self.voice_loop.prepare()
@@ -467,6 +521,7 @@ class Bridge:
             "swarm": _jsonable(r.swarm.store.stats()),
             "evolution": _jsonable(r.evolution.store.stats()),
             "assistant": self.voice_loop.status(),
+            "owner_apps": sorted(self.owner_apps),
         }
 
     def handle(self, req: dict[str, Any]) -> dict[str, Any]:

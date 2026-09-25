@@ -91,6 +91,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Voice-first assistant contract failed' }
           if (-not (Select-String -Path '.\VOICE_CONTRACT.txt' -Pattern 'VOICE_ASSISTANT_CONTRACT=PASS' -Quiet)) { throw 'Voice assistant contract did not report PASS' }
 
+      - name: Run owner app discovery contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python '.\jarvis-electron\owner_app_discovery_test.py' | Tee-Object -FilePath '.\OWNER_APP_DISCOVERY.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Owner app discovery contract failed' }
+          if (-not (Select-String -Path '.\OWNER_APP_DISCOVERY.txt' -Pattern 'OWNER_APP_DISCOVERY_CONTRACT=PASS' -Quiet)) { throw 'Owner app discovery contract did not report PASS' }
+
       - name: Run Infinity surface bridge contract
         shell: pwsh
         run: |
