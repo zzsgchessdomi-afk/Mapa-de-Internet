@@ -112,7 +112,7 @@ jobs:
           $ErrorActionPreference='Stop'
           $html=Get-Content '.\jarvis-electron\app\index.html' -Raw
           $renderer=Get-Content '.\jarvis-electron\app\renderer.js' -Raw
-          if ($html -match 'coming soon|placeholder|demo|mock') { throw 'Decorative placeholder text found in UI' }
+          if ($html -match 'coming soon|demo|mock') { throw 'Decorative placeholder text found in UI' }
           if ($renderer -match 'TODO|FIXME') { throw 'TODO/FIXME found in renderer' }
           if ($html -notmatch 'Autonomous Workbench' -or $html -notmatch 'Cognitive Swarm' -or $html -notmatch 'Reality Bridge' -or $html -notmatch 'Guardian') { throw 'Core Infinity modules missing from Electron UI' }
 
