@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "2.0.1",
+  "version": "2.2.0",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - reference-minimal ambient voice OS",
+  "description": "JARVIS GM Infinity 7 - cinematic ambient voice OS",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_Setup_REFERENCE_${version}.${ext}",
+    "artifactName": "JARVIS_GM_Setup_CINEMATIC_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",
