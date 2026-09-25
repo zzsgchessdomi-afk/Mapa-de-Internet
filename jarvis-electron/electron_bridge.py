@@ -295,6 +295,10 @@ class AssistantVoiceLoop:
 
         if event.type == "voice.wake":
             _emit({"event": "voice-wake"})
+            try:
+                self.runtime.perception.wake._awake_until = time.time() + 12.0
+            except Exception:
+                pass
             self._speak("Sí, aquí estoy.", kind="wake")
             return
 
@@ -338,6 +342,10 @@ class AssistantVoiceLoop:
             }
             label = payload.get("capability_label") or capability
             prompt = f"Necesito tu autorización para {label}. Di permite una vez, permite siempre o cancela."
+            try:
+                self.runtime.perception.wake._awake_until = time.time() + 24.0
+            except Exception:
+                pass
             _emit({
                 "event": "voice-permission",
                 "text": self._pending["text"],

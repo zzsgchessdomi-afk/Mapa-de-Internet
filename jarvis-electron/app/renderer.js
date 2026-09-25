@@ -219,7 +219,7 @@ $('realityList').addEventListener('click',()=>call('reality_list',{},'realityOut
 
 $('saveProvider').addEventListener('click',async()=>{
   const result=await call('provider_set',{model:$('modelInput').value,api_key:$('apiKeyInput').value},'settingsOutput');
-  $('apiKeyInput').value='';$('providerBadge').textContent=result.active||'IA';await refreshStatus();
+  $('apiKeyInput').value='';await refreshStatus();
 });
 $('selfTest').addEventListener('click',()=>call('self_test',{},'settingsOutput'));
 $('diagnostics').addEventListener('click',()=>call('diagnostics',{},'settingsOutput'));
@@ -270,6 +270,6 @@ window.jarvis.onEvent((evt)=>{
   if(state.ready) await refreshStatus();
   else setTimeout(refreshStatus,1200);
   try{
-    const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;$('providerBadge').textContent=p.active||'IA';
+    const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;
   }catch(_){}
 })();
