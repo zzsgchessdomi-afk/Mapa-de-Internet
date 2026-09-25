@@ -17,7 +17,7 @@ jobs:
       - name: Checkout temporary build branch
         uses: actions/checkout@v4
 
-      - name: Rehydrate VoicePresence source
+      - name: Rehydrate VoicePresence 2.0 source
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force voicepresence-electron | Out-Null
@@ -28,6 +28,26 @@ jobs:
           tar -xJf ".vpbuild\source.tar.xz" -C "voicepresence-electron"
           if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
 
+      - name: Apply VoicePresence 2.1 guided-coach patch
+        shell: pwsh
+        run: |
+          $parts = Get-ChildItem ".vpbuild\v21.patch.part.*" | Sort-Object Name
+          if ($parts.Count -ne 9) { throw "Expected 9 patch chunks, found $($parts.Count)" }
+          $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          [IO.File]::WriteAllBytes("$PWD\.vpbuild\v21.patch.gz", [Convert]::FromBase64String($b64))
+          $input = [IO.File]::OpenRead("$PWD\.vpbuild\v21.patch.gz")
+          $gzip = [IO.Compression.GzipStream]::new($input, [IO.Compression.CompressionMode]::Decompress)
+          $output = [IO.File]::Create("$PWD\.vpbuild\v21.patch")
+          $gzip.CopyTo($output)
+          $output.Dispose(); $gzip.Dispose(); $input.Dispose()
+          $text = [IO.File]::ReadAllText("$PWD\.vpbuild\v21.patch")
+          $text = $text.Replace("/mnt/data/vp20orig/", "a/").Replace("/mnt/data/vp2/", "b/")
+          [IO.File]::WriteAllText("$PWD\.vpbuild\v21.rel.patch", $text)
+          git apply --check --directory=voicepresence-electron ".vpbuild/v21.rel.patch"
+          git apply --directory=voicepresence-electron ".vpbuild/v21.rel.patch"
+          $pkg = Get-Content "voicepresence-electron\package.json" -Raw
+          if ($pkg -notmatch '"version"\s*:\s*"2\.1\.0"') { throw "2.1 patch did not apply" }
+
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
@@ -37,7 +57,7 @@ jobs:
         working-directory: voicepresence-electron
         run: npm install --no-audit --no-fund
 
-      - name: Audit project matrix
+      - name: Audit project matrix and guided session flow
         working-directory: voicepresence-electron
         run: npm test
 
@@ -45,12 +65,12 @@ jobs:
         working-directory: voicepresence-electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: npx electron-builder --win portable --x64
+        run: npx electron-builder --win portable --x64 --publish never
 
       - name: Verify Windows binary
         shell: pwsh
         run: |
-          $p = "voicepresence-electron\dist\VoicePresence-2.0.0-Windows-x64.exe"
+          $p = "voicepresence-electron\dist\VoicePresence-2.1.0-Windows-x64.exe"
           if (!(Test-Path $p)) { throw "EXE missing" }
           $f = Get-Item $p
           if ($f.Length -lt 50000000) { throw "EXE unexpectedly small: $($f.Length)" }
@@ -60,7 +80,7 @@ jobs:
       - name: Upload one-click Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: VoicePresence-Windows-x64
-          path: voicepresence-electron/dist/VoicePresence-2.0.0-Windows-x64.exe
+          name: VoicePresence-2.1.0-Windows-x64
+          path: voicepresence-electron/dist/VoicePresence-2.1.0-Windows-x64.exe
           if-no-files-found: error
           retention-days: 1
