@@ -54,23 +54,15 @@ function renderStatus(s){
   $('voiceBadge').textContent = voiceRunning ? 'LISTENING' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOICE ERROR' : 'VOICE INITIALIZING');
   $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
   $('presenceOrb').classList.toggle('listening', voiceRunning);
-  if($('hudVoice')) $('hudVoice').textContent = voiceRunning ? 'ONLINE' : 'OFFLINE';
-  if($('hudVision')) $('hudVision').textContent = p.vision?.running ? 'ONLINE' : 'OFF';
-  if($('hudWork')) $('hudWork').textContent = (s.workbench?.total ?? 0) > 0 ? 'ACTIVE' : 'READY';
-  if($('hudWorld')) $('hudWorld').textContent = (s.world?.entities ?? 0) > 0 ? 'SYNC' : 'EMPTY';
-  if($('hudGuardian')) $('hudGuardian').textContent = s.stop_engaged ? 'LOCKED' : 'ARMED';
   $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
   $('resetStop').disabled = !s.stop_engaged;
-  const bd=$('backendDot'), bt=$('backendText');
-  if(bd) bd.className='dot ok';
-  if(bt) bt.textContent=voiceRunning?`JARVIS listening • ${s.version}`:`Core ${s.version}`;
   if($('perceptionOutput')) $('perceptionOutput').textContent = fmt(p);
   renderPermissions(s.permissions || {});
 }
 
 async function refreshStatus(){
   try{renderStatus(await call('status'));}
-  catch(_){const bd=$('backendDot'),bt=$('backendText');if(bd)bd.className='dot bad';if(bt)bt.textContent='CORE OFFLINE';}
+  catch(_){ $('voiceBadge').textContent='CORE OFFLINE'; $('voiceBadge').classList.add('bad'); }
 }
 
 function renderPermissions(perms){
@@ -91,24 +83,6 @@ function renderPermissions(perms){
 }
 
 
-const systemsToggle = $('systemsToggle');
-const systemsClose = $('systemsClose');
-const sidebar = document.querySelector('.sidebar');
-if(systemsToggle) systemsToggle.addEventListener('click',()=>sidebar.classList.toggle('open'));
-if(systemsClose) systemsClose.addEventListener('click',()=>sidebar.classList.remove('open'));
-
-for(const btn of document.querySelectorAll('.nav')){
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-    btn.classList.add('active');
-    const key=btn.dataset.panel;
-    $(`panel-${key}`).classList.add('active');
-    $('panelTitle').textContent=panelMeta[key][0];$('panelSubtitle').textContent=panelMeta[key][1];
-    sidebar.classList.remove('open');
-  });
-}
-
 document.querySelectorAll('[data-op]').forEach(btn=>btn.addEventListener('click',async()=>{
   try{const r=await call(btn.dataset.op);$('perceptionOutput').textContent=fmt(r);await refreshStatus();}catch(_){}
 }));
@@ -120,14 +94,12 @@ function esc(s){
 }
 
 function setHudMessage(role, text, extra=''){
-  const input=$('lastInput'), response=$('lastResponse'), mode=$('hudMode');
+  const input=$('lastInput'), response=$('lastResponse');
   if(role==='user'){
     if(input) input.textContent=String(text||'—').toUpperCase();
-    if(mode) mode.textContent='COMMAND RECEIVED';
     document.body.classList.add('thinking');
   }else{
     if(response) response.textContent=String(text||'SYSTEM READY').toUpperCase();
-    if(mode) mode.textContent='SYSTEM READY';
     document.body.classList.remove('thinking');
   }
   return null;
@@ -253,19 +225,19 @@ window.jarvis.onEvent((evt)=>{
   }
   if(evt.event==='voice-wake'){
     $('wakeHint').textContent='TE ESCUCHO';
-    if($('hudMode')) $('hudMode').textContent='LISTENING';
+    
     $('presenceOrb').classList.add('awake');
     setTimeout(()=>$('presenceOrb').classList.remove('awake'),2200);
   }
   if(evt.event==='voice-command'){
     setHudMessage('user',evt.text);
     $('wakeHint').textContent='PROCESSING';
-    if($('hudMode')) $('hudMode').textContent='PROCESSING';
+    
   }
   if(evt.event==='assistant' && evt.text){
     setHudMessage('jarvis',evt.text);
     $('wakeHint').textContent='DI “JARVIS”';
-    if($('hudMode')) $('hudMode').textContent='SYSTEM READY';
+    
   }
   if(evt.event==='voice-permission'){
     pendingPermission={source:'voice',text:evt.text,capability:evt.capability};
@@ -278,7 +250,8 @@ window.jarvis.onEvent((evt)=>{
     $('permissionBar').classList.add('hidden');
   }
   if(evt.event==='fatal'||evt.event==='backend-exit'){
-    const bd=$('backendDot'),bt=$('backendText');if(bd)bd.className='dot bad';if(bt)bt.textContent='CORE STOPPED';
+    $('voiceBadge').textContent='CORE STOPPED';
+    $('voiceBadge').classList.add('bad');
     $('goalOutput').textContent=`El núcleo JARVIS se detuvo: ${evt.error||evt.code||'error desconocido'}`;
   }
 });
