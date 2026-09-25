@@ -1558,10 +1558,10 @@ function puterText(resp){
 async function activateAI(){
  if(aiState.loading)return;aiState.loading=true;aiState.abort=false;aiState.lastError=null;$('aiOutput').textContent='Conectando IA…';
  try{
-   await ensurePuter();
    aiState.model=$('aiEngineSelect').value||'auto';
-   aiState.engine='puter';
-   setAIStatus('ready','IA cloud activa',aiState.model==='auto'?'Puter Auto':aiState.model,100);
+   const secrets=IS_DESKTOP&&globalThis.atlasDesktop?.aiSecretStatus?await globalThis.atlasDesktop.aiSecretStatus():null;
+   if(secrets&&(secrets.gemini||secrets.groq||secrets.openrouter)){aiState.engine='desktop-cloud';setAIStatus('ready','Atlanex Intelligence activa','Gemini → Groq → OpenRouter',100)}
+   else{await ensurePuter();aiState.engine='puter';setAIStatus('ready','IA cloud activa',aiState.model==='auto'?'Puter Auto':aiState.model,100)}
    $('aiBtn').classList.add('aiBtnActive');
    $('aiOutput').textContent='IA lista. No se descargó ningún modelo local.'
  }catch(e){
@@ -1569,13 +1569,14 @@ async function activateAI(){
  }finally{aiState.loading=false}
 }
 async function aiPrompt(userPrompt,maxTokens=700){
- if(aiState.engine!=='puter')throw new Error('IA no activada');
- await ensurePuter();
+ if(!aiState.engine)throw new Error('IA no activada');
  if(aiState.abort)throw new Error('Generación detenida');
  const messages=[
    {role:'system',content:aiSystemPrompt()},
    {role:'user',content:userPrompt}
  ];
+ if(aiState.engine==='desktop-cloud'){const resp=await globalThis.atlasDesktop.cloudChat(messages);return String(resp?.text||'')}
+ await ensurePuter();
  const opts={};
  if(aiState.model&&aiState.model!=='auto')opts.model=aiState.model;
  const resp=await puter.ai.chat(messages,opts);
@@ -1599,7 +1600,7 @@ function parseJsonLoose(s){
  return null
 }
 async function aiCriteriaFor(objective,base){
- if(aiState.engine!=='puter')return base;
+ if(!aiState.engine)return base;
  try{
    const prompt=`Objetivo del usuario: ${objective}
 Criterios ya detectados: ${base.map(x=>x.label).join(', ')}
@@ -1612,7 +1613,7 @@ Devuelve exclusivamente JSON array: [{"label":"...","required":true}]. Máximo 4
  }catch{return base}
 }
 async function aiQueriesFor(objective,baseQueries){
- if(aiState.engine!=='puter')return baseQueries;
+ if(!aiState.engine)return baseQueries;
  try{
    const prompt=`Objetivo: ${objective}
 Modo: ${$('modeSelect')?.value||'general'}
