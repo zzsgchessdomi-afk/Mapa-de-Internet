@@ -202,6 +202,22 @@ ipcMain.handle('jarvis:open-user-data', async () => {
   return target;
 });
 
+
+ipcMain.handle('jarvis:export-bundled', async (_event, kind) => {
+  const table = {
+    source: { rel: path.join('owner', 'JARVIS_GM_OWNER_SOURCE_1.7.0rc1.zip'), name: 'JARVIS_GM_OWNER_SOURCE_1.7.0rc1.zip', filters: [{ name: 'ZIP', extensions: ['zip'] }] },
+    android: { rel: path.join('mobile', 'JARVIS_GM_Companion_debug.apk'), name: 'JARVIS_GM_Companion_debug.apk', filters: [{ name: 'Android APK', extensions: ['apk'] }] }
+  };
+  const item = table[kind];
+  if (!item) throw new Error('Unknown bundled export');
+  const src = path.join(process.resourcesPath, item.rel);
+  if (!fs.existsSync(src)) throw new Error(`Bundled file is not present: ${item.name}`);
+  const out = await dialog.showSaveDialog(mainWindow, { title: `Exportar ${item.name}`, defaultPath: item.name, filters: item.filters });
+  if (out.canceled || !out.filePath) return null;
+  fs.copyFileSync(src, out.filePath);
+  return out.filePath;
+});
+
 ipcMain.handle('jarvis:restart-core', async () => {
   try {
     if (core && core.stdin.writable) {
