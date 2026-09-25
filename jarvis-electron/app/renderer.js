@@ -87,6 +87,24 @@ $('researchList').addEventListener('click',()=>call('research_list',{},'research
 $('workCreate').addEventListener('click',()=>call('workbench_create',{goal:$('workGoal').value},'workOutput'));
 $('workCycle').addEventListener('click',()=>call('workbench_cycle',{},'workOutput'));
 $('workList').addEventListener('click',()=>call('workbench_list',{},'workOutput'));
+
+$('autonomyRun').addEventListener('click',()=>call('autonomy_run',{
+  goal:$('autonomyGoal').value,
+  success_criteria:$('autonomyCriteria').value.split(';').map(x=>x.trim()).filter(Boolean)
+},'autonomyOutput'));
+$('autonomyList').addEventListener('click',()=>call('autonomy_list',{},'autonomyOutput'));
+$('autonomyResume').addEventListener('click',()=>call('autonomy_resume',{mission_id:$('autonomyMission').value.trim()},'autonomyOutput'));
+
+function aiosPayload(){
+  const raw=$('aiosPayload').value.trim();
+  if(!raw)return {};
+  try{return JSON.parse(raw);}catch(_){throw new Error('Payload must be valid JSON');}
+}
+$('aiosSync').addEventListener('click',()=>call('aios_sync',{},'aiosOutput'));
+$('aiosResources').addEventListener('click',()=>call('aios_resources',{},'aiosOutput'));
+$('aiosPlan').addEventListener('click',async()=>{try{await call('aios_plan',{operation:$('aiosOperation').value,resource_ref:$('aiosResource').value||null,destination_ref:$('aiosDestination').value||null,payload:aiosPayload()},'aiosOutput');}catch(err){$('aiosOutput').textContent='ERROR: '+err.message;}});
+$('aiosExecute').addEventListener('click',async()=>{try{await call('aios_execute',{operation:$('aiosOperation').value,resource_ref:$('aiosResource').value||null,destination_ref:$('aiosDestination').value||null,payload:aiosPayload()},'aiosOutput');}catch(err){$('aiosOutput').textContent='ERROR: '+err.message;}});
+
 $('swarmRun').addEventListener('click',()=>call('swarm_run',{goal:$('swarmGoal').value},'swarmOutput'));
 $('swarmList').addEventListener('click',()=>call('swarm_list',{},'swarmOutput'));
 $('skillsList').addEventListener('click',()=>call('skills_list',{},'skillsOutput'));

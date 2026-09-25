@@ -71,7 +71,10 @@
           <button class="dock-btn" data-panel="memory" title="Memory"><span>⌘</span><small>MEM</small></button>
           <button class="dock-btn" data-panel="research" title="Research Corps"><span>⌕</span><small>R&D</small></button>
           <button class="dock-btn" data-panel="workbench" title="Autonomous Workbench"><span>◇</span><small>WORK</small></button>
+          <button class="dock-btn" data-panel="autonomy" title="Mission Autopilot"><span>▷</span><small>AUTO</small></button>
           <button class="dock-btn" data-panel="swarm" title="Cognitive Swarm"><span>✣</span><small>SWARM</small></button>
+          <button class="dock-btn" data-panel="skills" title="Skill Forge"><span>✦</span><small>SKILL</small></button>
+          <button class="dock-btn" data-panel="aios" title="Personal AI OS"><span>⌂</span><small>AIOS</small></button>
           <button class="dock-btn" data-panel="world" title="World Model"><span>◎</span><small>WORLD</small></button>
           <button class="dock-btn" data-panel="reality" title="Reality Bridge"><span>⌬</span><small>REAL</small></button>
           <button class="dock-btn" data-panel="mobile" title="Mobile Bridge"><span>▯</span><small>MOBILE</small></button>
@@ -135,6 +138,16 @@
       </div>
     </section>
 
+    <section class="panel overlay-panel" id="panel-autonomy">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>CLOSED-LOOP EXECUTION</span><h2>MISSION AUTOPILOT</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two">
+          <div class="card"><h3>NEW MISSION</h3><textarea id="autonomyGoal" placeholder="Mission objective"></textarea><input id="autonomyCriteria" placeholder="Success criteria, separated by ;"><div class="row"><button id="autonomyRun" class="primary">RUN</button><button id="autonomyList" class="ghost">MISSIONS</button></div></div>
+          <div class="card"><h3>RESUME MISSION</h3><input id="autonomyMission" placeholder="Mission ID"><button id="autonomyResume" class="primary full">RESUME</button></div>
+        </div><div class="console-card"><pre id="autonomyOutput">—</pre></div>
+      </div>
+    </section>
+
     <section class="panel overlay-panel" id="panel-swarm">
       <div class="overlay-window">
         <div class="overlay-title"><div><span>DYNAMIC SPECIALISTS</span><h2>COGNITIVE SWARM</h2></div><button class="close-overlay" data-panel="command">×</button></div>
@@ -146,6 +159,16 @@
       <div class="overlay-window">
         <div class="overlay-title"><div><span>CAPABILITY ENGINE</span><h2>SKILLS & EVOLUTION</h2></div><button class="close-overlay" data-panel="command">×</button></div>
         <div class="grid two"><div class="card"><h3>SKILL FORGE</h3><button id="skillsList" class="primary full">LIST SKILLS</button></div><div class="card"><h3>SELF-EVOLUTION</h3><button id="evolutionScan" class="primary full">SCAN</button><button id="evolutionList" class="ghost full">CANDIDATES</button></div></div><div class="console-card"><pre id="skillsOutput">—</pre></div>
+      </div>
+    </section>
+
+    <section class="panel overlay-panel" id="panel-aios">
+      <div class="overlay-window">
+        <div class="overlay-title"><div><span>RESOURCE ROUTER</span><h2>PERSONAL AI OS</h2></div><button class="close-overlay" data-panel="command">×</button></div>
+        <div class="grid two">
+          <div class="card"><h3>RESOURCES</h3><div class="row"><button id="aiosSync" class="primary">SYNC</button><button id="aiosResources" class="ghost">LIST</button></div></div>
+          <div class="card"><h3>ROUTE</h3><input id="aiosOperation" placeholder="open / handoff / resume / observe / control"><input id="aiosResource" placeholder="Resource ref / alias"><input id="aiosDestination" placeholder="Destination ref (optional)"><textarea id="aiosPayload" placeholder='Payload JSON, e.g. {"command":"on"}'></textarea><div class="row"><button id="aiosPlan" class="ghost">PLAN</button><button id="aiosExecute" class="primary">EXECUTE</button></div></div>
+        </div><div class="console-card"><pre id="aiosOutput">—</pre></div>
       </div>
     </section>
 

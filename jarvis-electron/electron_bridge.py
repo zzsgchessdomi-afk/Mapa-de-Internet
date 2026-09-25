@@ -594,6 +594,44 @@ class Bridge:
                 return {"ok": True, "result": _jsonable(report)}
             if op == "research_list":
                 return {"ok": True, "result": _jsonable(r.research_corps.list(int(args.get("limit", 25))))}
+            if op == "autonomy_list":
+                return {"ok": True, "result": _jsonable(r.autonomy_store.list(limit=int(args.get("limit", 50))))}
+            if op == "autonomy_run":
+                goal = str(args.get("goal", "")).strip()
+                if not goal:
+                    raise ValueError("Mission goal cannot be empty")
+                criteria = args.get("success_criteria") or []
+                if isinstance(criteria, str):
+                    criteria = [x.strip() for x in criteria.split(";") if x.strip()]
+                mission = r.autonomy_engine.run(goal, success_criteria=list(criteria), max_steps=int(args.get("max_steps", 10)))
+                return {"ok": True, "result": _jsonable(mission)}
+            if op == "autonomy_resume":
+                mission_id = str(args.get("mission_id", "")).strip()
+                if not mission_id:
+                    raise ValueError("mission_id is required")
+                mission = r.autonomy_engine.resume(mission_id, max_steps=int(args.get("max_steps", 10)))
+                return {"ok": True, "result": _jsonable(mission)}
+            if op == "aios_sync":
+                return {"ok": True, "result": _jsonable(r.personal_os.sync())}
+            if op == "aios_resources":
+                kind = args.get("kind")
+                return {"ok": True, "result": _jsonable(r.personal_os.resources(kind=str(kind) if kind else None, limit=int(args.get("limit", 100))))}
+            if op == "aios_plan":
+                payload = args.get("payload") or {}
+                return {"ok": True, "result": _jsonable(r.personal_os.plan(
+                    str(args.get("operation", "")),
+                    resource_ref=args.get("resource_ref"),
+                    destination_ref=args.get("destination_ref"),
+                    payload=payload,
+                ))}
+            if op == "aios_execute":
+                payload = args.get("payload") or {}
+                return {"ok": True, "result": _jsonable(r.personal_os.execute(
+                    str(args.get("operation", "")),
+                    resource_ref=args.get("resource_ref"),
+                    destination_ref=args.get("destination_ref"),
+                    payload=payload,
+                ))}
             if op == "workbench_list":
                 return {"ok": True, "result": _jsonable(r.workbench.store.list(limit=int(args.get("limit", 100))))}
             if op == "workbench_create":
