@@ -360,6 +360,66 @@ func unzipBytes(data []byte, dest string) error {
 	return nil
 }
 
+
+func applyWindowsSQLiteFixes(stageDir string) error {
+	coreDir := filepath.Join(stageDir, "app", "src", "jarvis_gm", "core")
+	if err := os.MkdirAll(coreDir, 0755); err != nil { return err }
+	sqlitePy := `from __future__ import annotations
+
+import sqlite3
+from typing import Any
+
+
+class ClosingConnection(sqlite3.Connection):
+    """SQLite connection whose context manager also closes the file handle."""
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+        try:
+            result = super().__exit__(exc_type, exc, tb)
+        finally:
+            self.close()
+        return bool(result)
+
+
+def connect(*args: Any, **kwargs: Any) -> ClosingConnection:
+    kwargs.setdefault("factory", ClosingConnection)
+    return sqlite3.connect(*args, **kwargs)
+`
+	if err := os.WriteFile(filepath.Join(coreDir, "sqlite.py"), []byte(sqlitePy), 0600); err != nil { return err }
+
+	files := []string{
+		"mobile/store.py", "workbench/store.py", "reality/store.py", "memory/store.py",
+		"evolution/store.py", "core/memory.py", "aios/store.py", "swarm/store.py",
+		"world/store.py", "guardian/store.py", "product/diagnostics.py",
+	}
+	root := filepath.Join(stageDir, "app", "src", "jarvis_gm")
+	imp := "from jarvis_gm.core.sqlite import connect as sqlite_connect"
+	for _, rel := range files {
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		b, err := os.ReadFile(p)
+		if err != nil { return fmt.Errorf("sqlite fix read %s: %w", rel, err) }
+		txt := string(b)
+		txt = strings.ReplaceAll(txt, "sqlite3.connect(", "sqlite_connect(")
+		if !strings.Contains(txt, imp) {
+			if strings.Contains(txt, "from __future__ import annotations
+") {
+				txt = strings.Replace(txt, "from __future__ import annotations
+", "from __future__ import annotations
+"+imp+"
+", 1)
+			} else {
+				txt = imp + "
+" + txt
+			}
+		}
+		if err := os.WriteFile(p, []byte(txt), 0600); err != nil {
+			return fmt.Errorf("sqlite fix write %s: %w", rel, err)
+		}
+	}
+	appendLog("Applied Windows SQLite close-on-exit fix")
+	return nil
+}
+
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
@@ -432,6 +492,9 @@ func performInstall(ctx context.Context) error {
 	progress(18)
 	if err := unzipBytes(payloadZip, stageDir); err != nil {
 		return fmt.Errorf("payload: %w", err)
+	}
+	if err := applyWindowsSQLiteFixes(stageDir); err != nil {
+		return fmt.Errorf("Windows SQLite fix: %w", err)
 	}
 	if err := os.WriteFile(filepath.Join(stageDir, "JARVIS_GM.exe"), launcherExe, 0700); err != nil {
 		return err
