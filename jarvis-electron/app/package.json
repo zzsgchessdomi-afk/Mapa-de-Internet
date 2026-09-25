@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_VOICE_FIRST_Setup_${version}.${ext}",
+    "artifactName": "JARVIS_GM_Setup_VOICE_FIRST_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",
