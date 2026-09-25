@@ -78,6 +78,7 @@ $('refreshStatus').addEventListener('click',refreshStatus);
 $('stopBtn').addEventListener('click',async()=>{await call('stop');await refreshStatus();});
 $('resetStop').addEventListener('click',async()=>{await call('reset_stop');await refreshStatus();});
 $('speakBtn').addEventListener('click',()=>call('speak',{text:$('speakText').value},'perceptionOutput'));
+$('voiceProbe').addEventListener('click',()=>call('voice_probe',{},'perceptionOutput'));
 
 $('memoryRemember').addEventListener('click',()=>call('memory_remember',{title:$('memoryTitle').value,content:$('memoryContent').value},'memoryOutput'));
 $('memorySearch').addEventListener('click',()=>call('memory_search',{query:$('memoryQuery').value},'memoryOutput'));

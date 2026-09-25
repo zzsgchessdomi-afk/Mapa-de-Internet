@@ -106,7 +106,7 @@
       <div class="overlay-window">
         <div class="overlay-title"><div><span>PERCEPTION</span><h2>VOICE / VISION / GESTURE</h2></div><button class="close-overlay" data-panel="command">×</button></div>
         <div class="grid two">
-          <div class="card"><h3>VOICE RUNTIME</h3><p>Private Windows recognition with hidden fallback engine.</p><div class="row"><button data-op="voice_start" class="primary">START</button><button data-op="voice_stop" class="ghost">STOP VOICE</button></div><input id="speakText" placeholder="TTS test"><button id="speakBtn" class="ghost full">SPEAK</button></div>
+          <div class="card"><h3>VOICE RUNTIME</h3><p>Private Windows recognition with hidden fallback engine.</p><div class="row"><button data-op="voice_start" class="primary">START</button><button data-op="voice_restart" class="ghost">RESTART</button><button data-op="voice_stop" class="ghost">STOP</button></div><input id="speakText" placeholder="TTS test"><div class="row"><button id="speakBtn" class="ghost">SPEAK</button><button id="voiceProbe" class="ghost">VOICE PROBE</button></div></div>
           <div class="card"><h3>CAMERA / GESTURE</h3><p>MediaPipe perception routed through Intent Core and Guardian.</p><div class="row"><button data-op="vision_start" class="primary">CAMERA ON</button><button data-op="vision_stop" class="ghost">OFF</button></div></div>
           <div class="card"><h3>SENTINEL</h3><p>Contextual screen observation.</p><div class="row"><button data-op="sentinel_start" class="primary">START</button><button data-op="sentinel_stop" class="ghost">STOP</button></div></div>
           <div class="card"><h3>RUNTIME DETAIL</h3><pre id="perceptionOutput">—</pre></div>

@@ -91,6 +91,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Voice-first assistant contract failed' }
           if (-not (Select-String -Path '.\VOICE_CONTRACT.txt' -Pattern 'VOICE_ASSISTANT_CONTRACT=PASS' -Quiet)) { throw 'Voice assistant contract did not report PASS' }
 
+      - name: Run voice diagnostic contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python '.\jarvis-electron\voice_diagnostic_contract_test.py' | Tee-Object -FilePath '.\VOICE_DIAGNOSTIC_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Voice diagnostic contract failed' }
+          if (-not (Select-String -Path '.\VOICE_DIAGNOSTIC_CONTRACT.txt' -Pattern 'VOICE_DIAGNOSTIC_CONTRACT=PASS' -Quiet)) { throw 'Voice diagnostic contract did not report PASS' }
+
       - name: Run owner app discovery contract
         shell: pwsh
         run: |

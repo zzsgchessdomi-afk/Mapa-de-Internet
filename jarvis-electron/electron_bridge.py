@@ -153,6 +153,44 @@ def _goal_response(goal, *, original: str, normalized: str, alias: str | None = 
     }
 
 
+def _voice_probe(runtime) -> dict[str, Any]:
+    out: dict[str, Any] = {"platform": sys.platform}
+    try:
+        out["perception"] = _jsonable(runtime.perception.status())
+    except Exception as exc:
+        out["perception_error"] = str(exc)
+    try:
+        import sounddevice as sd
+        devices = sd.query_devices()
+        default_in = sd.default.device[0] if isinstance(sd.default.device, (tuple, list)) else sd.default.device
+        out["audio"] = {
+            "default_input_index": int(default_in) if default_in is not None else None,
+            "inputs": [
+                {"index": i, "name": str(d.get("name", "")), "channels": int(d.get("max_input_channels", 0))}
+                for i, d in enumerate(devices) if int(d.get("max_input_channels", 0)) > 0
+            ][:20],
+        }
+    except Exception as exc:
+        out["audio_error"] = str(exc)
+    if os.name == "nt":
+        try:
+            import win32com.client.dynamic
+            cat = win32com.client.dynamic.Dispatch("SAPI.SpObjectTokenCategory")
+            cat.SetId(r"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\AudioInput")
+            toks = cat.EnumerateTokens()
+            names = []
+            for i in range(int(toks.Count)):
+                token = toks.Item(i)
+                try:
+                    names.append(str(token.GetDescription()))
+                except Exception:
+                    names.append(str(token.Id))
+            out["sapi_audio_inputs"] = names
+        except Exception as exc:
+            out["sapi_probe_error"] = str(exc)
+    return out
+
+
 def _normalize_phrase(text: str) -> str:
     raw = unicodedata.normalize("NFKD", str(text or "").casefold())
     raw = "".join(ch for ch in raw if not unicodedata.combining(ch))
@@ -634,6 +672,13 @@ class Bridge:
                 return {"ok": True, "result": {"active": r.providers.active_name, "model": getattr(p, "model", model), "has_key": bool(getattr(p, "api_key", None))}}
             if op == "voice_start":
                 r.perception.start_voice(); return {"ok": True, "result": r.perception.status()}
+            if op == "voice_restart":
+                r.perception.stop_voice()
+                time.sleep(0.25)
+                r.perception.start_voice()
+                return {"ok": True, "result": r.perception.status()}
+            if op == "voice_probe":
+                return {"ok": True, "result": _voice_probe(r)}
             if op == "voice_stop":
                 r.perception.stop_voice(); return {"ok": True, "result": r.perception.status()}
             if op == "voice_permission":
