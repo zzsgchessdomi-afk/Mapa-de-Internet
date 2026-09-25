@@ -58,6 +58,14 @@ jobs:
           powershell.exe -NoLogo -NoProfile -NonInteractive -Command "Add-Type -AssemblyName System.Speech; if (-not ('System.Speech.Recognition.SpeechRecognitionEngine' -as [type])) { exit 22 }; Write-Host 'SYSTEM_SPEECH_ASSEMBLY=PASS'"
           if ($LASTEXITCODE -ne 0) { throw 'System.Speech assembly fallback unavailable on Windows runner' }
 
+      - name: Run owner gen_py failure fallback simulation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python '.\jarvis-electron\owner_voice_failure_test.py' | Tee-Object -FilePath '.\OWNER_VOICE_FAILURE.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Owner voice failure fallback simulation failed' }
+          if (-not (Select-String -Path '.\OWNER_VOICE_FAILURE.txt' -Pattern 'OWNER_GENPY_FAILURE_FALLBACK=PASS' -Quiet)) { throw 'Owner failure simulation did not report PASS' }
+
       - name: Install backend build dependencies
         shell: pwsh
         run: |
@@ -245,7 +253,7 @@ jobs:
           Private in-process SAPI (no Windows Speech Recognition toolbar): PASS
           Late-bound SAPI (avoids gen_py wrappers): PASS
           Hidden System.Speech fallback contract: PASS
-          Cinematic HUD contract: PASS
+          Reference-mode HUD contract: PASS
           Main surface chat UI: ABSENT
           Reactive reactor canvas: PASS
           Wake/TTS physical microphone acceptance: PENDING OWNER HARDWARE TEST

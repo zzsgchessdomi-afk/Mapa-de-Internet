@@ -1,65 +1,57 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none';" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none';">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>JARVIS GM</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<div class="world-grid"></div>
-<div class="screen-glow"></div>
-<div class="scanlines"></div>
+<body data-mode="boot">
+  <div class="grid-plane"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
 
-<div class="app-shell">
-  <header class="frame-top">
-    <div class="frame-corner left"></div>
-    <div class="top-readout">
-      <span class="tiny">JARVIS // INFINITY 7</span>
-      <span id="voiceBadge" class="voice-badge">INITIALIZING</span>
+  <div class="window-hotzone">
+    <div class="window-controls">
+      <button id="winMin" title="Minimize">—</button>
+      <button id="winFull" title="Toggle fullscreen">□</button>
+      <button id="winClose" title="Close">×</button>
     </div>
-    <div class="header-actions">
-      <button id="resetStop" class="top-button">REARM</button>
-      <button id="stopBtn" class="top-button stop">STOP</button>
-    </div>
-    <div class="frame-corner right"></div>
-  </header>
+  </div>
 
-  <main>
-    <section id="statusStrip" class="status-strip"></section>
-
+  <main id="shell">
     <section class="panel active" id="panel-command">
-      <div class="reference-stage">
+      <div class="hud-stage">
         <canvas id="cinematicCanvas" class="cinematic-canvas" aria-hidden="true"></canvas>
-        <div class="lens-flare f1"></div>
-        <div class="lens-flare f2"></div>
-        <div class="reference-frame top"></div>
-        <div class="reference-frame bottom"></div>
 
-        <div class="jarvis-core-wrap">
-          <div id="presenceOrb" class="reference-core" role="button" tabindex="0" aria-label="JARVIS core">
-            <div class="reactor-haze"></div>
-            <div class="microticks"></div>
-            <div class="orbit o1"></div>
-            <div class="orbit o2"></div>
-            <div class="orbit o3"></div>
-            <div class="inner-glow"></div>
+        <div class="top-mark">
+          <i></i><b></b><i></i>
+          <span id="voiceBadge">BOOTING</span>
+        </div>
+
+        <div id="statusStrip" class="telemetry-rail" aria-label="System telemetry"></div>
+
+        <div class="core-cluster">
+          <div id="presenceOrb" class="core" aria-label="JARVIS core">
+            <div class="core-aura"></div>
+            <div class="ring ring-a"></div>
+            <div class="ring ring-b"></div>
+            <div class="ring ring-c"></div>
+            <div class="ticks"></div>
+            <div class="glass"></div>
             <span>JARVIS</span>
           </div>
-
-          <div class="reference-state">
-            <strong id="wakeHint">LISTENING</strong>
-            <span id="lastResponse">SYSTEM READY</span>
+          <div class="core-state">
+            <strong id="wakeHint">INITIALIZING</strong>
+            <span id="lastResponse">INFINITY 7</span>
           </div>
         </div>
 
-        <div class="voice-activity">
+        <div class="speech-trace">
           <span id="lastInput">—</span>
-          <div class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
-
-        <div id="jarvisFeed" class="sr-only" aria-live="polite"></div>
 
         <div id="permissionBar" class="permission-bar hidden">
           <div class="permit-copy">
@@ -73,36 +65,48 @@
           </div>
         </div>
 
-        <div class="dock" aria-label="JARVIS systems">
+        <nav class="dock" aria-label="JARVIS systems">
           <button class="dock-btn active" data-panel="command" title="Core"><span>◉</span><small>CORE</small></button>
           <button class="dock-btn" data-panel="perception" title="Perception"><span>⌁</span><small>SENSE</small></button>
           <button class="dock-btn" data-panel="memory" title="Memory"><span>⌘</span><small>MEM</small></button>
-          <button class="dock-btn" data-panel="world" title="World Model"><span>◎</span><small>WORLD</small></button>
+          <button class="dock-btn" data-panel="research" title="Research Corps"><span>⌕</span><small>R&D</small></button>
           <button class="dock-btn" data-panel="workbench" title="Autonomous Workbench"><span>◇</span><small>WORK</small></button>
+          <button class="dock-btn" data-panel="swarm" title="Cognitive Swarm"><span>✣</span><small>SWARM</small></button>
+          <button class="dock-btn" data-panel="world" title="World Model"><span>◎</span><small>WORLD</small></button>
+          <button class="dock-btn" data-panel="reality" title="Reality Bridge"><span>⌬</span><small>REAL</small></button>
           <button class="dock-btn" data-panel="mobile" title="Mobile Bridge"><span>▯</span><small>MOBILE</small></button>
           <button class="dock-btn" data-panel="security" title="Guardian"><span>△</span><small>GUARD</small></button>
-          <button class="dock-btn" data-panel="settings" title="Diagnostics"><span>⋮</span><small>SYS</small></button>
-        </div>
+          <button class="dock-btn" data-panel="settings" title="System"><span>⋮</span><small>SYS</small></button>
+        </nav>
+
+        <button id="stopBtn" class="panic-stop" title="Emergency STOP">STOP</button>
+        <button id="resetStop" class="rearm hidden" title="Rearm JARVIS">REARM</button>
 
         <details class="text-fallback">
-          <summary>⌨</summary>
+          <summary title="Keyboard fallback">⌨</summary>
           <div class="composer">
-            <textarea id="goalInput" placeholder="Manual fallback only"></textarea>
-            <div class="row"><button id="runGoal" class="primary">EXECUTE</button><button id="screenNow" class="ghost">SCREEN</button><button id="refreshStatus" class="ghost">SYNC</button></div>
+            <textarea id="goalInput" placeholder="Manual command fallback"></textarea>
+            <div class="row">
+              <button id="runGoal" class="primary">EXECUTE</button>
+              <button id="screenNow" class="ghost">SCREEN</button>
+              <button id="refreshStatus" class="ghost">SYNC</button>
+            </div>
           </div>
         </details>
+
+        <div id="jarvisFeed" class="sr-only" aria-live="polite"></div>
+        <div class="sr-only"><pre id="goalOutput">Ready.</pre></div>
       </div>
-      <div class="sr-only"><pre id="goalOutput">Esperando orden.</pre></div>
     </section>
 
     <section class="panel overlay-panel" id="panel-perception">
       <div class="overlay-window">
         <div class="overlay-title"><div><span>PERCEPTION</span><h2>VOICE / VISION / GESTURE</h2></div><button class="close-overlay" data-panel="command">×</button></div>
         <div class="grid two">
-          <div class="card"><h3>Voice Runtime</h3><p>Private in-process recognition. No classic Windows speech toolbar.</p><div class="row"><button data-op="voice_start" class="primary">START</button><button data-op="voice_stop" class="ghost">STOP VOICE</button></div><input id="speakText" placeholder="TTS test"/><button id="speakBtn" class="ghost full">SPEAK</button></div>
-          <div class="card"><h3>Camera / Gesture Layer</h3><p>MediaPipe + Intent Core + Guardian.</p><div class="row"><button data-op="vision_start" class="primary">CAMERA ON</button><button data-op="vision_stop" class="ghost">OFF</button></div></div>
-          <div class="card"><h3>Sentinel</h3><p>Contextual screen observation.</p><div class="row"><button data-op="sentinel_start" class="primary">START</button><button data-op="sentinel_stop" class="ghost">STOP</button></div></div>
-          <div class="card"><h3>STATE</h3><pre id="perceptionOutput">—</pre></div>
+          <div class="card"><h3>VOICE RUNTIME</h3><p>Private Windows recognition with hidden fallback engine.</p><div class="row"><button data-op="voice_start" class="primary">START</button><button data-op="voice_stop" class="ghost">STOP VOICE</button></div><input id="speakText" placeholder="TTS test"><button id="speakBtn" class="ghost full">SPEAK</button></div>
+          <div class="card"><h3>CAMERA / GESTURE</h3><p>MediaPipe perception routed through Intent Core and Guardian.</p><div class="row"><button data-op="vision_start" class="primary">CAMERA ON</button><button data-op="vision_stop" class="ghost">OFF</button></div></div>
+          <div class="card"><h3>SENTINEL</h3><p>Contextual screen observation.</p><div class="row"><button data-op="sentinel_start" class="primary">START</button><button data-op="sentinel_stop" class="ghost">STOP</button></div></div>
+          <div class="card"><h3>RUNTIME DETAIL</h3><pre id="perceptionOutput">—</pre></div>
         </div>
       </div>
     </section>
@@ -183,7 +187,6 @@
       </div>
     </section>
   </main>
-</div>
 <script src="renderer.js"></script>
 </body>
 </html>

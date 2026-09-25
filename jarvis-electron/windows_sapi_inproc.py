@@ -17,7 +17,11 @@ _SYSTEM_SPEECH_SCRIPT = r"""
 $ErrorActionPreference = "Stop"
 try {
   Add-Type -AssemblyName System.Speech
-  $recognizer = New-Object System.Speech.Recognition.SpeechRecognitionEngine
+  $installed = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers()
+  if ($installed.Count -lt 1) { throw "No Windows speech recognizer is installed" }
+  $preferred = $installed | Where-Object { $_.Culture.Name -like "es-*" } | Select-Object -First 1
+  if ($null -eq $preferred) { $preferred = $installed | Select-Object -First 1 }
+  $recognizer = New-Object System.Speech.Recognition.SpeechRecognitionEngine($preferred)
   $grammar = New-Object System.Speech.Recognition.DictationGrammar
   $recognizer.LoadGrammar($grammar)
   $recognizer.SetInputToDefaultAudioDevice()
@@ -275,7 +279,7 @@ class WindowsSapiVoice:
     def _speak_system_speech(text: str) -> None:
         ps = WindowsSapiRecognizer._powershell_path()
         safe = str(text).replace("'", "''")
-        script = "Add-Type -AssemblyName System.Speech;$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;$s.Speak('" + safe + "')"
+        script = "Add-Type -AssemblyName System.Speech;$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;$v=$s.GetInstalledVoices()|Where-Object {$_.VoiceInfo.Culture.Name -like 'es-*'}|Select-Object -First 1;if($null -ne $v){$s.SelectVoice($v.VoiceInfo.Name)};$s.Speak('" + safe + "')"
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         subprocess.run(

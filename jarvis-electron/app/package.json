@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - cinematic ambient voice OS with resilient dual Windows speech engine",
+  "description": "JARVIS GM Infinity 7 - immersive reference mode, voice-first Windows AI OS",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.jarvisgm.desktop",
     "productName": "JARVIS GM",
-    "artifactName": "JARVIS_GM_Setup_CINEMATIC_${version}.${ext}",
+    "artifactName": "JARVIS_GM_Setup_INFINITY_REFERENCE_${version}.${ext}",
     "asar": true,
     "files": [
       "main.js",

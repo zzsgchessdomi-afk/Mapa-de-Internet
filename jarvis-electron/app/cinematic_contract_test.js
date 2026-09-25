@@ -2,11 +2,12 @@ const fs=require('fs');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
 const css=fs.readFileSync(__dirname+'/styles.css','utf8');
 const js=fs.readFileSync(__dirname+'/renderer.js','utf8');
-const must=[
-  [html,'cinematicCanvas'],[html,'reference-core'],[html,'permissionBar'],
-  [css,'CINEMATIC CORE LAYER'],[css,'reactor-haze'],[css,'lens-flare'],
-  [js,'Cinematic JARVIS visualization'],[js,'requestAnimationFrame(draw)'],[js,'ResizeObserver']
-];
-for(const [src,token] of must){if(!src.includes(token))throw new Error('missing visual contract: '+token);}
-if(/chat-msg|chat-role|chat-text/.test(html)) throw new Error('chat surface returned to main HTML');
-console.log('CINEMATIC_VISUAL_CONTRACT=PASS');
+for(const token of ['cinematicCanvas','presenceOrb','Autonomous Workbench','Cognitive Swarm','Reality Bridge','Guardian']) if(!html.includes(token)) throw new Error('missing '+token);
+for(const token of ['frame:false','setFullScreen(true)']) {
+  const main=fs.readFileSync(__dirname+'/main.js','utf8'); if(!main.includes(token)) throw new Error('missing '+token);
+}
+if(/chat-msg|chat-role|chat-text|conversation-feed/.test(html)) throw new Error('chat surface returned');
+if(js.includes("VOICE ERROR // ${evt.detail")) throw new Error('raw voice exception leaks into main HUD');
+if(!js.includes("safeHud(")) throw new Error('HUD sanitization missing');
+if(!css.includes('.core{position:relative;width:92px')) throw new Error('reference core scale drift');
+console.log('REFERENCE_MODE_CONTRACT=PASS');

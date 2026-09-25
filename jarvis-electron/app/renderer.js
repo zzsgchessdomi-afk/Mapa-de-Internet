@@ -1,182 +1,77 @@
-const $ = (id) => document.getElementById(id);
-const fmt = (v) => typeof v === 'string' ? v : JSON.stringify(v, null, 2);
-const panelMeta = {
-  command:['JARVIS','Orden directa al núcleo real'],
-  perception:['Voz & Gestos','Percepción multimodal y capa de intención'],
-  memory:['Memoria','Continuidad, proyectos y contexto persistente'],
-  research:['Research Corps','Investigación multiagente con evidencia'],
-  workbench:['Autonomous Workbench','Trabajos persistentes y checkpoints'],
-  swarm:['Cognitive Swarm','Especialistas dinámicos, crítico y síntesis'],
-  skills:['Skills & Evolution','Skill Forge, benchmark y evolución controlada'],
-  world:['World Model','Modelo vivo de tu entorno y relaciones'],
-  mobile:['Móvil','Dispositivos autorizados y acciones móviles'],
-  reality:['Reality Bridge','Dispositivos físicos enrolados'],
-  security:['Guardian & Permisos','Autoridad final del propietario'],
-  settings:['IA & Diagnóstico','Proveedor, self-test y estado del release']
-};
+const $=id=>document.getElementById(id);
+const fmt=v=>typeof v==='string'?v:JSON.stringify(v,null,2);
+let status=null,busyCount=0,pendingPermission=null,lastVoiceDetail='';
 
-let status = null;
-let busyCount = 0;
-
-function busy(on){
-  busyCount += on ? 1 : -1;
-  busyCount = Math.max(0,busyCount);
-  document.body.classList.toggle('busy', busyCount>0);
-}
-
+function busy(on){busyCount=Math.max(0,busyCount+(on?1:-1));document.body.classList.toggle('busy',busyCount>0);}
 async function call(op,args={},outputId=null){
   busy(true);
-  try{
-    const result = await window.jarvis.invoke(op,args);
-    if(outputId) $(outputId).textContent = fmt(result);
-    return result;
-  }catch(err){
-    const text = `ERROR: ${err.message}`;
-    if(outputId) $(outputId).textContent = text;
-    else alert(text);
-    throw err;
-  }finally{busy(false)}
+  try{const result=await window.jarvis.invoke(op,args);if(outputId&&$(outputId))$(outputId).textContent=fmt(result);return result;}
+  catch(err){if(outputId&&$(outputId))$(outputId).textContent='ERROR: '+err.message;throw err;}
+  finally{busy(false);}
 }
-
-function renderStatus(s){
-  status = s;
-  const p = s.perception || {};
-  const items = [
-    ['Core', s.mode || 'Infinity 7'],
-    ['STOP', s.stop_engaged ? 'ENGAGED' : 'Ready'],
-    ['Voz', p.voice?.running ? 'ON' : 'OFF'],
-    ['Visión', p.vision?.running ? 'ON' : 'OFF'],
-    ['Workbench', `${s.workbench?.total ?? 0} jobs`],
-    ['World', `${s.world?.entities ?? 0} entities`]
-  ];
-  $('statusStrip').innerHTML = items.map(([a,b],i)=>`<div class="status-chip s${i}"><b>${a}</b><span>${String(b)}</span></div>`).join('');
-  const voiceRunning = !!p.voice?.running;
-  $('voiceBadge').textContent = voiceRunning ? 'LISTENING' : (p.voice?.status === 'error' || p.voice?.status === 'unavailable' ? 'VOICE ERROR' : 'VOICE INITIALIZING');
-  $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
-  $('presenceOrb').classList.toggle('listening', voiceRunning);
-  $('stopBtn').classList.toggle('engaged', !!s.stop_engaged);
-  $('resetStop').disabled = !s.stop_engaged;
-  if($('perceptionOutput')) $('perceptionOutput').textContent = fmt(p);
-  renderPermissions(s.permissions || {});
+function setMode(mode,label=null){
+  document.body.dataset.mode=mode;
+  const map={boot:'INITIALIZING',idle:'SYSTEM READY',listening:'LISTENING',awake:'LISTENING',processing:'PROCESSING',auth:'AUTHORIZATION',stopped:'STOPPED','voice-offline':'VOICE OFFLINE',error:'CORE ERROR'};
+  $('wakeHint').textContent=label||map[mode]||'SYSTEM READY';
 }
-
-async function refreshStatus(){
-  try{renderStatus(await call('status'));}
-  catch(_){ $('voiceBadge').textContent='CORE OFFLINE'; $('voiceBadge').classList.add('bad'); }
+function safeHud(text,fallback='SYSTEM READY'){
+  const s=String(text||fallback).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  if(/traceback|win32com|gen_py|exception|error:|0x[0-9a-f]+/i.test(s))return fallback;
+  return s.slice(0,110).toUpperCase();
 }
-
+function setHudMessage(role,text){
+  if(role==='user'){
+    $('lastInput').textContent=safeHud(text,'COMMAND RECEIVED');
+    setMode('processing');
+  }else{
+    $('lastResponse').textContent=safeHud(text,'SYSTEM READY');
+    if(document.body.dataset.mode==='processing')setMode(status?.perception?.voice?.running?'listening':'idle');
+  }
+}
 function renderPermissions(perms){
-  const root=$('permissionsGrid');
-  root.innerHTML='';
+  const root=$('permissionsGrid');root.innerHTML='';
   Object.entries(perms).sort(([a],[b])=>a.localeCompare(b)).forEach(([cap,allowed])=>{
     const row=document.createElement('div');row.className='perm';
     const label=document.createElement('span');label.textContent=cap;
     const input=document.createElement('input');input.type='checkbox';input.className='switch';input.checked=!!allowed;
-    input.addEventListener('change', async()=>{
-      input.disabled=true;
-      try{await call('set_permission',{capability:cap,allowed:input.checked});await refreshStatus();}
-      catch(_){input.checked=!input.checked}
-      finally{input.disabled=false}
-    });
+    input.addEventListener('change',async()=>{input.disabled=true;try{await call('set_permission',{capability:cap,allowed:input.checked});await refreshStatus();}catch(_){input.checked=!input.checked}finally{input.disabled=false}});
     row.append(label,input);root.appendChild(row);
   });
 }
+function renderStatus(s){
+  status=s;const p=s.perception||{},voice=p.voice||{};
+  const items=[['CORE',s.mode||'Infinity 7'],['STOP',s.stop_engaged?'LOCK':'READY'],['VOICE',voice.running?'ON':'OFF'],['VISION',p.vision?.running?'ON':'OFF'],['WORK',String(s.workbench?.total??0)],['WORLD',String(s.world?.entities??0)]];
+  $('statusStrip').innerHTML=items.map(([a,b])=>`<div class="status-chip"><b>${a}</b><span>${b}</span></div>`).join('');
+  $('stopBtn').classList.toggle('engaged',!!s.stop_engaged);
+  $('resetStop').classList.toggle('hidden',!s.stop_engaged);
+  renderPermissions(s.permissions||{});
+  if($('perceptionOutput'))$('perceptionOutput').textContent=fmt(p);
 
-
-document.querySelectorAll('[data-op]').forEach(btn=>btn.addEventListener('click',async()=>{
-  try{const r=await call(btn.dataset.op);$('perceptionOutput').textContent=fmt(r);await refreshStatus();}catch(_){}
-}));
-
-let pendingPermission = null;
-
-function esc(s){
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  if(s.stop_engaged){$('voiceBadge').textContent='STOPPED';setMode('stopped');return;}
+  if(voice.running){$('voiceBadge').textContent='ONLINE';$('voiceBadge').classList.remove('bad');$('presenceOrb').classList.add('listening');if(!['awake','processing','auth'].includes(document.body.dataset.mode))setMode('listening');}
+  else if(voice.status==='error'||voice.status==='unavailable'){$('voiceBadge').textContent='VOICE OFFLINE';$('voiceBadge').classList.add('bad');$('presenceOrb').classList.remove('listening');setMode('voice-offline');}
+  else{$('voiceBadge').textContent='STARTING';$('presenceOrb').classList.remove('listening');if(document.body.dataset.mode==='boot')setMode('boot');}
 }
-
-function setHudMessage(role, text, extra=''){
-  const input=$('lastInput'), response=$('lastResponse');
-  if(role==='user'){
-    if(input) input.textContent=String(text||'—').toUpperCase();
-    document.body.classList.add('thinking');
-  }else{
-    if(response) response.textContent=String(text||'SYSTEM READY').toUpperCase();
-    document.body.classList.remove('thinking');
-  }
-  return null;
-}
-
-function commandDetails(_result){ return ''; }
-
+async function refreshStatus(){try{renderStatus(await call('status'));}catch(_){$('voiceBadge').textContent='CORE OFFLINE';setMode('error');}}
 function showCommandResult(result){
-  const extra = commandDetails(result);
-  setHudMessage('jarvis', result.message || 'Orden procesada.', extra);
-  $('goalOutput').textContent = result.message || '';
-  if(result.needs_permission && result.capability){
+  setHudMessage('jarvis',result.message||'ORDER COMPLETE');
+  $('goalOutput').textContent=result.message||'';
+  if(result.needs_permission&&result.capability){
     pendingPermission={text:result.text,capability:result.capability};
-    $('permissionTitle').textContent='Necesito tu autorización';
-    $('permissionText').textContent=`Para continuar necesito permiso para ${result.capability_label || result.capability}.`;
-    $('permissionBar').classList.remove('hidden');
-  }else{
-    pendingPermission=null;
-    $('permissionBar').classList.add('hidden');
-  }
+    $('permissionTitle').textContent='AUTHORIZATION REQUIRED';
+    $('permissionText').textContent=`Permission required: ${result.capability_label||result.capability}`;
+    $('permissionBar').classList.remove('hidden');setMode('auth');
+  }else{pendingPermission=null;$('permissionBar').classList.add('hidden');}
+}
+async function executeGoal(text,authorizedMode=null){
+  if(!text)return;setHudMessage('user',text);$('goalOutput').textContent='Working…';$('runGoal').disabled=true;
+  try{const result=authorizedMode?await call('run_goal_authorized',{text,capability:pendingPermission.capability,mode:authorizedMode}):await call('run_goal',{text});showCommandResult(result);if(result.state==='verified')$('goalInput').value='';}
+  catch(err){$('goalOutput').textContent='ERROR: '+err.message;$('lastResponse').textContent='COMMAND FAILED';setMode(status?.perception?.voice?.running?'listening':'idle');}
+  finally{$('runGoal').disabled=false;await refreshStatus();}
 }
 
-async function executeGoal(text, authorizedMode=null){
-  if(!text)return;
-  setHudMessage('user',text);
-  $('goalOutput').textContent='Trabajando…';
-  $('runGoal').disabled=true;
-  try{
-    const result = authorizedMode
-      ? await call('run_goal_authorized',{text,capability:pendingPermission.capability,mode:authorizedMode})
-      : await call('run_goal',{text});
-    showCommandResult(result);
-    if(result.state==='verified') $('goalInput').value='';
-  }catch(err){
-    setHudMessage('jarvis',`No pude completar la orden: ${err.message}`);
-    $('goalOutput').textContent=`No pude completar la orden: ${err.message}`;
-  }finally{
-    $('runGoal').disabled=false;
-    await refreshStatus();
-  }
-}
-
-$('runGoal').addEventListener('click',async()=>{
-  const text=$('goalInput').value.trim();
-  await executeGoal(text);
-});
-$('allowOnce').addEventListener('click',async()=>{
-  if(!pendingPermission)return;
-  const p={...pendingPermission};
-  $('permissionBar').classList.add('hidden');
-  if(p.source==='voice'){
-    await call('voice_permission',{mode:'once'});
-    pendingPermission=null;
-  }else{
-    pendingPermission=p;
-    await executeGoal(p.text,'once');
-  }
-});
-$('allowAlways').addEventListener('click',async()=>{
-  if(!pendingPermission)return;
-  const p={...pendingPermission};
-  $('permissionBar').classList.add('hidden');
-  if(p.source==='voice'){
-    await call('voice_permission',{mode:'always'});
-    pendingPermission=null;
-  }else{
-    pendingPermission=p;
-    await executeGoal(p.text,'always');
-  }
-});
-$('denyPermission').addEventListener('click',async()=>{
-  const p=pendingPermission;
-  pendingPermission=null;
-  $('permissionBar').classList.add('hidden');
-  if(p?.source==='voice') await call('voice_permission',{mode:'cancel'});
-  else setHudMessage('jarvis','Entendido. No haré esa acción.');
-});
+document.querySelectorAll('[data-op]').forEach(btn=>btn.addEventListener('click',async()=>{try{const r=await call(btn.dataset.op);$('perceptionOutput').textContent=fmt(r);await refreshStatus();}catch(_){} }));
+$('runGoal').addEventListener('click',()=>executeGoal($('goalInput').value.trim()));
 $('goalInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('runGoal').click()});
 $('screenNow').addEventListener('click',()=>call('screen_snapshot',{},'goalOutput'));
 $('refreshStatus').addEventListener('click',refreshStatus);
@@ -187,14 +82,11 @@ $('speakBtn').addEventListener('click',()=>call('speak',{text:$('speakText').val
 $('memoryRemember').addEventListener('click',()=>call('memory_remember',{title:$('memoryTitle').value,content:$('memoryContent').value},'memoryOutput'));
 $('memorySearch').addEventListener('click',()=>call('memory_search',{query:$('memoryQuery').value},'memoryOutput'));
 $('memoryResume').addEventListener('click',()=>call('memory_resume',{query:$('memoryQuery').value},'memoryOutput'));
-
 $('researchRun').addEventListener('click',()=>call('research_run',{question:$('researchQuestion').value,depth:$('researchDepth').value},'researchOutput'));
 $('researchList').addEventListener('click',()=>call('research_list',{},'researchOutput'));
-
 $('workCreate').addEventListener('click',()=>call('workbench_create',{goal:$('workGoal').value},'workOutput'));
 $('workCycle').addEventListener('click',()=>call('workbench_cycle',{},'workOutput'));
 $('workList').addEventListener('click',()=>call('workbench_list',{},'workOutput'));
-
 $('swarmRun').addEventListener('click',()=>call('swarm_run',{goal:$('swarmGoal').value},'swarmOutput'));
 $('swarmList').addEventListener('click',()=>call('swarm_list',{},'swarmOutput'));
 $('skillsList').addEventListener('click',()=>call('skills_list',{},'skillsOutput'));
@@ -204,211 +96,65 @@ $('worldRefresh').addEventListener('click',()=>call('world_snapshot',{},'worldOu
 $('mobileRefresh').addEventListener('click',()=>call('mobile_summary',{},'mobileOutput'));
 $('realityStatus').addEventListener('click',()=>call('reality_status',{},'realityOutput'));
 $('realityList').addEventListener('click',()=>call('reality_list',{},'realityOutput'));
-
-$('saveProvider').addEventListener('click',async()=>{
-  const result=await call('provider_set',{model:$('modelInput').value,api_key:$('apiKeyInput').value},'settingsOutput');
-  $('apiKeyInput').value='';await refreshStatus();
-});
+$('saveProvider').addEventListener('click',async()=>{await call('provider_set',{model:$('modelInput').value,api_key:$('apiKeyInput').value},'settingsOutput');$('apiKeyInput').value='';await refreshStatus();});
 $('selfTest').addEventListener('click',()=>call('self_test',{},'settingsOutput'));
-$('diagnostics').addEventListener('click',()=>call('diagnostics',{},'settingsOutput'));
+$('diagnostics').addEventListener('click',async()=>{const r=await call('diagnostics',{},'settingsOutput');if(lastVoiceDetail)$('settingsOutput').textContent+='\n\nVOICE DETAIL\n'+lastVoiceDetail;return r;});
 $('releaseGate').addEventListener('click',()=>call('release_gate',{},'settingsOutput'));
 $('openLog').addEventListener('click',()=>window.jarvis.openLog());
 
-window.jarvis.onEvent((evt)=>{
-  if(evt.event==='ready'){refreshStatus();}
-  if(evt.event==='voice-status'){
-    const ok=evt.status==='running';
-    $('voiceBadge').textContent=ok?'LISTENING':(evt.status==='error'||evt.status==='unavailable'?'VOICE ERROR':'VOICE INITIALIZING');
-    $('voiceBadge').classList.toggle('bad',evt.status==='error'||evt.status==='unavailable');
-    $('presenceOrb').classList.toggle('listening',ok);
-    if(evt.status==='error'||evt.status==='unavailable'){
-      $('wakeHint').textContent='VOICE OFFLINE';
-      setHudMessage('jarvis',`VOICE ERROR // ${evt.detail||evt.status}`);
-    } else if(evt.status==='starting'){
-      $('wakeHint').textContent='VOICE STARTING';
-    }
-  }
-  if(evt.event==='voice-wake'){
-    $('wakeHint').textContent='TE ESCUCHO';
-    
-    $('presenceOrb').classList.add('awake');
-    setTimeout(()=>$('presenceOrb').classList.remove('awake'),2200);
-  }
-  if(evt.event==='voice-command'){
-    setHudMessage('user',evt.text);
-    $('wakeHint').textContent='PROCESSING';
-    
-  }
-  if(evt.event==='assistant' && evt.text){
-    setHudMessage('jarvis',evt.text);
-    $('wakeHint').textContent='DI “JARVIS”';
-    
-  }
-  if(evt.event==='voice-permission'){
-    pendingPermission={source:'voice',text:evt.text,capability:evt.capability};
-    $('permissionTitle').textContent='JARVIS necesita tu autorización';
-    $('permissionText').textContent=evt.prompt||`Necesito permiso para ${evt.capability_label||evt.capability}.`;
-    $('permissionBar').classList.remove('hidden');
-  }
-  if(evt.event==='voice-permission-cleared'){
-    if(pendingPermission?.source==='voice') pendingPermission=null;
-    $('permissionBar').classList.add('hidden');
-  }
-  if(evt.event==='fatal'||evt.event==='backend-exit'){
-    $('voiceBadge').textContent='CORE STOPPED';
-    $('voiceBadge').classList.add('bad');
-    $('goalOutput').textContent=`El núcleo JARVIS se detuvo: ${evt.error||evt.code||'error desconocido'}`;
-  }
-});
-
-(async()=>{
-  setHudMessage('jarvis','JARVIS ONLINE');
-  const state=await window.jarvis.state();
-  if(state.ready) await refreshStatus();
-  else setTimeout(refreshStatus,1200);
-  try{
-    const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;
-  }catch(_){}
-})();
+$('allowOnce').addEventListener('click',async()=>{if(!pendingPermission)return;const p={...pendingPermission};$('permissionBar').classList.add('hidden');if(p.source==='voice'){await call('voice_permission',{mode:'once'});pendingPermission=null;}else{pendingPermission=p;await executeGoal(p.text,'once');}});
+$('allowAlways').addEventListener('click',async()=>{if(!pendingPermission)return;const p={...pendingPermission};$('permissionBar').classList.add('hidden');if(p.source==='voice'){await call('voice_permission',{mode:'always'});pendingPermission=null;}else{pendingPermission=p;await executeGoal(p.text,'always');}});
+$('denyPermission').addEventListener('click',async()=>{const p=pendingPermission;pendingPermission=null;$('permissionBar').classList.add('hidden');if(p?.source==='voice')await call('voice_permission',{mode:'cancel'});setHudMessage('jarvis','CANCELLED');await refreshStatus();});
 
 function showPanel(key){
   document.querySelectorAll('.dock-btn').forEach(x=>x.classList.toggle('active',x.dataset.panel===key));
   document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-  const target=document.getElementById('panel-'+key);
-  if(target) target.classList.add('active');
+  const target=$('panel-'+key);if(target)target.classList.add('active');
 }
 document.querySelectorAll('[data-panel]').forEach(btn=>btn.addEventListener('click',()=>showPanel(btn.dataset.panel)));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')showPanel('command');});
+$('winMin').addEventListener('click',()=>window.jarvis.window('minimize'));
+$('winFull').addEventListener('click',()=>window.jarvis.window('fullscreen'));
+$('winClose').addEventListener('click',()=>window.jarvis.window('close'));
+$('presenceOrb').addEventListener('click',async()=>{try{if(!status?.perception?.voice?.running){setMode('boot','VOICE STARTING');await call('voice_start');setTimeout(refreshStatus,700);}else await call('speak',{text:'Sí, aquí estoy.'});}catch(_){setMode('voice-offline');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')showPanel('command');if(e.key==='F11'){e.preventDefault();window.jarvis.window('fullscreen');}if((e.ctrlKey||e.metaKey)&&e.code==='Space'){e.preventDefault();const f=document.querySelector('.text-fallback');f.open=!f.open;if(f.open)$('goalInput').focus();}});
 
-
-/* --- Cinematic JARVIS visualization: reactive, no external assets --- */
-(() => {
-  const canvas = document.getElementById('cinematicCanvas');
-  const stage = document.querySelector('.reference-stage');
-  const core = document.getElementById('presenceOrb');
-  if (!canvas || !stage || !core) return;
-  const ctx = canvas.getContext('2d', { alpha: true });
-  let w=0,h=0,dpr=1,cx=0,cy=0,last=performance.now();
-  let particles=[], phase=0, pulse=0, awakeBurst=0;
-
-  function resize(){
-    const r=stage.getBoundingClientRect();
-    dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    w=Math.max(1,r.width); h=Math.max(1,r.height);
-    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
-    canvas.style.width=w+'px'; canvas.style.height=h+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    const cr=core.getBoundingClientRect(), sr=stage.getBoundingClientRect();
-    cx=cr.left-sr.left+cr.width/2; cy=cr.top-sr.top+cr.height/2;
-    seedParticles();
+window.jarvis.onEvent(evt=>{
+  if(evt.event==='ready')refreshStatus();
+  if(evt.event==='voice-status'){
+    lastVoiceDetail=String(evt.detail||'');
+    const ok=evt.status==='running';
+    $('voiceBadge').textContent=ok?'ONLINE':(evt.status==='error'||evt.status==='unavailable'?'VOICE OFFLINE':'STARTING');
+    $('presenceOrb').classList.toggle('listening',ok);
+    if(ok){$('voiceBadge').classList.remove('bad');setMode('listening');$('lastResponse').textContent='SYSTEM READY';}
+    else if(evt.status==='error'||evt.status==='unavailable'){$('voiceBadge').classList.add('bad');setMode('voice-offline');$('lastResponse').textContent='VOICE ENGINE UNAVAILABLE';if($('perceptionOutput'))$('perceptionOutput').textContent='VOICE DETAIL\n'+lastVoiceDetail;}
+    else setMode('boot','VOICE STARTING');
   }
+  if(evt.event==='voice-wake'){$('presenceOrb').classList.add('awake');setMode('awake');$('lastResponse').textContent='YES?';setTimeout(()=>{$('presenceOrb').classList.remove('awake');if(document.body.dataset.mode==='awake')setMode('listening');},2200);}
+  if(evt.event==='voice-command'){setHudMessage('user',evt.text);setMode('processing');}
+  if(evt.event==='assistant'&&evt.text){setHudMessage('jarvis',evt.text);setMode(status?.perception?.voice?.running?'listening':'idle');}
+  if(evt.event==='voice-permission'){pendingPermission={source:'voice',text:evt.text,capability:evt.capability};$('permissionTitle').textContent='AUTHORIZATION REQUIRED';$('permissionText').textContent=evt.capability_label||evt.capability;$('permissionBar').classList.remove('hidden');setMode('auth');}
+  if(evt.event==='voice-permission-cleared'){if(pendingPermission?.source==='voice')pendingPermission=null;$('permissionBar').classList.add('hidden');refreshStatus();}
+  if(evt.event==='fatal'||evt.event==='backend-exit'){$('voiceBadge').textContent='CORE OFFLINE';$('goalOutput').textContent=String(evt.error||evt.code||'backend stopped');$('lastResponse').textContent='CORE OFFLINE';setMode('error');}
+});
 
-  function seedParticles(){
-    const count=Math.max(55,Math.min(120,Math.floor((w*h)/15000)));
-    particles=Array.from({length:count},(_,i)=>{
-      const a=(i/count)*Math.PI*2 + ((i*37)%19)*0.03;
-      const radius=115 + ((i*47)%320);
-      return {a,r:radius,spd:(0.00008+((i*13)%17)*0.000006)*(i%2?1:-1),z:.25+((i*29)%70)/100,s:0.35+((i*11)%15)/10};
-    });
-  }
+(async()=>{setMode('boot');const state=await window.jarvis.state();if(state.ready)await refreshStatus();else setTimeout(refreshStatus,1000);try{const p=await call('provider_get');$('modelInput').value=p.model||$('modelInput').value;}catch(_){}})();
 
-  function statePower(){
-    let p=.32;
-    if(core.classList.contains('listening')) p=.55;
-    if(document.body.classList.contains('thinking')) p=.82;
-    if(core.classList.contains('awake')) p=1;
-    return p;
-  }
-
-  function arcRing(radius, alpha, speed, segments, width){
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(phase*speed);
-    ctx.lineWidth=width;
-    ctx.strokeStyle='rgba(92,220,255,'+alpha+')';
-    ctx.shadowColor='rgba(86,218,255,.65)';
-    ctx.shadowBlur=8;
-    for(let i=0;i<segments;i++){
-      const a=(i/segments)*Math.PI*2;
-      const span=(.08 + ((i*7)%5)*.012);
-      ctx.beginPath();
-      ctx.arc(0,0,radius,a,a+span);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function draw(now){
-    const dt=Math.min(40,now-last); last=now; phase+=dt*.001;
-    const power=statePower(); pulse+=(power-pulse)*.05;
-    ctx.clearRect(0,0,w,h);
-
-    // soft volumetric field
-    ctx.save();
-    ctx.globalCompositeOperation='lighter';
-    const halo=ctx.createRadialGradient(cx,cy,15,cx,cy,360);
-    halo.addColorStop(0,'rgba(164,246,255,'+(0.055+power*.045)+')');
-    halo.addColorStop(.24,'rgba(54,202,247,'+(0.035+power*.028)+')');
-    halo.addColorStop(.65,'rgba(25,118,158,.018)');
-    halo.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=halo; ctx.fillRect(0,0,w,h);
-
-    // orbital particles
-    for(const p of particles){
-      p.a += dt*p.spd*(1+power*.7);
-      const wobble=Math.sin(phase*1.2+p.a*3)*8*p.z;
-      const rr=p.r+wobble;
-      const x=cx+Math.cos(p.a)*rr;
-      const y=cy+Math.sin(p.a)*rr*.42;
-      if(x<0||x>w||y<0||y>h) continue;
-      const alpha=(.035+.11*p.z)*(.55+power*.75);
-      ctx.fillStyle='rgba(116,228,255,'+alpha+')';
-      ctx.shadowColor='rgba(73,211,255,.9)'; ctx.shadowBlur=5*p.z;
-      ctx.beginPath(); ctx.arc(x,y,p.s*p.z,0,Math.PI*2); ctx.fill();
-    }
-
-    // cinematic rings around the core
-    arcRing(98,.24+.18*power,.55,28,.7);
-    arcRing(126,.14+.13*power,-.34,20,.55);
-    arcRing(160,.08+.09*power,.19,16,.45);
-    arcRing(214,.045+.055*power,-.10,12,.4);
-
-    // scanner sweep
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(phase*.31);
-    const beam=ctx.createLinearGradient(0,0,340,0);
-    beam.addColorStop(0,'rgba(91,221,255,.16)');
-    beam.addColorStop(.18,'rgba(91,221,255,.055)');
-    beam.addColorStop(1,'rgba(91,221,255,0)');
-    ctx.fillStyle=beam;
-    ctx.beginPath(); ctx.moveTo(60,-1);ctx.lineTo(350,-18);ctx.lineTo(350,18);ctx.lineTo(60,1);ctx.closePath();ctx.fill();
-    ctx.restore();
-
-    // wake impulse
-    if(core.classList.contains('awake')) awakeBurst=Math.min(1,awakeBurst+.08);
-    else awakeBurst=Math.max(0,awakeBurst-.025);
-    if(awakeBurst>0.01){
-      const radius=105+awakeBurst*210;
-      ctx.strokeStyle='rgba(173,245,255,'+(awakeBurst*.22)+')';
-      ctx.lineWidth=1;
-      ctx.shadowColor='rgba(91,221,255,.9)';ctx.shadowBlur=12;
-      ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke();
-    }
-
-    // subtle horizontal anamorphic flare
-    const lg=ctx.createLinearGradient(cx-330,0,cx+330,0);
-    lg.addColorStop(0,'rgba(70,205,248,0)');
-    lg.addColorStop(.43,'rgba(70,205,248,'+(.015+power*.018)+')');
-    lg.addColorStop(.5,'rgba(221,253,255,'+(.07+power*.06)+')');
-    lg.addColorStop(.57,'rgba(70,205,248,'+(.015+power*.018)+')');
-    lg.addColorStop(1,'rgba(70,205,248,0)');
-    ctx.fillStyle=lg;ctx.fillRect(cx-330,cy-1,660,2);
-    ctx.restore();
-    requestAnimationFrame(draw);
-  }
-
-  const ro=new ResizeObserver(resize); ro.observe(stage);
-  window.addEventListener('resize',resize,{passive:true});
-  resize(); requestAnimationFrame(draw);
+/* Reference-mode cinematic renderer. No external assets. */
+(()=>{
+  const canvas=$('cinematicCanvas'),stage=document.querySelector('.hud-stage'),core=$('presenceOrb');
+  if(!canvas||!stage||!core)return;
+  const ctx=canvas.getContext('2d',{alpha:true});
+  let w=1,h=1,dpr=1,cx=0,cy=0,last=performance.now(),phase=0,mx=0,my=0,tx=0,ty=0,particles=[];
+  function resize(){const r=stage.getBoundingClientRect();dpr=Math.max(1,Math.min(2,devicePixelRatio||1));w=r.width;h=r.height;canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);const cr=core.getBoundingClientRect();cx=cr.left-r.left+cr.width/2;cy=cr.top-r.top+cr.height/2;seed();}
+  function seed(){const n=Math.max(45,Math.min(90,Math.floor(w*h/23000)));particles=Array.from({length:n},(_,i)=>({a:i/n*Math.PI*2,r:115+(i*73)%330,s:.25+(i*17)%9/10,z:.18+(i*31)%70/100,v:(i%2?1:-1)*(.000025+(i%11)*.000004)}));}
+  function modePower(){const m=document.body.dataset.mode;return m==='awake'?1:m==='processing'?.92:m==='listening'?.58:m==='auth'?.72:m==='voice-offline'?.18:.30;}
+  function ring(radius,alpha,speed,count,width){ctx.save();ctx.translate(cx+mx,cy+my);ctx.rotate(phase*speed);ctx.strokeStyle=`rgba(104,222,255,${alpha})`;ctx.lineWidth=width;ctx.shadowColor='rgba(78,210,250,.55)';ctx.shadowBlur=6;for(let i=0;i<count;i++){const a=i/count*Math.PI*2,span=.035+((i*7)%5)*.012;ctx.beginPath();ctx.arc(0,0,radius,a,a+span);ctx.stroke();}ctx.restore();}
+  function draw(now){const dt=Math.min(40,now-last);last=now;phase+=dt*.001;mx+=(tx-mx)*.025;my+=(ty-my)*.025;const p=modePower();ctx.clearRect(0,0,w,h);ctx.save();ctx.globalCompositeOperation='lighter';
+    const glow=ctx.createRadialGradient(cx+mx,cy+my,6,cx+mx,cy+my,285);glow.addColorStop(0,`rgba(192,249,255,${.028+p*.035})`);glow.addColorStop(.20,`rgba(65,207,248,${.018+p*.020})`);glow.addColorStop(.62,'rgba(27,111,147,.008)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+    for(const q of particles){q.a+=dt*q.v*(1+p*.55);const rr=q.r+Math.sin(phase*.7+q.a*4)*4*q.z,x=cx+mx+Math.cos(q.a)*rr,y=cy+my+Math.sin(q.a)*rr*.38;if(x<0||x>w||y<0||y>h)continue;ctx.fillStyle=`rgba(112,222,250,${(.018+.055*q.z)*(1+p*.6)})`;ctx.beginPath();ctx.arc(x,y,q.s*q.z,0,Math.PI*2);ctx.fill();}
+    ring(73,.20+p*.15,.48,22,.55);ring(92,.10+p*.10,-.25,18,.45);ring(118,.055+p*.07,.13,14,.4);ring(168,.025+p*.035,-.07,10,.35);
+    ctx.save();ctx.translate(cx+mx,cy+my);ctx.rotate(phase*.18);const beam=ctx.createLinearGradient(52,0,285,0);beam.addColorStop(0,`rgba(91,218,251,${.045+p*.06})`);beam.addColorStop(.22,'rgba(91,218,251,.022)');beam.addColorStop(1,'rgba(91,218,251,0)');ctx.fillStyle=beam;ctx.beginPath();ctx.moveTo(48,-.5);ctx.lineTo(285,-8);ctx.lineTo(285,8);ctx.lineTo(48,.5);ctx.closePath();ctx.fill();ctx.restore();
+    const flare=ctx.createLinearGradient(cx-240,0,cx+240,0);flare.addColorStop(0,'rgba(80,210,247,0)');flare.addColorStop(.48,'rgba(102,225,255,.012)');flare.addColorStop(.5,`rgba(224,253,255,${.03+p*.03})`);flare.addColorStop(.52,'rgba(102,225,255,.012)');flare.addColorStop(1,'rgba(80,210,247,0)');ctx.fillStyle=flare;ctx.fillRect(cx-240,cy-1,480,2);ctx.restore();requestAnimationFrame(draw);}
+  stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect();tx=(e.clientX-r.left-r.width/2)*.0035;ty=(e.clientY-r.top-r.height/2)*.0035;},{passive:true});stage.addEventListener('pointerleave',()=>{tx=0;ty=0;});
+  new ResizeObserver(resize).observe(stage);resize();requestAnimationFrame(draw);
 })();
