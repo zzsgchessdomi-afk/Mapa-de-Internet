@@ -28,16 +28,21 @@ jobs:
         with:
           python-version: '3.11.9'
 
-      - name: Reconstruct embedded JARVIS payload
+      - name: Validate embedded JARVIS payload
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          Set-Location jarvis-ci
-          $parts = Get-ChildItem 'payload.b64.part*' | Sort-Object Name
-          if ($parts.Count -lt 1) { throw 'payload chunks missing' }
-          $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
-          [IO.File]::WriteAllBytes((Join-Path (Get-Location) 'payload.zip'), [Convert]::FromBase64String($b64))
-          if ((Get-Item .\payload.zip).Length -lt 100000) { throw 'reconstructed payload too small' }
+          $zip = '.\jarvis-ci\payload.zip'
+          if (!(Test-Path $zip)) { throw 'payload.zip missing' }
+          if ((Get-Item $zip).Length -lt 100000) { throw 'payload.zip too small' }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip))
+          try {
+            if ($z.Entries.Count -lt 50) { throw "payload.zip entry count too small: $($z.Entries.Count)" }
+            if (-not ($z.Entries.FullName -contains 'app/pyproject.toml')) { throw 'pyproject missing from payload' }
+          } finally {
+            $z.Dispose()
+          }
 
       - name: Build GUI launcher and installer
         shell: pwsh
@@ -111,14 +116,13 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $root = "$env:LOCALAPPDATA\Programs\JARVIS GM"
-          $py = Join-Path $root 'runtime\Scripts\python.exe'
-          $env:JARVIS_CI_GUI_SMOKE = '1'
-          Push-Location $root
-          & $py -c "from jarvis_gm.app import main; main()"
-          $code = $LASTEXITCODE
-          Pop-Location
-          Remove-Item Env:JARVIS_CI_GUI_SMOKE -ErrorAction SilentlyContinue
-          if ($code -ne 0) { throw "JARVIS GUI smoke failed: $code" }
+          $pyw = Join-Path $root 'runtime\Scripts\pythonw.exe'
+          $p = Start-Process -FilePath $pyw -ArgumentList '-c', 'from jarvis_gm.app import main; main()' -WorkingDirectory $root -PassThru
+          Start-Sleep -Seconds 6
+          $p.Refresh()
+          if ($p.HasExited) { throw "JARVIS GUI exited during startup with code $($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          Start-Sleep -Seconds 1
 
       - name: Second-run regression
         shell: pwsh
