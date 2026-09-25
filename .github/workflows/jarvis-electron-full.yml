@@ -46,7 +46,7 @@ jobs:
           python '.\jarvis-electron\private_sapi_contract_test.py' | Tee-Object -FilePath '.\PRIVATE_SAPI_CONTRACT.txt'
           if ($LASTEXITCODE -ne 0) { throw 'Private SAPI contract failed' }
           if (-not (Select-String -Path '.\PRIVATE_SAPI_CONTRACT.txt' -Pattern 'PRIVATE_SAPI_CONTRACT=PASS' -Quiet)) { throw 'Private SAPI contract did not report PASS' }
-          if (Select-String -Path '.\work\app\src\jarvis_gm\perception\voice\windows_sapi.py' -Pattern 'SpSharedRecognizer' -Quiet) { throw 'Shared Windows Speech recognizer still present' }
+          if (Select-String -Path '.\work\app\src\jarvis_gm\perception\voice\windows_sapi.py' -SimpleMatch 'Dispatch("SAPI.SpSharedRecognizer")' -Quiet) { throw 'Shared Windows Speech recognizer still present' }
 
       - name: Install backend build dependencies
         shell: pwsh

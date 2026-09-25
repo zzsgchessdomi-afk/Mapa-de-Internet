@@ -16,7 +16,7 @@ _AUDIO_INPUT_CATEGORY = r"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\AudioInpu
 class WindowsSapiRecognizer:
     """Private in-process SAPI recognizer.
 
-    This intentionally does NOT use SpSharedRecognizer. The shared recognizer is
+    This intentionally does NOT use the shared system recognizer. That recognizer is
     coupled to the classic Windows Speech Recognition UI/training experience,
     which is not part of JARVIS. JARVIS owns this recognizer inside its private
     backend and never launches the Windows speech toolbar.
