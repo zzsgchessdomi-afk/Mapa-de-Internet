@@ -47,6 +47,9 @@ jobs:
           node --check "voicepresence-electron\renderer\app.js"
           $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
           if ($pkg.version -ne "2.2.0") { throw "Version patch failed: $($pkg.version)" }
+          $pkg.build.win.artifactName = "VoicePresence-2.2.0-Windows-x64.exe"
+          $pkg.build.portable.artifactName = "VoicePresence-2.2.0-Windows-x64.exe"
+          $pkg | ConvertTo-Json -Depth 50 | Set-Content "voicepresence-electron\package.json" -Encoding UTF8
           $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
           foreach ($marker in @("command-center","missionScreen","INICIAR SESIÓN GUIADA","startGuidedSession","showSessionComparison")) {
             if (-not $app.Contains($marker)) { throw "Missing v2.2 marker: $marker" }
