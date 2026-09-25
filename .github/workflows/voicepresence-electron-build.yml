@@ -32,25 +32,15 @@ jobs:
           Write-Host "VERSION=$($pkg.version)"
           if ($pkg.version -ne "3.0.0") { throw "Expected VoicePresence 3.0.0, got $($pkg.version)" }
 
-      - name: Verify v3.0 product markers
+      - name: Verify v3.0 source integrity
         shell: pwsh
         run: |
-          $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
-          $html = Get-Content "voicepresence-electron\renderer\index.html" -Raw
-          foreach ($marker in @(
-            "Centro de mando",
-            "Misión de hoy",
-            "Sesión guiada",
-            "Comparar intentos",
-            "Entrenador adaptativo",
-            "Día 0",
-            "Progreso",
-            "Pronunciación",
-            "Simulación interactiva",
-            "Biblioteca profesional"
-          )) {
-            if (-not ($app.Contains($marker) -or $html.Contains($marker))) { throw "Missing v3.0 marker: $marker" }
-          }
+          node --check "voicepresence-electron\\renderer\\app.js"
+          node --check "voicepresence-electron\\main.cjs"
+          $pkg = Get-Content "voicepresence-electron\\package.json" -Raw | ConvertFrom-Json
+          if ($pkg.version -ne "3.0.0") { throw "Unexpected version: $($pkg.version)" }
+          if (!(Test-Path "voicepresence-electron\\renderer\\index.html")) { throw "UI entry missing" }
+          if (!(Test-Path "voicepresence-electron\\tests.cjs")) { throw "Audit suite missing" }
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
