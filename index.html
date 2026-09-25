@@ -413,6 +413,73 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
 .mcTop{background:rgba(3,10,20,.94);border-bottom:1px solid rgba(62,166,255,.17)}
 .mcLeft{background:linear-gradient(180deg,rgba(5,18,35,.98),rgba(2,9,19,.98));border-right:1px solid rgba(57,160,245,.16)}
 .mcNav button.on{background:linear-gradient(90deg,rgba(15,124,255,.22),rgba(18,186,255,.08));border-color:rgba(67,178,255,.25)}
+
+/* ATLANEX COMMAND CENTER — desktop product surface */
+@media (min-width:821px){
+  .mcRoot{
+    grid-template-rows:66px minmax(0,1fr);
+    background:
+      radial-gradient(circle at 50% 18%,rgba(0,153,255,.11),transparent 34%),
+      radial-gradient(circle at 86% 65%,rgba(71,90,255,.07),transparent 34%),
+      #020711;
+  }
+  .mcTop{
+    grid-template-columns:270px minmax(430px,1fr) auto;
+    gap:18px;padding:0 18px;
+    background:linear-gradient(180deg,rgba(4,13,27,.98),rgba(3,10,21,.96));
+    border-bottom:1px solid rgba(59,174,255,.19);
+    box-shadow:0 12px 42px rgba(0,0,0,.22);
+  }
+  .mcBrand{min-width:250px;gap:12px}
+  .mcLogo{width:36px;height:36px;border-radius:12px;box-shadow:0 0 28px rgba(44,164,255,.18)}
+  .mcBrand b{font-size:17px;letter-spacing:-.02em}
+  .mcBrand small{font-size:7px;letter-spacing:.24em;color:#718ca8}
+  .mcSearch{max-width:880px;padding:6px;border-radius:15px;background:rgba(7,20,37,.95);border-color:rgba(64,180,255,.20);box-shadow:0 12px 34px rgba(0,0,0,.24),0 0 30px rgba(30,146,255,.05)}
+  .mcSearch input{font-size:11.5px;padding:10px 12px}
+  .mcSearch button{font-size:9px;padding:10px 16px}
+  .mcTopActions{gap:7px}.mcTopActions .btn{font-size:8px;padding:9px 10px}
+  .mcStatus{padding:8px 10px;font-size:7.5px;background:rgba(60,224,164,.05)}
+  .mcPulse span{font-size:6.8px;padding:5px 7px}.mcPulse b{font-size:8px}
+
+  .mcBody{grid-template-columns:280px minmax(0,1fr) 390px}
+  .mcLeft{padding:16px;background:linear-gradient(180deg,rgba(5,18,35,.99),rgba(3,11,23,.99));border-right-color:rgba(55,161,245,.16)}
+  .mcRight{padding:13px;background:linear-gradient(180deg,rgba(5,17,33,.99),rgba(3,10,21,.99));border-left-color:rgba(55,161,245,.16);gap:11px}
+  .mcCenter{grid-template-rows:minmax(0,1fr) 172px 116px;background:#030a14}
+
+  .mcProject{padding:13px;border-radius:14px;border-color:rgba(65,171,255,.16);background:linear-gradient(150deg,rgba(22,109,255,.12),rgba(5,20,36,.72));box-shadow:inset 0 0 30px rgba(29,121,255,.035)}
+  .mcProject h3{font-size:13px;margin:7px 0 6px}.mcProject p{font-size:8.5px;line-height:1.5}
+  .mcNav{gap:5px;margin-top:13px}.mcNav button{padding:10px 11px;font-size:9px;border:1px solid transparent}.mcNav button.on{border-color:rgba(67,178,255,.18)}
+  .mcSectionTitle{margin-top:18px;font-size:7.4px}.mcRun{padding:9px 9px}.mcRun b{font-size:8.5px}.mcRun span{font-size:7px}
+  .mcStats{padding:10px}.mcStatsGrid b{font-size:14px}.mcStatsGrid span{font-size:6.5px}
+
+  .mcGraphPanel{
+    background:
+      radial-gradient(circle at 50% 43%,rgba(26,116,255,.13),transparent 36%),
+      linear-gradient(rgba(86,163,255,.028) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(86,163,255,.028) 1px,transparent 1px),
+      linear-gradient(180deg,#04101e,#030914);
+    background-size:auto,28px 28px,28px 28px,auto;
+  }
+  .mcGraphHead{left:18px;right:18px;top:15px}.mcGraphHead h2{font-size:15px;letter-spacing:-.015em}.mcGraphHead p{font-size:8px;margin-top:5px}
+  .mcGraph{inset:58px 12px 12px}
+  .mcNode{min-width:142px;max-width:190px;padding:10px 12px;border-radius:13px;background:linear-gradient(160deg,rgba(9,25,44,.98),rgba(5,15,29,.98));box-shadow:0 14px 36px rgba(0,0,0,.34)}
+  .mcNode.query{min-width:188px;border-color:rgba(57,151,255,.48);box-shadow:0 0 46px rgba(39,132,255,.13),0 16px 38px rgba(0,0,0,.34)}
+  .mcNode b{font-size:9.5px}.mcNode small{font-size:7px;margin-top:4px}.mcNode .score{font-size:7px}
+  .mcDot{width:8px;height:8px}
+  .mcEmpty{width:min(480px,78%);padding:34px 30px 26px;border:1px solid rgba(70,181,255,.13);border-radius:20px;background:linear-gradient(160deg,rgba(7,24,43,.78),rgba(4,13,26,.66));box-shadow:0 25px 80px rgba(0,0,0,.32),0 0 70px rgba(26,137,255,.05);font-size:10px;letter-spacing:.18em;color:#b9eaff}
+  .mcEmpty:before{content:"";display:block;width:72px;height:72px;margin:0 auto 20px;border-radius:24px;border:1px solid rgba(79,201,255,.25);background:radial-gradient(circle,#a9f3ff 0 8%,rgba(73,198,255,.28) 9% 17%,transparent 18%),radial-gradient(circle,transparent 0 31%,rgba(72,190,255,.48) 32% 33%,transparent 34%),linear-gradient(145deg,rgba(19,88,132,.5),rgba(6,29,54,.7));box-shadow:0 0 55px rgba(38,176,255,.13)}
+  .mcEmpty span{display:block;margin-top:10px;font-size:8px;letter-spacing:0;line-height:1.55;color:#718ca8}
+
+  .mcReplay{padding:11px 16px;background:linear-gradient(180deg,#06111f,#05101c)}.mcReplayHead b{font-size:10px}.mcReplayHead span{font-size:7.5px}
+  .mcReplayNow{font-size:7.5px}.mcForkInline input{font-size:7.5px;padding:7px 9px}
+  .mcAgents{gap:8px;padding:11px 15px;background:#05101c}.mcAgent{padding:9px 10px;border-radius:10px}.mcAgent b{font-size:8px}.mcAgent span{font-size:6.7px;margin-top:4px}
+
+  .mcRightTabs{padding:6px;gap:5px;border-radius:12px}.mcRightTabs button{font-size:7.5px;padding:8px 5px}
+  .mcBoxHead{padding:10px}.mcBoxHead b{font-size:9px}.mcBoxHead span{font-size:6.5px}
+  .mcEvidenceBody{padding:11px}.mcEvTitle{font-size:12px}.mcEvExcerpt{font-size:8px;line-height:1.55}
+  .proofHero{padding:12px}.proofHero h3{font-size:13px}.proofHero p{font-size:7.8px}
+  .claimCard{padding:9px}.claimTop b{font-size:8.2px}.claimValue{font-size:7.5px}.claimEvidence{font-size:7px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
 <script src="./lib/capsule-core.js"></script>
@@ -461,7 +528,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
         </div>
         <div class="mcGraph" id="mcGraph">
           <svg class="mcEdges" id="mcEdges"></svg>
-          <div class="mcEmpty" id="mcEmpty">No hay una investigación activa.<br>Escribe un objetivo arriba para construir el mapa.</div>
+          <div class="mcEmpty" id="mcEmpty">ATLANEX RESEARCH CORE<br><span>Escribe una misión arriba. El mapa aparecerá únicamente con resultados reales, fuentes y evidencia de tu investigación.</span></div>
           <div class="mcDecisionRibbon" id="mcDecisionRibbon"></div>
           <div class="mcProofBadge">CLICK NODE → PROOF CHAIN</div>
         </div>
@@ -496,11 +563,11 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
       <div class="mcPane show" data-mc-pane="proof">
         <section class="mcEvidence">
           <div class="mcBoxHead"><b>Proof Chain</b><span id="mcEvidenceCounter">0 fuentes</span></div>
-          <div class="mcEvidenceBody" id="mcEvidenceBody"><div class="mcConflictEmpty">Selecciona una entidad del mapa. Atlas mostrará exactamente por qué la puntuó así.</div></div>
+          <div class="mcEvidenceBody" id="mcEvidenceBody"><div class="mcConflictEmpty">Selecciona una entidad del mapa. Atlanex mostrará exactamente por qué la puntuó así.</div></div>
         </section>
         <section class="mcConflict" style="margin-top:9px">
           <div class="mcBoxHead"><b>Evidence Conflicts</b><span id="mcConflictCount">0</span></div>
-          <div class="mcConflictBody" id="mcConflictBody"><div class="mcConflictEmpty">Atlas solo mostrará conflictos cuando encuentre textos opuestos en fuentes distintas.</div></div>
+          <div class="mcConflictBody" id="mcConflictBody"><div class="mcConflictEmpty">Atlanex solo mostrará conflictos cuando encuentre textos opuestos en fuentes distintas.</div></div>
         </section>
       </div>
 
@@ -508,7 +575,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
         <section class="mcCompare">
           <div class="mcBoxHead"><b>Scenario Lab</b><span>pesos, no verdad absoluta</span></div>
           <div class="mcCompareBody">
-            <div class="scenarioIntro">Cambia qué te importa y Atlas recalcula el orden sin alterar la investigación original. Esto es una simulación de prioridades, no una puntuación objetiva del mundo.</div>
+            <div class="scenarioIntro">Cambia qué te importa y Atlanex recalcula el orden sin alterar la investigación original. Esto es una simulación de prioridades, no una puntuación objetiva del mundo.</div>
             <div class="scenarioRows" id="scenarioRows"></div>
             <div class="scenarioRank" id="scenarioRank"></div>
           </div>
@@ -533,7 +600,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
           <div class="mcEvidenceBody">
             <div class="sourceIntake">
               <b>Añadir fuente real</b>
-              <p>Pega una URL. Atlas la inspecciona, guarda snapshot + SHA-256 y solo después puede usarla como evidencia verificable.</p>
+              <p>Pega una URL. Atlanex la inspecciona, guarda snapshot + SHA-256 y solo después puede usarla como evidencia verificable.</p>
               <div class="sourceIntakeRow"><input id="manualSourceUrl" placeholder="https://..."><button class="btn primary" id="manualSourceAdd">Inspeccionar</button><button class="btn" id="localDocsAdd">Archivos</button></div>
             </div>
             <div class="sourceMatrix" id="sourceMatrix"></div>
@@ -575,9 +642,9 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
 <div class="resizeHandle leftH" id="leftResize"></div><div class="resizeHandle rightH" id="rightResize"></div>
 <section class="cmdPalette glass" id="cmdPalette"><input id="cmdSearch" placeholder="Comando…  Ctrl+K"><div class="cmdList" id="cmdList"></div></section>
 <section class="consoleDrawer" id="consoleDrawer">
- <div class="consoleHead"><b>ATLAS COMMAND CONSOLE</b><div style="flex:1"></div><button class="btn" id="consoleClose">×</button></div>
+ <div class="consoleHead"><b>ATLANEX COMMAND CONSOLE</b><div style="flex:1"></div><button class="btn" id="consoleClose">×</button></div>
  <div class="consoleBody" id="consoleBody"></div>
- <div class="consoleInputRow"><span>atlas&gt;</span><input id="consoleInput" autocomplete="off" spellcheck="false" placeholder="help"></div>
+ <div class="consoleInputRow"><span>atlanex&gt;</span><input id="consoleInput" autocomplete="off" spellcheck="false" placeholder="help"></div>
 </section>
 
 
@@ -588,7 +655,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
       <div class="x19Mark"></div>
       <div class="x19Name">Atlanex</div>
       <h1 class="x19Title">Investiga. Conecta. Decide.</h1>
-      <div class="x19Sub">Escribe una misión. Atlas puede investigar por ciclos, perseguir gaps de evidencia, verificar fuentes por snapshot SHA-256 y detenerse cuando cumple un objetivo medible.</div>
+      <div class="x19Sub">Escribe una misión. Atlanex puede investigar por ciclos, perseguir gaps de evidencia, verificar fuentes por snapshot SHA-256 y detenerse cuando cumple un objetivo medible.</div>
       <form class="x19Command" id="launchForm">
         <input id="launchQuery" autocomplete="off" placeholder="Ej. Compara herramientas de IA para video con API y uso comercial">
         <button class="btn" type="submit">Investigar</button>
@@ -599,8 +666,8 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
         <button class="x19Example" data-launchq="Encuéntrame herramientas de IA para video que tengan API, entrada gratuita y uso comercial. Compáralas.">Comparar herramientas</button>
         <button class="x19Example" data-launchq="Busca oportunidades y huecos en software para gimnasios pequeños: competidores, APIs y señales de demanda.">Buscar oportunidad</button>
       </div>
-      <button class="btn x19Install" id="installAtlas" type="button" style="margin-top:15px">Instalar Atlas</button>
-      <div class="x19FullscreenHint" id="fullscreenHint">Al entrar, Atlas usará toda la pantalla cuando el navegador lo permita.</div>
+      <button class="btn x19Install" id="installAtlas" type="button" style="margin-top:15px">Instalar Atlanex</button>
+      <div class="x19FullscreenHint" id="fullscreenHint">Al entrar, Atlanex usará toda la pantalla cuando el navegador lo permita.</div>
     </div>
     <div class="x19Footer"><span>Production Candidate</span><i></i><span>Autonomous Evidence Research</span><i></i><span>Proof first</span></div>
   </div>
@@ -608,7 +675,7 @@ body{background:radial-gradient(circle at 52% 38%,#08254a 0,#041326 25%,#020711 
 <div class="startOverlay show" id="startOverlay"></div>
 <div class="workspaceBanner glass" id="workspaceBanner">
   <div style="flex:1;min-width:0">
-    <b>Bienvenido a Atlas</b>
+    <b>Bienvenido a Atlanex</b>
     <span>Empieza con una investigación libre o usa una plantilla. La experiencia ya abre como producto, no como archivo perdido en Descargas.</span>
     <div class="pillRow" style="margin-top:7px">
       <span class="launchPill">Research</span>
@@ -1103,7 +1170,7 @@ function toggleConsole(force){
 }
 async function executeConsole(raw){
  const line=String(raw||'').trim();if(!line)return;
- consoleWrite('atlas> '+line);const [cmd,...rest]=line.split(/\s+/),arg=rest.join(' ');
+ consoleWrite('atlanex> '+line);const [cmd,...rest]=line.split(/\s+/),arg=rest.join(' ');
  if(cmd==='help')consoleWrite('research <objetivo> | ask <pregunta> | agents | health | deep | monitor | present | export | project | ai | clear | home');
  else if(cmd==='research'){if(!arg)return consoleWrite('Falta objetivo');$('q').value=arg;await run(arg)}
  else if(cmd==='ask'){if(!arg)return consoleWrite('Falta pregunta');await askAtlas(arg)}
@@ -1539,7 +1606,7 @@ async function detectAI(){
 function aiSystemPrompt(){
  return `Eres Atlanex Intelligence, analista de investigación. Responde en español.
 REGLAS ESTRICTAS:
-1) Usa únicamente la evidencia incluida por Atlas.
+1) Usa únicamente la evidencia incluida por Atlanex.
 2) Separa VERIFICADO, PROVISIONAL y DESCONOCIDO.
 3) Si falta evidencia, dilo.
 4) Un score heurístico no es un hecho.
@@ -1565,7 +1632,7 @@ async function activateAI(){
    $('aiBtn').classList.add('aiBtnActive');
    $('aiOutput').textContent='IA lista. No se descargó ningún modelo local.'
  }catch(e){
-   aiState.engine=null;aiState.lastError=String(e?.message||e);setAIStatus('error','IA cloud no disponible',aiState.lastError,0);$('aiOutput').textContent='Atlas seguirá con su motor analítico normal.'
+   aiState.engine=null;aiState.lastError=String(e?.message||e);setAIStatus('error','IA cloud no disponible',aiState.lastError,0);$('aiOutput').textContent='Atlanex seguirá con su motor analítico normal.'
  }finally{aiState.loading=false}
 }
 async function aiPrompt(userPrompt,maxTokens=700){
@@ -3151,9 +3218,9 @@ document.querySelectorAll('.x19Example').forEach(el=>el.onclick=()=>{
 });
 document.body.classList.add('booting');
 if(location.protocol==='file:'||location.protocol==='content:'){
- $('fullscreenHint').textContent='Toca “Abrir Atlas” para entrar a pantalla completa.';
+ $('fullscreenHint').textContent='Toca “Abrir Atlanex” para entrar a pantalla completa.';
 }else{
- $('fullscreenHint').textContent='Atlas está listo.';
+ $('fullscreenHint').textContent='Atlanex está listo.';
 }
 
 
@@ -3196,6 +3263,6 @@ $('aiStop').onclick=()=>{aiState.abort=true;setAIStatus('', 'IA detenida','Las p
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('answerBox').classList.remove('show')});
 
-syncProject();project=activeProject();current=project.runs[0]||null;if(current){criteria=current.criteria||[];rawResults=current.rawResults||[];entities=current.entities||[];renderAll();buildGraph(current.objective);setCoverage(current.coverage)}else renderAll();renderWatch();renderAudit();renderChanges();draw();setTimeout(detectAI,350);setTimeout(()=>{maybeShowRecovery();if(!IS_RESTRICTED_ORIGIN)runHealthCheck()},700);
+syncProject();project=activeProject();current=project.runs[0]||null;if(current){criteria=current.criteria||[];rawResults=current.rawResults||[];entities=current.entities||[];renderAll();buildGraph(current.objective);setCoverage(current.coverage)}else renderAll();renderWatch();renderAudit();renderChanges();draw();setTimeout(detectAI,350);setTimeout(()=>{maybeShowRecovery();if(!IS_RESTRICTED_ORIGIN)runHealthCheck()},700);if(IS_DESKTOP)setTimeout(()=>closeSplash(),140);
 })();
 </script><script>if(location.protocol.startsWith('http')&&'serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}</script></body></html>
