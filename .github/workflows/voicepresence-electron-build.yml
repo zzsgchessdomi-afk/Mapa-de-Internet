@@ -1,4 +1,4 @@
-name: VoicePresence Electron Windows Build
+name: VoicePresence 3.0 Windows Build
 
 on:
   push:
@@ -14,45 +14,26 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout temporary build branch
+      - name: Checkout build branch
         uses: actions/checkout@v4
 
-      - name: Rehydrate VoicePresence 2.0 source
+      - name: Rehydrate VoicePresence 3.0 source
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force voicepresence-electron | Out-Null
-          $parts = Get-ChildItem ".vpbuild\source.part.*" | Sort-Object Name
-          if ($parts.Count -ne 6) { throw "Expected 6 source chunks, found $($parts.Count)" }
+          $parts = Get-ChildItem ".vpbuild\v30.part.*" | Sort-Object Name
+          if ($parts.Count -ne 14) { throw "Expected 14 v3.0 source chunks, found $($parts.Count)" }
           $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
-          [IO.File]::WriteAllBytes("$PWD\.vpbuild\source.tar.xz", [Convert]::FromBase64String($b64))
-          tar -xJf ".vpbuild\source.tar.xz" -C "voicepresence-electron"
+          [IO.File]::WriteAllBytes("$PWD\.vpbuild\voicepresence3.tar.xz", [Convert]::FromBase64String($b64))
+          tar -xJf ".vpbuild\voicepresence3.tar.xz" -C "voicepresence-electron"
           if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
-
-      - name: Apply VoicePresence 2.1 guided-session core
-        shell: pwsh
-        run: |
-          $parts = Get-ChildItem ".vpbuild\v21.part.*" | Sort-Object Name
-          if ($parts.Count -ne 7) { throw "Expected 7 v2.1 patch chunks, found $($parts.Count)" }
-          ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v21-exact.cjs" -Encoding UTF8
-          node ".vpbuild\apply-v21-exact.cjs" "voicepresence-electron"
-          node --check "voicepresence-electron\renderer\app.js"
-
-      - name: Apply VoicePresence 2.2 command-center UI
-        shell: pwsh
-        run: |
-          $parts = Get-ChildItem ".vpbuild\v22.part.*" | Sort-Object Name
-          if ($parts.Count -ne 5) { throw "Expected 5 v2.2 patch chunks, found $($parts.Count)" }
-          ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v22-exact.cjs" -Encoding UTF8
-          node ".vpbuild\apply-v22-exact.cjs" "voicepresence-electron"
-          node --check "voicepresence-electron\renderer\app.js"
           $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
-          if ($pkg.version -ne "2.2.0") { throw "Version patch failed: $($pkg.version)" }
-          $pkg.build.win.artifactName = "VoicePresence-2.2.0-Windows-x64.exe"
-          $pkg.build.portable.artifactName = "VoicePresence-2.2.0-Windows-x64.exe"
-          $pkg | ConvertTo-Json -Depth 50 | Set-Content "voicepresence-electron\package.json" -Encoding UTF8
+          if ($pkg.version -ne "3.0.0") { throw "Expected 3.0.0, got $($pkg.version)" }
+          node --check "voicepresence-electron\renderer\app.js"
+          node --check "voicepresence-electron\main.cjs"
           $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
-          foreach ($marker in @("command-center","missionScreen","INICIAR SESIÓN GUIADA","startGuidedSession","showSessionComparison")) {
-            if (-not $app.Contains($marker)) { throw "Missing v2.2 marker: $marker" }
+          foreach ($marker in @("studioCapture","startDailyPlan","openMirrorStudio","showSessionComparisonV3","dailyPool","renderEntrenador")) {
+            if (-not $app.Contains($marker)) { throw "Missing v3 marker: $marker" }
           }
 
       - name: Setup Node 22
@@ -64,11 +45,11 @@ jobs:
         working-directory: voicepresence-electron
         run: npm install --no-audit --no-fund
 
-      - name: Audit project matrix
+      - name: Run complete VoicePresence 3.0 audit
         working-directory: voicepresence-electron
         run: npm test
 
-      - name: Build portable Electron EXE
+      - name: Build one-click Electron EXE
         working-directory: voicepresence-electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -77,17 +58,18 @@ jobs:
       - name: Verify Windows binary
         shell: pwsh
         run: |
-          $p = "voicepresence-electron\dist\VoicePresence-2.2.0-Windows-x64.exe"
+          $p = "voicepresence-electron\dist\VoicePresence-3.0.0-Windows-x64.exe"
           if (!(Test-Path $p)) { throw "EXE missing" }
           $f = Get-Item $p
           if ($f.Length -lt 50000000) { throw "EXE unexpectedly small: $($f.Length)" }
-          Get-FileHash $p -Algorithm SHA256
+          $hash = Get-FileHash $p -Algorithm SHA256
           Write-Host "EXE_BYTES=$($f.Length)"
+          Write-Host "EXE_SHA256=$($hash.Hash)"
 
-      - name: Upload one-click Windows EXE
+      - name: Upload VoicePresence 3.0 EXE
         uses: actions/upload-artifact@v4
         with:
-          name: VoicePresence-2.2.0-Windows-x64
-          path: voicepresence-electron/dist/VoicePresence-2.2.0-Windows-x64.exe
+          name: VoicePresence-3.0.0-Windows-x64
+          path: voicepresence-electron/dist/VoicePresence-3.0.0-Windows-x64.exe
           if-no-files-found: error
           retention-days: 1
