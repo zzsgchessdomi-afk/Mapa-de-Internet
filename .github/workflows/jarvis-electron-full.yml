@@ -38,6 +38,16 @@ jobs:
           if (!(Test-Path '.\work\app\src\jarvis_gm\runtime.py')) { throw 'Full JARVIS runtime missing' }
           Copy-Item '.\jarvis-electron\electron_bridge.py' '.\work\app\src\jarvis_gm\electron_bridge.py' -Force
 
+      - name: Overlay private in-process SAPI voice backend
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Copy-Item '.\jarvis-electron\windows_sapi_inproc.py' '.\work\app\src\jarvis_gm\perception\voice\windows_sapi.py' -Force
+          python '.\jarvis-electron\private_sapi_contract_test.py' | Tee-Object -FilePath '.\PRIVATE_SAPI_CONTRACT.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Private SAPI contract failed' }
+          if (-not (Select-String -Path '.\PRIVATE_SAPI_CONTRACT.txt' -Pattern 'PRIVATE_SAPI_CONTRACT=PASS' -Quiet)) { throw 'Private SAPI contract did not report PASS' }
+          if (Select-String -Path '.\work\app\src\jarvis_gm\perception\voice\windows_sapi.py' -Pattern 'SpSharedRecognizer' -Quiet) { throw 'Shared Windows Speech recognizer still present' }
+
       - name: Install backend build dependencies
         shell: pwsh
         run: |
@@ -213,6 +223,7 @@ jobs:
           Backend ready after install: PASS
           Voice-first integration: PASS
           Voice autostart attempt: PASS
+          Private in-process SAPI (no Windows Speech Recognition toolbar): PASS
           Wake/TTS physical microphone acceptance: PENDING OWNER HARDWARE TEST
           localhost/127.0.0.1 transport: NOT USED
           User Python install: NOT REQUIRED

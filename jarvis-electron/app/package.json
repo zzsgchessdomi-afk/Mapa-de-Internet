@@ -1,8 +1,8 @@
 {
   "name": "jarvis-gm-electron",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "private": true,
-  "description": "JARVIS GM Infinity 7 - voice-first Electron shell with full local core",
+  "description": "JARVIS GM Infinity 7 - voice-first private in-process speech runtime",
   "main": "main.js",
   "author": "JARVIS GM Owner",
   "license": "UNLICENSED",
