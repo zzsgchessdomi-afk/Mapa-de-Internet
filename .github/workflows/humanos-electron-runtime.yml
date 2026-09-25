@@ -1,0 +1,26 @@
+name: HUMANOS Electron Runtime Build
+on:
+  push:
+    branches:
+      - humanos-electron-runtime-build
+  workflow_dispatch:
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Electron Windows runtime
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 "https://github.com/electron/electron/releases/download/v38.2.0/electron-v38.2.0-win32-x64.zip" -o electron.zip
+          mkdir runtime
+          unzip -q electron.zip -d runtime
+          mv runtime/electron.exe runtime/HUMANOS.exe
+          printf "Electron 38.2.0 Windows x64\n" > runtime/HUMANOS_RUNTIME.txt
+      - name: Upload Windows runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: humanos-electron-runtime-win-x64
+          path: runtime/
+          compression-level: 6
+          if-no-files-found: error
