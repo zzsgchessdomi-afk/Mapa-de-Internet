@@ -1,0 +1,52 @@
+{
+  "name": "jarvis-gm-electron",
+  "version": "1.7.0",
+  "private": true,
+  "description": "JARVIS GM Infinity 7 - Electron shell with full local core",
+  "main": "main.js",
+  "author": "JARVIS GM Owner",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win nsis --x64",
+    "pack:portable": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.20"
+  },
+  "build": {
+    "appId": "com.jarvisgm.desktop",
+    "productName": "JARVIS GM",
+    "artifactName": "JARVIS_GM_Setup_${version}.${ext}",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "styles.css"
+    ],
+    "extraResources": [
+      {
+        "from": "backend-dist",
+        "to": "backend",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JARVIS GM",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}
