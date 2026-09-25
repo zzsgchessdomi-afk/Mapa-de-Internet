@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+import re
 import sys
 import threading
 import traceback
@@ -39,6 +40,112 @@ def _jsonable(value: Any) -> Any:
         except Exception:
             pass
     return str(value)
+
+
+WEB_ALIASES = {
+    "youtube": "https://www.youtube.com",
+    "google": "https://www.google.com",
+    "gmail": "https://mail.google.com",
+    "drive": "https://drive.google.com",
+    "google drive": "https://drive.google.com",
+    "maps": "https://maps.google.com",
+    "google maps": "https://maps.google.com",
+    "chatgpt": "https://chatgpt.com",
+    "github": "https://github.com",
+    "whatsapp": "https://web.whatsapp.com",
+}
+
+CAPABILITY_LABELS = {
+    "app.launch": "abrir aplicaciones",
+    "browser.open": "abrir sitios web",
+    "input.control": "usar teclado y ratón",
+    "window.control": "controlar ventanas",
+    "filesystem.read": "leer archivos",
+    "filesystem.write": "crear o modificar archivos",
+    "system.control": "controlar funciones del sistema",
+    "autonomy.run": "ejecutar trabajo autónomo",
+    "workbench.run": "ejecutar trabajos persistentes",
+    "workbench.manage": "administrar trabajos persistentes",
+    "research.web": "investigar en la web",
+    "research.deep": "hacer investigación profunda",
+    "swarm.run": "ejecutar el Cognitive Swarm",
+    "reality.control": "controlar dispositivos físicos",
+    "mobile.control": "controlar dispositivos móviles",
+    "external.send": "enviar información fuera del equipo",
+}
+
+def _normalize_owner_goal(text: str) -> tuple[str, str | None]:
+    raw = str(text or "").strip()
+    low = re.sub(r"\s+", " ", raw.casefold()).strip()
+    m = re.match(r"^(?:jarvis[, ]+)?(?:abre|abrir|open)\s+(?:el\s+|la\s+)?(.+?)\s*$", low)
+    if m:
+        target = m.group(1).strip()
+        if target in WEB_ALIASES:
+            return f"abre {WEB_ALIASES[target]}", target
+    return raw, None
+
+def _blocked_capability(goal) -> str | None:
+    for result in getattr(goal, "results", []) or []:
+        if not getattr(result, "blocked", False):
+            continue
+        error = str(getattr(result, "error", "") or "")
+        m = re.search(r"Capability blocked by policy:\s*([A-Za-z0-9_.-]+)", error)
+        if m:
+            return m.group(1)
+        req_name = str(getattr(result, "action", "") or "")
+        return req_name or None
+    return None
+
+def _goal_message(goal, alias: str | None = None) -> str:
+    state = str(getattr(getattr(goal, "state", None), "value", getattr(goal, "state", ""))).lower()
+    plan = list(getattr(goal, "plan", []) or [])
+    if state == "verified":
+        if plan:
+            req = plan[-1]
+            name = str(getattr(req, "name", ""))
+            args = getattr(req, "args", {}) or {}
+            if name == "open_url":
+                return f"Listo. Abrí {alias.title() if alias else args.get('url', 'el sitio')}."
+            if name == "open_app":
+                return f"Listo. Abrí {args.get('app', 'la aplicación')}."
+            if name == "type_text":
+                return "Listo. Escribí el texto."
+            if name in {"move_cursor", "move_cursor_normalized"}:
+                return "Listo. Moví el cursor."
+            if name == "mouse_button":
+                return "Listo. Hice clic."
+            if name == "hotkey":
+                return "Listo. Ejecuté el atajo."
+            if name in {"maximize_window", "minimize_window", "focus_window"}:
+                return "Listo. Ajusté la ventana."
+        return "Listo. La orden se completó y fue verificada."
+    if state == "blocked":
+        capability = _blocked_capability(goal)
+        if capability and capability in DEFAULT_POLICY:
+            return f"Necesito tu permiso para {CAPABILITY_LABELS.get(capability, capability)}."
+        return "La orden fue bloqueada por seguridad. Puedo mostrarte exactamente qué autorización necesita."
+    if state == "failed":
+        return f"No pude completar la orden: {getattr(goal, 'verification', '') or 'se produjo un error'}"
+    return f"Estado de la orden: {state or 'desconocido'}"
+
+def _goal_response(goal, *, original: str, normalized: str, alias: str | None = None) -> dict[str, Any]:
+    capability = _blocked_capability(goal)
+    plan = [_jsonable(x) for x in (getattr(goal, "plan", []) or [])]
+    results = [_jsonable(x) for x in (getattr(goal, "results", []) or [])]
+    state = str(getattr(getattr(goal, "state", None), "value", getattr(goal, "state", "")))
+    return {
+        "text": original,
+        "state": state,
+        "message": _goal_message(goal, alias=alias),
+        "needs_permission": bool(state == "blocked" and capability in DEFAULT_POLICY),
+        "capability": capability if capability in DEFAULT_POLICY else None,
+        "capability_label": CAPABILITY_LABELS.get(capability, capability) if capability else None,
+        "normalized": normalized if normalized != original else None,
+        "goal_id": str(getattr(goal, "id", "")),
+        "plan": plan,
+        "results": results,
+        "verification": getattr(goal, "verification", None),
+    }
 
 
 class Bridge:
@@ -113,8 +220,35 @@ class Bridge:
                 text = str(args.get("text", "")).strip()
                 if not text:
                     raise ValueError("La orden está vacía")
-                goal = r.orchestrator.run(text)
-                return {"ok": True, "result": _jsonable(goal)}
+                normalized, alias = _normalize_owner_goal(text)
+                goal = r.orchestrator.run(normalized)
+                return {"ok": True, "result": _goal_response(goal, original=text, normalized=normalized, alias=alias)}
+            if op == "run_goal_authorized":
+                text = str(args.get("text", "")).strip()
+                capability = str(args.get("capability", "")).strip()
+                mode = str(args.get("mode", "once")).strip().lower()
+                if not text:
+                    raise ValueError("La orden está vacía")
+                if capability not in DEFAULT_POLICY:
+                    raise ValueError(f"Permiso desconocido: {capability}")
+                if mode not in {"once", "always"}:
+                    raise ValueError("mode debe ser once o always")
+                original_allowed = r.policy.is_allowed(capability)
+                normalized, alias = _normalize_owner_goal(text)
+                try:
+                    r.policy.set(capability, True)
+                    try:
+                        r.guardian.grant_capability(capability, ttl_s=90.0, uses=3)
+                    except Exception:
+                        pass
+                    goal = r.orchestrator.run(normalized)
+                finally:
+                    if mode == "once":
+                        r.policy.set(capability, original_allowed)
+                payload = _goal_response(goal, original=text, normalized=normalized, alias=alias)
+                payload["permission_mode"] = mode
+                payload["permission_persisted"] = bool(mode == "always")
+                return {"ok": True, "result": payload}
             if op == "stop":
                 r.emergency_release_inputs()
                 r.kill_switch.engage()

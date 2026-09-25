@@ -40,14 +40,22 @@
     <section id="statusStrip" class="status-strip"></section>
 
     <section class="panel active" id="panel-command">
-      <div class="hero">
-        <div class="hero-kicker">CONTROL DIRECTO</div>
-        <h2>¿Qué quieres que haga?</h2>
-        <p>Esta orden entra directamente al Orchestrator real de Infinity 7 y devuelve su resultado real.</p>
-        <textarea id="goalInput" placeholder="Ej.: Jarvis, revisa la pantalla, abre mi proyecto y continúa la tarea pendiente."></textarea>
-        <div class="row"><button id="runGoal" class="primary">Ejecutar orden</button><button id="screenNow" class="ghost">Ver pantalla</button><button id="refreshStatus" class="ghost">Actualizar estado</button></div>
+      <div class="command-stage">
+        <div class="jarvis-presence">
+          <div class="presence-orb"></div>
+          <div><div class="hero-kicker">JARVIS ONLINE</div><h2>¿Qué quieres que haga?</h2><p>Háblame como a un asistente. Yo planifico, pido autorización cuando haga falta y ejecuto.</p></div>
+        </div>
+        <div id="jarvisFeed" class="jarvis-feed" aria-live="polite"></div>
+        <div id="permissionBar" class="permission-bar hidden">
+          <div><strong id="permissionTitle">Necesito tu autorización</strong><span id="permissionText"></span></div>
+          <div class="row"><button id="allowOnce" class="primary">Permitir una vez</button><button id="allowAlways" class="ghost">Permitir siempre</button><button id="denyPermission" class="ghost">Cancelar</button></div>
+        </div>
+        <div class="composer">
+          <textarea id="goalInput" placeholder="Ej.: Abre YouTube / Escribe esto en el Bloc de notas / Revisa la pantalla y dime qué ves."></textarea>
+          <div class="row"><button id="runGoal" class="primary">Enviar a JARVIS</button><button id="screenNow" class="ghost">Ver pantalla</button><button id="refreshStatus" class="ghost">Estado</button></div>
+        </div>
       </div>
-      <div class="console-card"><div class="card-title">Resultado real</div><pre id="goalOutput">Esperando orden.</pre></div>
+      <div class="sr-only"><pre id="goalOutput">Esperando orden.</pre></div>
     </section>
 
     <section class="panel" id="panel-perception">

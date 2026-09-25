@@ -96,11 +96,83 @@ document.querySelectorAll('[data-op]').forEach(btn=>btn.addEventListener('click'
   try{const r=await call(btn.dataset.op);$('perceptionOutput').textContent=fmt(r);await refreshStatus();}catch(_){}
 }));
 
+let pendingPermission = null;
+
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function addChat(role, text, extra=''){
+  const feed=$('jarvisFeed');
+  const node=document.createElement('div');
+  node.className=`chat-msg ${role}`;
+  node.innerHTML=`<div class="chat-role">${role==='user'?'TÚ':'JARVIS'}</div><div class="chat-text">${esc(text)}</div>${extra}`;
+  feed.appendChild(node);
+  feed.scrollTop=feed.scrollHeight;
+  return node;
+}
+
+function commandDetails(result){
+  return `<details class="tech-details"><summary>Detalles técnicos</summary><pre>${esc(JSON.stringify({state:result.state,goal_id:result.goal_id,plan:result.plan,results:result.results,verification:result.verification},null,2))}</pre></details>`;
+}
+
+function showCommandResult(result){
+  const extra = commandDetails(result);
+  addChat('jarvis', result.message || 'Orden procesada.', extra);
+  $('goalOutput').textContent = result.message || '';
+  if(result.needs_permission && result.capability){
+    pendingPermission={text:result.text,capability:result.capability};
+    $('permissionTitle').textContent='Necesito tu autorización';
+    $('permissionText').textContent=`Para continuar necesito permiso para ${result.capability_label || result.capability}.`;
+    $('permissionBar').classList.remove('hidden');
+  }else{
+    pendingPermission=null;
+    $('permissionBar').classList.add('hidden');
+  }
+}
+
+async function executeGoal(text, authorizedMode=null){
+  if(!text)return;
+  addChat('user',text);
+  $('goalOutput').textContent='Trabajando…';
+  $('runGoal').disabled=true;
+  try{
+    const result = authorizedMode
+      ? await call('run_goal_authorized',{text,capability:pendingPermission.capability,mode:authorizedMode})
+      : await call('run_goal',{text});
+    showCommandResult(result);
+    if(result.state==='verified') $('goalInput').value='';
+  }catch(err){
+    addChat('jarvis',`No pude completar la orden: ${err.message}`);
+    $('goalOutput').textContent=`No pude completar la orden: ${err.message}`;
+  }finally{
+    $('runGoal').disabled=false;
+    await refreshStatus();
+  }
+}
+
 $('runGoal').addEventListener('click',async()=>{
-  const text=$('goalInput').value.trim();if(!text)return;
-  $('goalOutput').textContent='Ejecutando…';
-  try{await call('run_goal',{text},'goalOutput');}catch(_){}
-  await refreshStatus();
+  const text=$('goalInput').value.trim();
+  await executeGoal(text);
+});
+$('allowOnce').addEventListener('click',async()=>{
+  if(!pendingPermission)return;
+  const p={...pendingPermission};
+  $('permissionBar').classList.add('hidden');
+  pendingPermission=p;
+  await executeGoal(p.text,'once');
+});
+$('allowAlways').addEventListener('click',async()=>{
+  if(!pendingPermission)return;
+  const p={...pendingPermission};
+  $('permissionBar').classList.add('hidden');
+  pendingPermission=p;
+  await executeGoal(p.text,'always');
+});
+$('denyPermission').addEventListener('click',()=>{
+  pendingPermission=null;
+  $('permissionBar').classList.add('hidden');
+  addChat('jarvis','Entendido. No haré esa acción.');
 });
 $('goalInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('runGoal').click()});
 $('screenNow').addEventListener('click',()=>call('screen_snapshot',{},'goalOutput'));
@@ -148,6 +220,7 @@ window.jarvis.onEvent((evt)=>{
 });
 
 (async()=>{
+  addChat('jarvis','Núcleo Infinity 7 activo. Dame una orden.');
   const state=await window.jarvis.state();
   if(state.ready) await refreshStatus();
   else setTimeout(refreshStatus,1200);
