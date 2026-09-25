@@ -28,19 +28,28 @@ jobs:
           tar -xJf ".vpbuild\source.tar.xz" -C "voicepresence-electron"
           if (!(Test-Path "voicepresence-electron\package.json")) { throw "Source rehydration failed" }
 
-      - name: Apply exact VoicePresence 2.1 guided-session patch
+      - name: Apply VoicePresence 2.1 guided-session core
         shell: pwsh
         run: |
-          $patchParts = Get-ChildItem ".vpbuild\v21.part.*" | Sort-Object Name
-          if ($patchParts.Count -ne 7) { throw "Expected 7 v2.1 patch chunks, found $($patchParts.Count)" }
-          ($patchParts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v21-exact.cjs" -Encoding UTF8
+          $parts = Get-ChildItem ".vpbuild\v21.part.*" | Sort-Object Name
+          if ($parts.Count -ne 7) { throw "Expected 7 v2.1 patch chunks, found $($parts.Count)" }
+          ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v21-exact.cjs" -Encoding UTF8
           node ".vpbuild\apply-v21-exact.cjs" "voicepresence-electron"
           node --check "voicepresence-electron\renderer\app.js"
+
+      - name: Apply VoicePresence 2.2 command-center UI
+        shell: pwsh
+        run: |
+          $parts = Get-ChildItem ".vpbuild\v22.part.*" | Sort-Object Name
+          if ($parts.Count -ne 5) { throw "Expected 5 v2.2 patch chunks, found $($parts.Count)" }
+          ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join "" | Set-Content ".vpbuild\apply-v22-exact.cjs" -Encoding UTF8
+          node ".vpbuild\apply-v22-exact.cjs" "voicepresence-electron"
+          node --check "voicepresence-electron\renderer\app.js"
           $pkg = Get-Content "voicepresence-electron\package.json" -Raw | ConvertFrom-Json
-          if ($pkg.version -ne "2.1.0") { throw "Version patch failed: $($pkg.version)" }
+          if ($pkg.version -ne "2.2.0") { throw "Version patch failed: $($pkg.version)" }
           $app = Get-Content "voicepresence-electron\renderer\app.js" -Raw
-          foreach ($marker in @("startGuidedSession","showCorrectionPhase","showSessionComparison","sessionComparisonHTML")) {
-            if (-not $app.Contains($marker)) { throw "Missing guided-session marker: $marker" }
+          foreach ($marker in @("command-center","missionScreen","INICIAR SESIÓN GUIADA","startGuidedSession","showSessionComparison")) {
+            if (-not $app.Contains($marker)) { throw "Missing v2.2 marker: $marker" }
           }
 
       - name: Setup Node 22
@@ -52,7 +61,7 @@ jobs:
         working-directory: voicepresence-electron
         run: npm install --no-audit --no-fund
 
-      - name: Audit project matrix and guided flow
+      - name: Audit project matrix
         working-directory: voicepresence-electron
         run: npm test
 
@@ -65,7 +74,7 @@ jobs:
       - name: Verify Windows binary
         shell: pwsh
         run: |
-          $p = "voicepresence-electron\dist\VoicePresence-2.1.0-Windows-x64.exe"
+          $p = "voicepresence-electron\dist\VoicePresence-2.2.0-Windows-x64.exe"
           if (!(Test-Path $p)) { throw "EXE missing" }
           $f = Get-Item $p
           if ($f.Length -lt 50000000) { throw "EXE unexpectedly small: $($f.Length)" }
@@ -75,7 +84,7 @@ jobs:
       - name: Upload one-click Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: VoicePresence-2.1.0-Windows-x64
-          path: voicepresence-electron/dist/VoicePresence-2.1.0-Windows-x64.exe
+          name: VoicePresence-2.2.0-Windows-x64
+          path: voicepresence-electron/dist/VoicePresence-2.2.0-Windows-x64.exe
           if-no-files-found: error
           retention-days: 1
