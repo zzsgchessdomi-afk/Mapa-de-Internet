@@ -121,7 +121,7 @@ function createWindow() {
     height: 900,
     minWidth: 1120,
     minHeight: 720,
-    backgroundColor: '#080b10',
+    backgroundColor: '#010408',
     show: false,
     autoHideMenuBar: true,
     title: 'JARVIS GM',

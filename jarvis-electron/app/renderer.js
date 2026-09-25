@@ -55,6 +55,7 @@ function renderStatus(s){
   $('voiceBadge').classList.toggle('bad', p.voice?.status === 'error' || p.voice?.status === 'unavailable');
   $('presenceOrb').classList.toggle('listening', voiceRunning);
   if($('hudVoice')) $('hudVoice').textContent = voiceRunning ? 'ONLINE' : 'OFFLINE';
+  if($('hudVision')) $('hudVision').textContent = p.vision?.running ? 'ONLINE' : 'OFF';
   if($('hudWork')) $('hudWork').textContent = (s.workbench?.total ?? 0) > 0 ? 'ACTIVE' : 'READY';
   if($('hudWorld')) $('hudWorld').textContent = (s.world?.entities ?? 0) > 0 ? 'SYNC' : 'EMPTY';
   if($('hudGuardian')) $('hudGuardian').textContent = s.stop_engaged ? 'LOCKED' : 'ARMED';
@@ -117,10 +118,17 @@ function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 }
 
-function addChat(role, text, extra=''){
-  const input=$('lastInput'), response=$('lastResponse');
-  if(role==='user') input.textContent=String(text||'—').toUpperCase();
-  else response.textContent=String(text||'SYSTEM READY').toUpperCase();
+function setHudMessage(role, text, extra=''){
+  const input=$('lastInput'), response=$('lastResponse'), mode=$('hudMode');
+  if(role==='user'){
+    input.textContent='INPUT // '+String(text||'—').toUpperCase();
+    mode.textContent='COMMAND RECEIVED';
+    document.body.classList.add('thinking');
+  }else{
+    response.textContent=String(text||'SYSTEM READY').toUpperCase();
+    mode.textContent='SYSTEM READY';
+    document.body.classList.remove('thinking');
+  }
   return null;
 }
 
@@ -128,7 +136,7 @@ function commandDetails(_result){ return ''; }
 
 function showCommandResult(result){
   const extra = commandDetails(result);
-  addChat('jarvis', result.message || 'Orden procesada.', extra);
+  setHudMessage('jarvis', result.message || 'Orden procesada.', extra);
   $('goalOutput').textContent = result.message || '';
   if(result.needs_permission && result.capability){
     pendingPermission={text:result.text,capability:result.capability};
@@ -143,7 +151,7 @@ function showCommandResult(result){
 
 async function executeGoal(text, authorizedMode=null){
   if(!text)return;
-  addChat('user',text);
+  setHudMessage('user',text);
   $('goalOutput').textContent='Trabajando…';
   $('runGoal').disabled=true;
   try{
@@ -153,7 +161,7 @@ async function executeGoal(text, authorizedMode=null){
     showCommandResult(result);
     if(result.state==='verified') $('goalInput').value='';
   }catch(err){
-    addChat('jarvis',`No pude completar la orden: ${err.message}`);
+    setHudMessage('jarvis',`No pude completar la orden: ${err.message}`);
     $('goalOutput').textContent=`No pude completar la orden: ${err.message}`;
   }finally{
     $('runGoal').disabled=false;
@@ -194,7 +202,7 @@ $('denyPermission').addEventListener('click',async()=>{
   pendingPermission=null;
   $('permissionBar').classList.add('hidden');
   if(p?.source==='voice') await call('voice_permission',{mode:'cancel'});
-  else addChat('jarvis','Entendido. No haré esa acción.');
+  else setHudMessage('jarvis','Entendido. No haré esa acción.');
 });
 $('goalInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('runGoal').click()});
 $('screenNow').addEventListener('click',()=>call('screen_snapshot',{},'goalOutput'));
@@ -240,20 +248,23 @@ window.jarvis.onEvent((evt)=>{
     $('voiceBadge').textContent=ok?'ESCUCHANDO':(evt.status==='error'||evt.status==='unavailable'?'VOZ NO DISPONIBLE':'VOZ INICIANDO');
     $('voiceBadge').classList.toggle('bad',evt.status==='error'||evt.status==='unavailable');
     $('presenceOrb').classList.toggle('listening',ok);
-    if(evt.status==='error'||evt.status==='unavailable') addChat('jarvis',`La voz no está disponible: ${evt.detail||evt.status}`);
+    if(evt.status==='error'||evt.status==='unavailable') setHudMessage('jarvis',`La voz no está disponible: ${evt.detail||evt.status}`);
   }
   if(evt.event==='voice-wake'){
-    $('wakeHint').textContent='Te escucho…';
+    $('wakeHint').textContent='TE ESCUCHO';
+    if($('hudMode')) $('hudMode').textContent='LISTENING';
     $('presenceOrb').classList.add('awake');
     setTimeout(()=>$('presenceOrb').classList.remove('awake'),2200);
   }
   if(evt.event==='voice-command'){
-    addChat('user',evt.text);
-    $('wakeHint').textContent='Procesando tu orden…';
+    setHudMessage('user',evt.text);
+    $('wakeHint').textContent='PROCESSING';
+    if($('hudMode')) $('hudMode').textContent='PROCESSING';
   }
   if(evt.event==='assistant' && evt.text){
-    addChat('jarvis',evt.text);
-    $('wakeHint').textContent='Di “JARVIS”';
+    setHudMessage('jarvis',evt.text);
+    $('wakeHint').textContent='DI “JARVIS”';
+    if($('hudMode')) $('hudMode').textContent='SYSTEM READY';
   }
   if(evt.event==='voice-permission'){
     pendingPermission={source:'voice',text:evt.text,capability:evt.capability};
@@ -272,7 +283,7 @@ window.jarvis.onEvent((evt)=>{
 });
 
 (async()=>{
-  addChat('jarvis','Estoy activo. Di “JARVIS” y háblame. Puedes escribir solo si lo necesitas.');
+  setHudMessage('jarvis','JARVIS ONLINE');
   const state=await window.jarvis.state();
   if(state.ready) await refreshStatus();
   else setTimeout(refreshStatus,1200);
