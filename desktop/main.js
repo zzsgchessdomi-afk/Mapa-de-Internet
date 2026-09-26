@@ -165,7 +165,7 @@ function createWindow(show=true){
  mainWindow.on('closed',()=>{mainWindow=null});
  return mainWindow
 }
-function createTray(){try{const p=path.join(appDir,'icons','icon-192.png');if(!fs.existsSync(p))return;tray=new Tray(nativeImage.createFromPath(p).resize({width:18,height:18}));tray.setToolTip('Atlanex');tray.setContextMenu(Menu.buildFromTemplate([{label:'Abrir Atlas',click:()=>{mainWindow?.show();mainWindow?.focus()}},{label:'Revisar monitores ahora',click:()=>monitorTick(true).catch(()=>{})},{type:'separator'},{label:'Salir completamente',click:()=>{isQuitting=true;app.quit()}}]));tray.on('double-click',()=>mainWindow?.show())}catch{}}
+function createTray(){try{const p=path.join(appDir,'icons','icon-192.png');if(!fs.existsSync(p))return;tray=new Tray(nativeImage.createFromPath(p).resize({width:18,height:18}));tray.setToolTip('Atlanex');tray.setContextMenu(Menu.buildFromTemplate([{label:'Abrir Atlanex',click:()=>{mainWindow?.show();mainWindow?.focus()}},{label:'Revisar monitores ahora',click:()=>monitorTick(true).catch(()=>{})},{type:'separator'},{label:'Salir completamente',click:()=>{isQuitting=true;app.quit()}}]));tray.on('double-click',()=>mainWindow?.show())}catch{}}
 function acceptanceLog(payload){try{const p=process.env.ATLAS_ACCEPTANCE_LOG;if(p)fs.writeFileSync(p,JSON.stringify(payload,null,2),'utf8')}catch{}}
 async function rendererCheck(win){
  const consoleErrors=[],preloadErrors=[];
@@ -173,7 +173,7 @@ async function rendererCheck(win){
  win.webContents.on('preload-error',(_e,preloadPath,error)=>preloadErrors.push({preloadPath,error:String(error?.message||error)}));
  await win.loadFile(path.join(appDir,'index.html'));
  await win.webContents.executeJavaScript("document.readyState==='complete'?true:new Promise(r=>addEventListener('load',()=>r(true),{once:true}))");
- return await win.webContents.executeJavaScript(`(()=>{const fatal=document.getElementById('atlasFatal');const fatalText=document.getElementById('atlasFatalText');const body=(document.body?.innerText||'').toLowerCase();return{atlas:(document.title||'').toLowerCase().includes('internet atlas')||body.includes('internet atlas'),title:document.title||'',splash:!!document.getElementById('splash'),machine:!!document.getElementById('launchMachine'),fatal:!!fatal&&getComputedStyle(fatal).display!=='none',fatalText:fatalText?.textContent||'',desktop:!!globalThis.atlasDesktop?.isDesktop}})()`).then(x=>({...x,consoleErrors,preloadErrors}))
+ return await win.webContents.executeJavaScript(`(()=>{const fatal=document.getElementById('atlasFatal');const fatalText=document.getElementById('atlasFatalText');const body=(document.body?.innerText||'').toLowerCase();return{atlas:(document.title||'').toLowerCase().includes('atlanex')||body.includes('atlanex'),title:document.title||'',splash:!!document.getElementById('splash'),machine:!!document.getElementById('launchMachine'),fatal:!!fatal&&getComputedStyle(fatal).display!=='none',fatalText:fatalText?.textContent||'',desktop:!!globalThis.atlasDesktop?.isDesktop}})()`).then(x=>({...x,consoleErrors,preloadErrors}))
 }
 
 async function runSmoke(){
@@ -224,7 +224,14 @@ async function runAcceptance(){
   acceptanceLog(result);console.log(JSON.stringify(result));return 0
  }catch(e){
   const result={ok:false,error:String(e?.message||e),stack:String(e?.stack||'').slice(-4000)};
-  acceptanceLconst lock=app.requestSingleInstanceLock();
+  acceptanceLog(result);console.error(JSON.stringify(result));return 1
+ }finally{
+  try{win?.destroy()}catch{}
+  try{const mp=monitorPath();if(had&&backup)fs.writeFileSync(mp,backup);else if(!had&&fs.existsSync(mp))fs.unlinkSync(mp)}catch{}
+ }
+}
+
+const lock=app.requestSingleInstanceLock();
 if(!lock)app.quit();
 else{
  app.on('second-instance',()=>{mainWindow?.show();mainWindow?.focus()});
@@ -242,8 +249,8 @@ else{
 }
 
 ipcMain.handle('atlas:window',(_e,a)=>{if(!mainWindow)return false;if(a==='minimize')mainWindow.minimize();else if(a==='maximize')mainWindow.isMaximized()?mainWindow.unmaximize():mainWindow.maximize();else if(a==='close')mainWindow.close();else if(a==='fullscreen')mainWindow.setFullScreen(!mainWindow.isFullScreen());return true});
-ipcMain.handle('atlas:save-project',async(_e,{text,defaultName})=>{const x=await dialog.showSaveDialog(mainWindow,{title:'Guardar proyecto Atlas',defaultPath:path.join(app.getPath('documents'),defaultName||'Atlas_Project.atlas.json'),filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePath)return false;fs.writeFileSync(x.filePath,text,'utf8');return true});
-ipcMain.handle('atlas:open-project',async()=>{const x=await dialog.showOpenDialog(mainWindow,{title:'Abrir proyecto Atlas',properties:['openFile'],filters:[{name:'Atlas Project',extensions:['json']}]});if(x.canceled||!x.filePaths[0])return null;return{path:x.filePaths[0],text:fs.readFileSync(x.filePaths[0],'utf8')}});
+ipcMain.handle('atlas:save-project',async(_e,{text,defaultName})=>{const x=await dialog.showSaveDialog(mainWindow,{title:'Guardar proyecto Atlanex',defaultPath:path.join(app.getPath('documents'),defaultName||'Atlas_Project.atlas.json'),filters:[{name:'Atlanex Project',extensions:['json']}]});if(x.canceled||!x.filePath)return false;fs.writeFileSync(x.filePath,text,'utf8');return true});
+ipcMain.handle('atlas:open-project',async()=>{const x=await dialog.showOpenDialog(mainWindow,{title:'Abrir proyecto Atlanex',properties:['openFile'],filters:[{name:'Atlanex Project',extensions:['json']}]});if(x.canceled||!x.filePaths[0])return null;return{path:x.filePaths[0],text:fs.readFileSync(x.filePaths[0],'utf8')}});
 ipcMain.handle('atlas:notify',(_e,{title,body})=>{if(Notification.isSupported())new Notification({title:title||'Atlanex',body:body||''}).show();return true});
 ipcMain.handle('atlas:research',async(_e,{q}={})=>await researchPayload(q));
 ipcMain.handle('atlas:inspect',async(_e,{url}={})=>await inspectPayload(url));
@@ -267,5 +274,5 @@ ipcMain.handle('atlas:monitor-list',()=>loadMonitor());
 ipcMain.handle('atlas:monitor-sync',async(_e,p)=>{const old=loadMonitor(),map=new Map(old.jobs.map(j=>[j.id,j])),jobs=[];for(const raw of(p?.jobs||[])){const j=cleanJob(raw);if(!j)continue;const x=map.get(j.id);jobs.push(x?{...j,lastChecked:x.lastChecked,lastHash:x.lastHash,lastTitle:x.lastTitle,changed:x.changed,failures:x.failures,lastError:x.lastError,history:x.history,nextCheck:x.nextCheck}:j)}old.jobs=jobs;saveMonitor(old);return loadMonitor()});
 ipcMain.handle('atlas:monitor-run-now',async()=>await monitorTick(true));
 ipcMain.handle('atlas:monitor-config',(_e,p)=>{const s=loadMonitor();if(typeof p?.enabled==='boolean')s.enabled=p.enabled;if(typeof p?.startWithWindows==='boolean'){s.startWithWindows=p.startWithWindows;setLogin(s.startWithWindows)}saveMonitor(s);return s});
-ipcMain.handle('atlas:pick-research-files',async()=>{const r=await dialog.showOpenDialog(mainWindow,{title:'Añadir documentos a Internet Atlas',properties:['openFile','multiSelections'],filters:[{name:'Documentos',extensions:['pdf','txt','md','json','html','htm','csv','xml']}]});if(r.canceled)return[];const out=[];for(const file of r.filePaths.slice(0,12)){try{const st=fs.statSync(file);if(st.size>20000000){out.push({name:path.basename(file),error:'Archivo mayor de 20 MB'});continue}const ext=path.extname(file).toLowerCase();let text='',kind='text';if(ext==='.pdf'){const{PDFParse}=await import('pdf-parse');const parser=new PDFParse({data:new Uint8Array(fs.readFileSync(file))});try{text=String((await parser.getText())?.text||'');kind='pdf'}finally{try{await parser.destroy()}catch{}}}else{text=fs.readFileSync(file,'utf8');if(ext==='.html'||ext==='.htm')text=text.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()}text=text.slice(0,180000);if(!text.trim()){out.push({name:path.basename(file),error:'No se pudo extraer texto'});continue}out.push({name:path.basename(file),kind,size:st.size,text,contentHash:crypto.createHash('sha256').update(text,'utf8').digest('hex'),fetchedAt:new Date().toISOString()})}catch(e){out.push({name:path.basename(file),error:String(e?.message||e).slice(0,300)})}}return out});
+ipcMain.handle('atlas:pick-research-files',async()=>{const r=await dialog.showOpenDialog(mainWindow,{title:'Añadir documentos a Atlanex',properties:['openFile','multiSelections'],filters:[{name:'Documentos',extensions:['pdf','txt','md','json','html','htm','csv','xml']}]});if(r.canceled)return[];const out=[];for(const file of r.filePaths.slice(0,12)){try{const st=fs.statSync(file);if(st.size>20000000){out.push({name:path.basename(file),error:'Archivo mayor de 20 MB'});continue}const ext=path.extname(file).toLowerCase();let text='',kind='text';if(ext==='.pdf'){const{PDFParse}=await import('pdf-parse');const parser=new PDFParse({data:new Uint8Array(fs.readFileSync(file))});try{text=String((await parser.getText())?.text||'');kind='pdf'}finally{try{await parser.destroy()}catch{}}}else{text=fs.readFileSync(file,'utf8');if(ext==='.html'||ext==='.htm')text=text.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()}text=text.slice(0,180000);if(!text.trim()){out.push({name:path.basename(file),error:'No se pudo extraer texto'});continue}out.push({name:path.basename(file),kind,size:st.size,text,contentHash:crypto.createHash('sha256').update(text,'utf8').digest('hex'),fetchedAt:new Date().toISOString()})}catch(e){out.push({name:path.basename(file),error:String(e?.message||e).slice(0,300)})}}return out});
 ipcMain.handle('atlas:version',()=>app.getVersion());
