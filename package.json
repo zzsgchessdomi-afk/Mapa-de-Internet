@@ -8,7 +8,7 @@
   },
   "description": "Atlanex autonomous evidence-first research workspace",
   "scripts": {
-    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs",
+    "check": "node --check api/research.js && node --check api/inspect.js && node --check lib/scanner.js && node --check lib/capsule-core.js && node --check scripts/capsule_cli.mjs && node --check sdk/javascript/index.mjs && node --check tests/no-localhost-architecture.mjs",
     "test:contract": "node tests/research-contract.mjs",
     "audit:release": "node scripts/release_audit.mjs",
     "test:capsule": "node tests/capsule-contract.mjs && node tests/capsule-signature.mjs && node tests/capsule-sdk.mjs && node tests/capsule-replay-minimizer.mjs && node tests/capsule-viewer-syntax.mjs && node tests/index-inline-syntax.mjs",
@@ -20,7 +20,8 @@
     "capsule:testcase": "node scripts/capsule_cli.mjs testcase",
     "capsule:run-testcase": "node scripts/capsule_cli.mjs run-testcase",
     "benchmark:capsule": "node benchmarks/capsule-benchmark.mjs",
-    "audit:all": "npm run check && npm run test:contract && npm run test:capsule && npm run benchmark:capsule && npm run audit:release"
+    "audit:all": "npm run check && npm run test:contract && npm run test:capsule && npm run benchmark:capsule && npm run audit:release && npm run test:no-localhost",
+    "test:no-localhost": "node tests/no-localhost-architecture.mjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5"
