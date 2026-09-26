@@ -1,9 +1,9 @@
 {
   "RETRIEVER": "duckduckgo",
-  "FAST_LLM": "openai:atlas-auto",
-  "SMART_LLM": "openai:atlas-auto",
-  "STRATEGIC_LLM": "openai:atlas-auto",
-  "EMBEDDING": "openai:atlas-feature-hash-384",
+  "FAST_LLM": "google_genai:gemini-2.5-flash",
+  "SMART_LLM": "google_genai:gemini-2.5-flash",
+  "STRATEGIC_LLM": "google_genai:gemini-2.5-flash",
+  "EMBEDDING": "google_genai:models/gemini-embedding-001",
   "CURATE_SOURCES": true,
   "REPORT_FORMAT": "APA",
   "MAX_ITERATIONS": 3,
