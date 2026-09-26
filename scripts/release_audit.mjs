@@ -23,19 +23,21 @@ ok("packaged acceptance",main.includes("--acceptance-test")&&main.includes("runA
 ok("live research gate",main.includes("live research acceptance failed"));
 ok("snapshot gate",main.includes("live source snapshot/hash acceptance failed"));
 ok("monitor gate",main.includes("monitor persistence live check failed"));
-ok("deep agent gate",main.includes("--self-test-deep")&&main.includes("gpt_researcher_deep"));
+ok("deep agent gate",main.includes("--self-test-deep")&&main.includes("google_genai_adapter")&&main.includes("no_loopback_runtime"));
 const server=text("desktop/sidecar/server.py");
 ok("CrewAI runtime test",server.includes("CrewAI runtime")||server.includes("crewai_runtime"));
-ok("GPT Researcher deep test",server.includes("gpt_researcher_deep")&&server.includes("conduct_research"));
+ok("GPT Researcher Gemini runtime test",server.includes("gpt_researcher_runtime")&&server.includes("google_genai_adapter")&&server.includes("provider_objects")&&server.includes("stdio_rpc")&&server.includes("no_loopback_runtime"));
 const wf=text(".github/workflows/windows-build.yml");
 ok("portable acceptance workflow",wf.includes("--acceptance-test")&&wf.includes("Atlanex-Portable"));
 ok("NSIS install acceptance",wf.includes("NSIS")&&wf.includes("Installed app acceptance"));
 ok("deep agent CI",wf.includes("--self-test-deep"));
+ok("no-loopback desktop transport",!main.includes("127.0.0.1")&&!main.includes("localhost")&&!server.includes("127.0.0.1")&&!server.includes("localhost")&&main.includes("sidecarRpc('health'")&&server.includes("def stdio_main()"));
 const rootAudit=JSON.parse(text("package.json")).scripts?.["audit:all"]||"";
 ok("Capsule CI gate",wf.includes("npm run test:capsule")||(wf.includes("npm run audit:all")&&rootAudit.includes("npm run test:capsule")));
 ok("Capsule benchmark CI gate",wf.includes("npm run benchmark:capsule")||(wf.includes("npm run audit:all")&&rootAudit.includes("npm run benchmark:capsule")));
 const preload=text("desktop/preload.cjs");
-for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-evidence","atlas:agent-health","atlas:agent-doctor","atlas:agent-smoke","atlas:agent-start","atlas:agent-run","atlas:agent-cancel","atlas:monitor-list","atlas:monitor-sync","atlas:monitor-run-now","atlas:monitor-config"]){
+ok("direct desktop research IPC",main.includes("atlas:research")&&main.includes("atlas:inspect")&&preload.includes("atlas:research")&&preload.includes("atlas:inspect"));
+for(const channel of ["atlas:version","atlas:pick-research-files","atlas:open-evidence","atlas:research","atlas:inspect","atlas:agent-health","atlas:agent-doctor","atlas:agent-smoke","atlas:agent-start","atlas:agent-run","atlas:agent-cancel","atlas:monitor-list","atlas:monitor-sync","atlas:monitor-run-now","atlas:monitor-config"]){
   ok("IPC "+channel,preload.includes(channel)&&main.includes(channel),channel);
 }
 const spec=text("desktop/sidecar/atlas_agent.spec");

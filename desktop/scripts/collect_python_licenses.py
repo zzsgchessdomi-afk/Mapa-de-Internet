@@ -5,7 +5,7 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "bundled-agent-engine"
 OUT.mkdir(parents=True, exist_ok=True)
-ROOTS = {"crewai", "gpt-researcher", "fastapi", "uvicorn", "httpx"}
+ROOTS = {"crewai", "gpt-researcher", "httpx", "ddgs", "langchain-google-genai"}
 
 def norm(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name.strip().lower())
