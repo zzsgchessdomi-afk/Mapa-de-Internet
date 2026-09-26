@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('atlasDesktop',{
 
  pickResearchFiles:()=>ipcRenderer.invoke('atlas:pick-research-files'),
  openEvidenceViewer:(url,title)=>ipcRenderer.invoke('atlas:open-evidence',{url,title}),
+ research:(q)=>ipcRenderer.invoke('atlas:research',{q}),
+ inspectUrl:(url)=>ipcRenderer.invoke('atlas:inspect',{url}),
  onLLMRequest:(handler)=>ipcRenderer.on('atlas:llm-request',(_event,payload)=>handler(payload)),
  respondLLMRequest:(id,payload)=>ipcRenderer.send('atlas:llm-response',{id,...payload}),
  agentHealth:()=>ipcRenderer.invoke('atlas:agent-health'),
